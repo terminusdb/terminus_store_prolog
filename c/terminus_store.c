@@ -14,7 +14,7 @@ static int write_store_blob(void *closure, atom_t a, int flags) {
 
 static int release_store_blob(atom_t a) {
   void* store = PL_blob_data(a, NULL, NULL);
-  cleanup_store(store);
+  cleanup_directory_store(store);
   return TRUE;
 }
 
