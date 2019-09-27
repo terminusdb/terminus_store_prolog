@@ -80,6 +80,20 @@ static PL_blob_t database_blob =
   };
 
 
+static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db_term) {
+  if (PL_term_type(db_term) != PL_VARIABLE) {
+    PL_fail;
+  }
+  check_string_or_atom_term(db_name);
+  char* db_name_char;
+  assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
+  void* store = PL_blob_data(store_blob, NULL, NULL);
+  char* err;
+  void* db_ptr = create_database(db_name_char, store, &err);
+  PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
+  PL_succeed;
+}
+
 static PL_blob_t layer_blob =
   {
    PL_BLOB_MAGIC,
@@ -117,6 +131,8 @@ static foreign_t pl_hello_world() {
 install_t
 install()
 {
+  PL_register_foreign("create_database", 3,
+                      pl_create_database, 0);
   PL_register_foreign("open_directory_store", 2,
                       pl_open_directory_store, 0);
 }

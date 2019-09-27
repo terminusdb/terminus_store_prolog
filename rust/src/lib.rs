@@ -1,12 +1,22 @@
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_void};
 
+use terminus_store::layer::{
+    IdTriple, Layer, ObjectType, PredicateObjectPairsForSubject, StringTriple,
+};
 use terminus_store::storage::*;
+use terminus_store::storage::{
+    DirectoryLabelStore, DirectoryLayerStore, LabelStore, LayerStore, MemoryLabelStore,
+    MemoryLayerStore,
+};
 use terminus_store::sync::store::*;
 
 #[no_mangle]
 pub static STORE_SIZE: usize =
     std::mem::size_of::<SyncStore<DirectoryLabelStore, DirectoryLayerStore>>();
+
+pub static DB_SIZE: usize =
+    std::mem::size_of::<SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>>();
 
 #[no_mangle]
 pub extern "C" fn open_directory_store(
@@ -17,6 +27,20 @@ pub extern "C" fn open_directory_store(
     let dir_name = dir_name_cstr.to_str().unwrap();
     let store = open_sync_directory_store(dir_name);
     Box::into_raw(Box::new(store))
+}
+
+pub extern "C" fn create_database(
+    name: *const c_char,
+    store_ptr: *mut c_void,
+    err: c_char,
+) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
+    let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
+    // We assume it to be somewhat safe because swipl will check string types
+    let db_name_cstr = unsafe { CStr::from_ptr(name) };
+    let db_name = db_name_cstr.to_str().unwrap();
+    // Safe because we expect the swipl pointers to be decent
+    let database = unsafe { Box::from_raw(store).create(db_name).unwrap() };
+    Box::into_raw(Box::new(database))
 }
 
 #[no_mangle]
