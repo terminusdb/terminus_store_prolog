@@ -12,3 +12,4 @@ install::
 
 clean:
 	rm -rf *.so
+	cd rust; cargo clean
