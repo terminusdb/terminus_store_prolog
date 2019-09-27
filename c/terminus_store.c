@@ -35,14 +35,9 @@ static PL_blob_t store_blob =
    NULL,
   };
 
+static term_t check_string_or_atom_term(term_t to_check) {
+  int term_type = PL_term_type(to_check);
 
-
-static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
-  int term_type = PL_term_type(dir_name);
-
-  if (PL_term_type(store_term) != PL_VARIABLE) {
-    PL_fail;
-  }
 
   if (term_type != PL_ATOM && term_type != PL_STRING) {
     term_t except = PL_new_term_ref();
@@ -52,6 +47,13 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
     assert(unify_res);
     PL_throw(except);
   }
+}
+
+static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
+  if (PL_term_type(store_term) != PL_VARIABLE) {
+    PL_fail;
+  }
+  check_string_or_atom_term(dir_name);
 
   char* dir_name_char;
   assert(PL_get_chars(dir_name, &dir_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
@@ -59,9 +61,6 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
   PL_unify_blob(store_term, store_ptr, STORE_SIZE, &store_blob);
   PL_succeed;
 }
-
-
-
 
 static PL_blob_t database_blob =
   {
