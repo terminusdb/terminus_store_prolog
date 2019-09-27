@@ -1,0 +1,6 @@
+*~
+*.so
+Cargo.lock
+**/*.rs.bk
+rust/target/
+\#*\#
