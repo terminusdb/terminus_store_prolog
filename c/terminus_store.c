@@ -47,7 +47,8 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
   if (term_type != PL_ATOM && term_type != PL_STRING) {
     term_t except = PL_new_term_ref();
     int unify_res = PL_unify_term(except,
-                  PL_CHARS, "We only accept a string or atom as dir_name");
+                                  PL_FUNCTOR_CHARS, "type_error", 1,
+                                  PL_CHARS, "We only accept a string or atom as dir_name");
     assert(unify_res);
     PL_throw(except);
   }
