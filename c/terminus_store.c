@@ -100,10 +100,11 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
   check_string_or_atom_term(db_name);
   char* db_name_char;
   assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
-  void* store = PL_blob_data(store_blob, NULL, NULL);
+  void* store;
+  assert(PL_get_blob(store_blob, &store, NULL, NULL));
   printf("TESTSTTTT\n\n\n");
   char* err;
-  void* db_ptr = create_database(db_name_char, &store, &err);
+  void* db_ptr = create_database(db_name_char, store, &err);
   printf("TESTSTTTT222\n\n\n");
   PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
   PL_succeed;

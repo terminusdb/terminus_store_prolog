@@ -38,7 +38,7 @@ pub extern "C" fn open_directory_store(
 pub extern "C" fn create_database(
     name: *const c_char,
     store_ptr: *mut c_void,
-    err: c_char,
+    err: *const *const c_char,
 ) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
     let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
     let store_box = unsafe { Box::from_raw(store) };
