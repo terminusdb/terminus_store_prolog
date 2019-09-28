@@ -47,6 +47,7 @@ pub extern "C" fn create_database(
     let db_name = db_name_cstr.to_str().unwrap();
     // Safe because we expect the swipl pointers to be decent
     let database = store_box.create(db_name).unwrap();
+    std::mem::forget(store_box);
     Box::into_raw(Box::new(database))
 }
 
