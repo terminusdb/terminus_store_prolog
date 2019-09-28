@@ -92,6 +92,15 @@ static PL_blob_t database_blob =
    NULL,
   };
 
+static int throw_rust_err(char* rust_err) {
+    term_t except = PL_new_term_ref();
+    int unify_res = PL_unify_term(except,
+                                  PL_FUNCTOR_CHARS, "terminus_store_rust_error", 1,
+                                  PL_CHARS, rust_err);
+    assert(unify_res);
+    PL_throw(except);
+}
+
 
 static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db_term) {
   if (PL_term_type(db_term) != PL_VARIABLE) {
@@ -105,6 +114,9 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
   printf("TESTSTTTT\n\n\n");
   char* err;
   void* db_ptr = create_database(db_name_char, store, &err);
+  if (db_ptr == NULL) {
+    throw_rust_err("Could not create database");
+  }
   printf("TESTSTTTT222\n\n\n");
   PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
   PL_succeed;
