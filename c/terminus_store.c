@@ -8,7 +8,7 @@
 
 static int write_store_blob(void *closure, atom_t a, int flags) {
   IOSTREAM *out = closure;
-  Sfwrite("test", 1, strlen("test"), out);
+  Sfwrite("store_blob", 1, strlen("store_blob"), out);
   return TRUE;
 }
 
@@ -111,13 +111,12 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
   assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
   void* store;
   assert(PL_get_blob(store_blob, &store, NULL, NULL));
-  printf("TESTSTTTT\n\n\n");
   char* err;
   void* db_ptr = create_database(db_name_char, store, &err);
+  // Decent error handling, not only checking for null
   if (db_ptr == NULL) {
     throw_rust_err("Could not create database");
   }
-  printf("TESTSTTTT222\n\n\n");
   PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
   PL_succeed;
 }
@@ -135,19 +134,28 @@ static PL_blob_t layer_blob =
    */
   };
 
+
+static int write_layer_builder_blob(void *closure, atom_t a, int flags) {
+  IOSTREAM *out = closure;
+  Sfwrite("layer_builder_blob", 1, strlen("layer_builder_blob"), out);
+  return TRUE;
+}
+
+static int release_layer_builder_blob(atom_t a) {
+  void* builder = PL_blob_data(a, NULL, NULL);
+  cleanup_layer_builder(builder);
+  return TRUE;
+}
+
 static PL_blob_t layer_builder_blob =
   {
    PL_BLOB_MAGIC,
    PL_BLOB_UNIQUE,
    "layer_builder",
-   /*
-     NULL,
-     NULL,
-     NULL,
-     NULL,
-   */
+   &release_layer_builder_blob,
+   NULL,
+   &write_layer_builder_blob,
   };
-
 
 
 static foreign_t pl_hello_world() {
