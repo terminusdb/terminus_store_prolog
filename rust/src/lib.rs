@@ -1,4 +1,4 @@
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 
 use terminus_store::layer::{
@@ -46,9 +46,17 @@ pub extern "C" fn create_database(
     let db_name_cstr = unsafe { CStr::from_ptr(name) };
     let db_name = db_name_cstr.to_str().unwrap();
     // Safe because we expect the swipl pointers to be decent
-    let database = store_box.create(db_name).unwrap();
-    std::mem::forget(store_box);
-    Box::into_raw(Box::new(database))
+    match store_box.create(db_name) {
+        Ok(database) => {
+            std::mem::forget(store_box);
+            Box::into_raw(Box::new(database))
+        }
+        Err(e) => {
+            std::mem::forget(store_box);
+            // TODO: Manipulate the error pointer
+            std::ptr::null()
+        }
+    }
 }
 
 #[no_mangle]
