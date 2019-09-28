@@ -1,5 +1,7 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
+use std::error::Error;
+use std::io;
 
 use terminus_store::layer::{
     IdTriple, Layer, ObjectType, PredicateObjectPairsForSubject, StringTriple,
@@ -34,26 +36,33 @@ pub extern "C" fn open_directory_store(
     Box::into_raw(Box::new(store))
 }
 
+fn error_to_cstring(error: io::Error) -> CString {
+    CString::new(format!("{}", error)).unwrap()
+}
+
 #[no_mangle]
 pub extern "C" fn create_database(
     name: *const c_char,
     store_ptr: *mut c_void,
-    err: *const *const c_char,
+    err: *mut *const c_char,
 ) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
     let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
     let store_box = unsafe { Box::from_raw(store) };
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = unsafe { CStr::from_ptr(name) };
     let db_name = db_name_cstr.to_str().unwrap();
+
+    let result = store_box.create(db_name);
+    std::mem::forget(store_box);
     // Safe because we expect the swipl pointers to be decent
-    match store_box.create(db_name) {
+    match result {
         Ok(database) => {
-            std::mem::forget(store_box);
             Box::into_raw(Box::new(database))
         }
         Err(e) => {
-            std::mem::forget(store_box);
-            // TODO: Manipulate the error pointer
+            unsafe {
+                *err = error_to_cstring(e).into_raw();
+            }
             std::ptr::null()
         }
     }
@@ -75,4 +84,11 @@ pub extern "C" fn cleanup_db(db_ptr: *mut c_void) {
 pub extern "C" fn cleanup_layer_builder(layer_builder_ptr: *mut c_void) {
     let builder = layer_builder_ptr as *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>;
     unsafe { Box::from_raw(builder) };
+}
+
+#[no_mangle]
+pub extern "C" fn cleanup_cstring(cstring_ptr: *mut c_char) {
+    unsafe {
+        CString::from_raw(cstring_ptr);
+    }
 }
