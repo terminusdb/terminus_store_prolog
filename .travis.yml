@@ -10,4 +10,4 @@ before_script:
 
 script:
   - make
-  - swipl -g run_tests ./prolog/terminus_store.pl
+  - swipl -g run_tests -g halt ./prolog/terminus_store.pl
