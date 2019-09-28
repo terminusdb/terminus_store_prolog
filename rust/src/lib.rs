@@ -15,6 +15,7 @@ use terminus_store::sync::store::*;
 pub static STORE_SIZE: usize =
     std::mem::size_of::<SyncStore<DirectoryLabelStore, DirectoryLayerStore>>();
 
+#[no_mangle]
 pub static DB_SIZE: usize =
     std::mem::size_of::<SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>>();
 
@@ -29,17 +30,19 @@ pub extern "C" fn open_directory_store(
     Box::into_raw(Box::new(store))
 }
 
+#[no_mangle]
 pub extern "C" fn create_database(
     name: *const c_char,
     store_ptr: *mut c_void,
     err: c_char,
 ) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
     let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
+    let store_box = unsafe { Box::from_raw(store) };
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = unsafe { CStr::from_ptr(name) };
     let db_name = db_name_cstr.to_str().unwrap();
     // Safe because we expect the swipl pointers to be decent
-    let database = unsafe { Box::from_raw(store).create(db_name).unwrap() };
+    let database = store_box.create(db_name).unwrap();
     Box::into_raw(Box::new(database))
 }
 
@@ -47,4 +50,10 @@ pub extern "C" fn create_database(
 pub extern "C" fn cleanup_directory_store(store_ptr: *mut c_void) {
     let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
     unsafe { Box::from_raw(store) };
+}
+
+#[no_mangle]
+pub extern "C" fn cleanup_db(db_ptr: *mut c_void) {
+    let db = db_ptr as *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>;
+    unsafe { Box::from_raw(db) };
 }

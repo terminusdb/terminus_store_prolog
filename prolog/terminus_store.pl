@@ -1,4 +1,5 @@
 :- module(terminus_store, [
+              create_database/3,
               open_directory_store/2
           ]).
 
@@ -14,5 +15,8 @@ test(open_directory_store_atom_exception) :-
     print(E),
     E =@= type_error('We only accept a string or atom as dir_name').
 
+test(create_db) :-
+    open_directory_store("testdir", X),
+    create_database(X, "sometestdb", _).
 
 :- end_tests(terminus_store).

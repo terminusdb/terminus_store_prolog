@@ -62,10 +62,23 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
   PL_succeed;
 }
 
+
+static int write_database_blob(void *closure, atom_t a, int flags) {
+  IOSTREAM *out = closure;
+  Sfwrite("db_blob", 1, strlen("db_blob"), out);
+  return TRUE;
+}
+
+static int release_database_blob(atom_t a) {
+  void* db = PL_blob_data(a, NULL, NULL);
+  cleanup_db(db);
+  return TRUE;
+}
+
 static PL_blob_t database_blob =
   {
    PL_BLOB_MAGIC,
-   PL_BLOB_UNIQUE,
+   0,
    "database",
    /*
      int           (*release)(atom_t a);
@@ -73,9 +86,9 @@ static PL_blob_t database_blob =
      int           (*write)(IOSTREAM *s, atom_t a, int flags);
      void          (*acquire)(atom_t a);
    */
+   &release_database_blob,
    NULL,
-   NULL,
-   NULL,
+   &write_database_blob,
    NULL,
   };
 
@@ -88,8 +101,10 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
   char* db_name_char;
   assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
   void* store = PL_blob_data(store_blob, NULL, NULL);
+  printf("TESTSTTTT\n\n\n");
   char* err;
-  void* db_ptr = create_database(db_name_char, store, &err);
+  void* db_ptr = create_database(db_name_char, &store, &err);
+  printf("TESTSTTTT222\n\n\n");
   PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
   PL_succeed;
 }
