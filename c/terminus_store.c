@@ -73,126 +73,126 @@ static void throw_rust_err(char* rust_err) {
 
 
 static int write_store_blob(void *closure, atom_t a, int flags) {
-  IOSTREAM *out = closure;
-  char* contents = "#<store_blob>";
-  Sfwrite(contents, 1, strlen(contents), out);
-  return TRUE;
+    IOSTREAM *out = closure;
+    char* contents = "#<store_blob>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
 }
 
 static int release_store_blob(atom_t a) {
-  void* store = PL_blob_data(a, NULL, NULL);
-  cleanup_directory_store(store);
-  return TRUE;
+    void* store = PL_blob_data(a, NULL, NULL);
+    cleanup_directory_store(store);
+    return TRUE;
 }
 
 static PL_blob_t store_blob_type =
-  {
-   PL_BLOB_MAGIC,
-   PL_BLOB_NOCOPY,
-   "store",
-   /*
-     int           (*release)(atom_t a);
-     int           (*compare)(atom_t a, atom_t b);
-     int           (*write)(IOSTREAM *s, atom_t a, int flags);
-     void          (*acquire)(atom_t a);
-   */
-   &release_store_blob,
-   NULL,
-   &write_store_blob,
-   NULL,
-  };
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "store",
+    /*
+      int           (*release)(atom_t a);
+      int           (*compare)(atom_t a, atom_t b);
+      int           (*write)(IOSTREAM *s, atom_t a, int flags);
+      void          (*acquire)(atom_t a);
+    */
+    &release_store_blob,
+    NULL,
+    &write_store_blob,
+    NULL,
+};
 
 
 static int write_database_blob(void *closure, atom_t a, int flags) {
-  IOSTREAM *out = closure;
-  char* contents = "#<database>";
-  Sfwrite(contents, 1, strlen(contents), out);
-  return TRUE;
+    IOSTREAM *out = closure;
+    char* contents = "#<database>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
 }
 
 static int release_database_blob(atom_t a) {
-  void* db = PL_blob_data(a, NULL, NULL);
-  cleanup_db(db);
-  return TRUE;
+    void* db = PL_blob_data(a, NULL, NULL);
+    cleanup_db(db);
+    return TRUE;
 }
 
 static PL_blob_t database_blob_type =
-  {
-   PL_BLOB_MAGIC,
-   PL_BLOB_NOCOPY,
-   "database",
-   /*
-     int           (*release)(atom_t a);
-     int           (*compare)(atom_t a, atom_t b);
-     int           (*write)(IOSTREAM *s, atom_t a, int flags);
-     void          (*acquire)(atom_t a);
-   */
-   &release_database_blob,
-   NULL,
-   &write_database_blob,
-   NULL,
-  };
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "database",
+    /*
+      int           (*release)(atom_t a);
+      int           (*compare)(atom_t a, atom_t b);
+      int           (*write)(IOSTREAM *s, atom_t a, int flags);
+      void          (*acquire)(atom_t a);
+    */
+    &release_database_blob,
+    NULL,
+    &write_database_blob,
+    NULL,
+};
 
 static int write_layer_blob(void *closure, atom_t a, int flags) {
-  IOSTREAM *out = closure;
-  char* contents = "#<layer>";
-  Sfwrite(contents, 1, strlen(contents), out);
-  return TRUE;
+    IOSTREAM *out = closure;
+    char* contents = "#<layer>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
 }
 
 static int release_layer_blob(atom_t a) {
-  void* layer = PL_blob_data(a, NULL, NULL);
-  cleanup_layer(layer);
-  return TRUE;
+    void* layer = PL_blob_data(a, NULL, NULL);
+    cleanup_layer(layer);
+    return TRUE;
 }
 
 
 static PL_blob_t layer_blob_type =
-  {
-   PL_BLOB_MAGIC,
-   PL_BLOB_NOCOPY,
-   "layer",
-   &release_layer_blob,
-   NULL,
-   &write_layer_blob,
-   NULL,
-  };
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "layer",
+    &release_layer_blob,
+    NULL,
+    &write_layer_blob,
+    NULL,
+};
 
 static int write_layer_builder_blob(void *closure, atom_t a, int flags) {
-  IOSTREAM *out = closure;
-  char* contents = "#<layer_builder>";
-  Sfwrite(contents, 1, strlen(contents), out);
-  return TRUE;
+    IOSTREAM *out = closure;
+    char* contents = "#<layer_builder>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
 }
 
 static int release_layer_builder_blob(atom_t a) {
-  void* builder = PL_blob_data(a, NULL, NULL);
-  cleanup_layer_builder(builder);
-  return TRUE;
+    void* builder = PL_blob_data(a, NULL, NULL);
+    cleanup_layer_builder(builder);
+    return TRUE;
 }
 
 static PL_blob_t layer_builder_blob_type =
-  {
-   PL_BLOB_MAGIC,
-   PL_BLOB_NOCOPY,
-   "layer_builder",
-   &release_layer_builder_blob,
-   NULL,
-   &write_layer_builder_blob,
-  };
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "layer_builder",
+    &release_layer_builder_blob,
+    NULL,
+    &write_layer_builder_blob,
+};
 
 
 static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
-  if (PL_term_type(store_term) != PL_VARIABLE) {
-    PL_fail;
-  }
-  check_string_or_atom_term(dir_name);
+    if (PL_term_type(store_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+    check_string_or_atom_term(dir_name);
 
-  char* dir_name_char;
-  assert(PL_get_chars(dir_name, &dir_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
-  void* store_ptr = open_directory_store(dir_name_char);
-  PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
-  PL_succeed;
+    char* dir_name_char;
+    assert(PL_get_chars(dir_name, &dir_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
+    void* store_ptr = open_directory_store(dir_name_char);
+    PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
+    PL_succeed;
 }
 
 static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db_term) {
@@ -249,10 +249,10 @@ static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
 install_t
 install()
 {
-  PL_register_foreign("create_database", 3,
-                      pl_create_database, 0);
-  PL_register_foreign("open_directory_store", 2,
-                      pl_open_directory_store, 0);
-  PL_register_foreign("head", 2,
-                      pl_head, 0);
+    PL_register_foreign("create_database", 3,
+                        pl_create_database, 0);
+    PL_register_foreign("open_directory_store", 2,
+                        pl_open_directory_store, 0);
+    PL_register_foreign("head", 2,
+                        pl_head, 0);
 }
