@@ -1,7 +1,8 @@
 :- module(terminus_store, [
               create_database/3,
               open_directory_store/2,
-              head/2
+              head/2,
+              open_write/2
           ]).
 
 :- use_foreign_library(libterminus_store).

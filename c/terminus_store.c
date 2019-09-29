@@ -244,6 +244,45 @@ static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
     PL_succeed;
 }
 
+static foreign_t pl_open_write(term_t layer_or_database_term, term_t builder_term) {
+    if (PL_term_type(layer_or_database_term) == PL_VARIABLE) {
+        throw_instantiation_err(layer_or_database_term);
+    }
+
+    PL_blob_t* blob_type;
+    void* blob;
+    if (!PL_get_blob(layer_or_database_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type)) {
+        throw_type_error(layer_or_database_term, "layer");
+    }
+
+    if (PL_term_type(builder_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
+
+    char* err;
+    void* builder_ptr;
+    if (blob_type == &store_blob_type) {
+        builder_ptr = store_create_base_layer(blob, &err);
+    }
+    else if (blob_type == &layer_blob_type) {
+        builder_ptr = layer_open_write(blob, &err);
+    }
+    else {
+        abort();
+    }
+
+    if (builder_ptr == NULL) {
+        assert(err);
+        throw_rust_err(err);
+    }
+    else {
+        PL_unify_blob(builder_term, builder_ptr, 0, &layer_builder_blob_type);
+    }
+
+    PL_succeed;
+}
+
 install_t
 install()
 {
@@ -253,4 +292,6 @@ install()
                         pl_open_directory_store, 0);
     PL_register_foreign("head", 2,
                         pl_head, 0);
+    PL_register_foreign("open_write", 2,
+                        pl_open_write, 0);
 }

@@ -6,3 +6,5 @@ void cleanup_layer_builder(void* layer_builder);
 void cleanup_cstring(char* c_string);
 void* create_database(char* name, void* store, char** err);
 void* database_get_head(void* db, char** err);
+void* store_create_base_layer(void* db, char** err);
+void* layer_open_write(void* layer, char** err);
