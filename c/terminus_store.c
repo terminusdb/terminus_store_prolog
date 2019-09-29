@@ -50,7 +50,7 @@ static void* check_blob_type(term_t term, PL_blob_t* expected_type) {
     return blob;
 }
 
-static term_t check_string_or_atom_term(term_t term) {
+static char* check_string_or_atom_term(term_t term) {
     if (PL_term_type(term) == PL_VARIABLE) {
         throw_instantiation_err(term);
     }
@@ -60,6 +60,11 @@ static term_t check_string_or_atom_term(term_t term) {
     if (term_type != PL_ATOM && term_type != PL_STRING) {
         throw_type_error(term, "atom");
     }
+
+    char* result;
+    assert(PL_get_chars(term, &result, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
+
+    return result;
 }
 
 static void throw_rust_err(char* rust_err) {
@@ -185,37 +190,26 @@ static PL_blob_t layer_builder_blob_type =
 };
 
 
-static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
+static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term) {
     if (PL_term_type(store_term) != PL_VARIABLE) {
         PL_fail;
     }
-    check_string_or_atom_term(dir_name);
-
-    char* dir_name_char;
-    assert(PL_get_chars(dir_name, &dir_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
-    void* store_ptr = open_directory_store(dir_name_char);
+    char* dir_name = check_string_or_atom_term(dir_name_term);
+    void* store_ptr = open_directory_store(dir_name);
     PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
     PL_succeed;
 }
 
-static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db_term) {
+static foreign_t pl_create_database(term_t store_blob, term_t db_name_term, term_t db_term) {
     void* store = check_blob_type(store_blob, &store_blob_type);
-
-    if (PL_term_type(db_name) == PL_VARIABLE) {
-        throw_instantiation_err(db_name);
-    }
-
-    check_string_or_atom_term(db_name);
+    char* db_name = check_string_or_atom_term(db_name_term);
 
     if (PL_term_type(db_term) != PL_VARIABLE) {
         PL_fail;
     }
 
-    char* db_name_char;
-    assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
-
     char* err;
-    void* db_ptr = create_database(db_name_char, store, &err);
+    void* db_ptr = create_database(db_name, store, &err);
     // Decent error handling, not only checking for null
     if (db_ptr == NULL) {
         throw_rust_err(err);
@@ -283,6 +277,130 @@ static foreign_t pl_open_write(term_t layer_or_database_term, term_t builder_ter
     PL_succeed;
 }
 
+static foreign_t pl_add_id_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    int64_t subject, predicate, object;
+    PL_get_int64_ex(subject_term, &subject);
+    PL_get_int64_ex(predicate_term, &subject);
+    PL_get_int64_ex(object_term, &subject);
+
+    char *err;
+    int result = builder_add_id_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    if (result) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_add_string_node_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    char* subject = check_string_or_atom_term(subject_term);
+    char* predicate = check_string_or_atom_term(predicate_term);
+    char* object = check_string_or_atom_term(object_term);
+
+    char *err;
+    builder_add_string_node_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    PL_succeed;
+}
+
+static foreign_t pl_add_string_value_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    char* subject = check_string_or_atom_term(subject_term);
+    char* predicate = check_string_or_atom_term(predicate_term);
+    char* object = check_string_or_atom_term(object_term);
+
+    char *err;
+    builder_add_string_value_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    PL_succeed;
+}
+
+static foreign_t pl_remove_id_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    int64_t subject, predicate, object;
+    PL_get_int64_ex(subject_term, &subject);
+    PL_get_int64_ex(predicate_term, &subject);
+    PL_get_int64_ex(object_term, &subject);
+
+    char *err;
+    int result = builder_remove_id_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    if (result) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_remove_string_node_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    char* subject = check_string_or_atom_term(subject_term);
+    char* predicate = check_string_or_atom_term(predicate_term);
+    char* object = check_string_or_atom_term(object_term);
+
+    char *err;
+    int result = builder_remove_string_node_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    if (result) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    char* subject = check_string_or_atom_term(subject_term);
+    char* predicate = check_string_or_atom_term(predicate_term);
+    char* object = check_string_or_atom_term(object_term);
+
+    char *err;
+    int result = builder_remove_string_value_triple(builder, subject, predicate, object, &err);
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    if (result) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+
+    char* err;
+    void* layer_ptr = builder_commit(builder, &err);
+    if (layer_ptr == NULL) {
+        throw_rust_err(err);
+    }
+
+    PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
+}
+
 install_t
 install()
 {
@@ -294,4 +412,18 @@ install()
                         pl_head, 0);
     PL_register_foreign("open_write", 2,
                         pl_open_write, 0);
+    PL_register_foreign("nb_add_id_triple", 4,
+                        pl_add_id_triple, 0);
+    PL_register_foreign("nb_add_string_node_triple", 4,
+                        pl_add_string_node_triple, 0);
+    PL_register_foreign("nb_add_string_value_triple", 4,
+                        pl_add_string_value_triple, 0);
+    PL_register_foreign("nb_remove_id_triple", 4,
+                        pl_remove_id_triple, 0);
+    PL_register_foreign("nb_remove_string_node_triple", 4,
+                        pl_remove_string_node_triple, 0);
+    PL_register_foreign("nb_remove_string_value_triple", 4,
+                        pl_remove_string_value_triple, 0);
+    PL_register_foreign("nb_commit", 2,
+                        pl_builder_commit, 0);
 }

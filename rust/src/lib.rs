@@ -5,6 +5,9 @@ use std::io;
 use terminus_store::storage::{
     DirectoryLabelStore, DirectoryLayerStore,
 };
+use terminus_store::layer::{
+    StringTriple, IdTriple
+};
 use terminus_store::sync::store::*;
 
 #[no_mangle]
@@ -103,6 +106,155 @@ pub unsafe extern "C" fn layer_open_write(layer_ptr: *mut SyncDatabaseLayer<Dire
     };
 
     std::mem::forget(layer);
+
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_add_id_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
+    let builder = Box::from_raw(builder_ptr);
+
+    let result = match builder.add_id_triple(IdTriple::new(subject, predicate, object)) {
+        Ok(r) => {
+            *err = std::ptr::null();
+
+            r
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+
+            false
+        }
+    };
+
+    std::mem::forget(builder);
+
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_add_string_node_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
+    let builder = Box::from_raw(builder_ptr);
+
+    let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
+    let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
+    let object = CStr::from_ptr(object_ptr).to_string_lossy();
+
+    match builder.add_string_triple(&StringTriple::new_node(&subject, &predicate, &object)) {
+        Ok(_) => *err = std::ptr::null(),
+        Err(e) => *err = error_to_cstring(e).into_raw()
+    };
+
+    std::mem::forget(builder);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_add_string_value_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
+    let builder = Box::from_raw(builder_ptr);
+
+    let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
+    let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
+    let object = CStr::from_ptr(object_ptr).to_string_lossy();
+
+    match builder.add_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
+        Ok(_) => *err = std::ptr::null(),
+        Err(e) => *err = error_to_cstring(e).into_raw()
+    };
+
+    std::mem::forget(builder);
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_remove_id_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
+    let builder = Box::from_raw(builder_ptr);
+
+    let result = match builder.remove_id_triple(IdTriple::new(subject, predicate, object)) {
+        Ok(r) => {
+            *err = std::ptr::null();
+
+            r
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+
+            false
+        }
+    };
+
+    std::mem::forget(builder);
+
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_remove_string_node_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
+    let builder = Box::from_raw(builder_ptr);
+
+    let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
+    let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
+    let object = CStr::from_ptr(object_ptr).to_string_lossy();
+
+    let result = match builder.remove_string_triple(&StringTriple::new_node(&subject, &predicate, &object)) {
+        Ok(r) => {
+            *err = std::ptr::null();
+
+            r
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+
+            false
+        }
+    };
+
+    std::mem::forget(builder);
+
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_remove_string_value_triple(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
+    let builder = Box::from_raw(builder_ptr);
+
+    let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
+    let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
+    let object = CStr::from_ptr(object_ptr).to_string_lossy();
+
+    let result = match builder.remove_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
+        Ok(r) => {
+            *err = std::ptr::null();
+
+            r
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+
+            false
+        }
+    };
+
+    std::mem::forget(builder);
+
+    result
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn builder_commit(builder_ptr: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayer<DirectoryLayerStore> {
+    let builder = Box::from_raw(builder_ptr);
+
+    let result = match builder.commit() {
+        Ok(layer) => {
+            *err = std::ptr::null();
+            Box::into_raw(Box::new(layer))
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null()
+        }
+    };
+
+    std::mem::forget(builder);
 
     result
 }
