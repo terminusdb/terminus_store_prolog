@@ -69,21 +69,18 @@ pub extern "C" fn create_database(
 }
 
 #[no_mangle]
-pub extern "C" fn cleanup_directory_store(store_ptr: *mut c_void) {
-    let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
+pub extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
     unsafe { Box::from_raw(store) };
 }
 
 #[no_mangle]
-pub extern "C" fn cleanup_db(db_ptr: *mut c_void) {
-    let db = db_ptr as *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>;
+pub extern "C" fn cleanup_db(db: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>) {
     unsafe { Box::from_raw(db) };
 }
 
 #[no_mangle]
-pub extern "C" fn cleanup_layer_builder(layer_builder_ptr: *mut c_void) {
-    let builder = layer_builder_ptr as *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>;
-    unsafe { Box::from_raw(builder) };
+pub extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>) {
+    unsafe { Box::from_raw(layer_builder) };
 }
 
 #[no_mangle]
