@@ -14,18 +14,6 @@ use terminus_store::storage::{
 use terminus_store::sync::store::*;
 
 #[no_mangle]
-pub static STORE_SIZE: usize =
-    std::mem::size_of::<SyncStore<DirectoryLabelStore, DirectoryLayerStore>>();
-
-#[no_mangle]
-pub static DB_SIZE: usize =
-    std::mem::size_of::<SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>>();
-
-#[no_mangle]
-pub static LAYER_BUILDER_SIZE: usize =
-    std::mem::size_of::<SyncDatabaseLayerBuilder<DirectoryLayerStore>>();
-
-#[no_mangle]
 pub extern "C" fn open_directory_store(
     dir: *const c_char,
 ) -> *const SyncStore<DirectoryLabelStore, DirectoryLayerStore> {

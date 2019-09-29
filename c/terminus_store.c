@@ -18,10 +18,10 @@ static int release_store_blob(atom_t a) {
   return TRUE;
 }
 
-static PL_blob_t store_blob =
+static PL_blob_t store_blob_type =
   {
    PL_BLOB_MAGIC,
-   0,
+   PL_BLOB_NOCOPY,
    "store",
    /*
      int           (*release)(atom_t a);
@@ -58,7 +58,7 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
   char* dir_name_char;
   assert(PL_get_chars(dir_name, &dir_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
   void* store_ptr = open_directory_store(dir_name_char);
-  PL_unify_blob(store_term, store_ptr, STORE_SIZE, &store_blob);
+  PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
   PL_succeed;
 }
 
@@ -75,10 +75,10 @@ static int release_database_blob(atom_t a) {
   return TRUE;
 }
 
-static PL_blob_t database_blob =
+static PL_blob_t database_blob_type =
   {
    PL_BLOB_MAGIC,
-   0,
+   PL_BLOB_NOCOPY,
    "database",
    /*
      int           (*release)(atom_t a);
@@ -120,14 +120,14 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
   if (db_ptr == NULL) {
     throw_rust_err(err);
   }
-  PL_unify_blob(db_term, db_ptr, DB_SIZE, &database_blob);
+  PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
   PL_succeed;
 }
 
-static PL_blob_t layer_blob =
+static PL_blob_t layer_blob_type =
   {
    PL_BLOB_MAGIC,
-   0,
+   PL_BLOB_NOCOPY,
    "layer",
    /*
      NULL,
@@ -150,10 +150,10 @@ static int release_layer_builder_blob(atom_t a) {
   return TRUE;
 }
 
-static PL_blob_t layer_builder_blob =
+static PL_blob_t layer_builder_blob_type =
   {
    PL_BLOB_MAGIC,
-   PL_BLOB_UNIQUE,
+   PL_BLOB_NOCOPY,
    "layer_builder",
    &release_layer_builder_blob,
    NULL,
