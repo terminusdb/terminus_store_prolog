@@ -1,4 +1,3 @@
-void hello_world();
 size_t STORE_SIZE;
 size_t DB_SIZE;
 size_t LAYER_BUILDER_SIZE;

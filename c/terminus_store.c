@@ -161,12 +161,6 @@ static PL_blob_t layer_builder_blob =
   };
 
 
-static foreign_t pl_hello_world() {
-  hello_world();
-  return 0;
-}
-
-
 install_t
 install()
 {
