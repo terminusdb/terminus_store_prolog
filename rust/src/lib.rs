@@ -57,6 +57,35 @@ pub extern "C" fn create_database(
 }
 
 #[no_mangle]
+pub extern "C" fn database_get_head(database_ptr: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayer<DirectoryLayerStore> {
+    let database_box = unsafe { Box::from_raw(database_ptr) };
+    let result = match database_box.head() {
+        Ok(None) => {
+            unsafe {
+                *err = std::ptr::null();
+                std::ptr::null()
+            }
+        },
+        Ok(Some(layer)) => {
+            unsafe {
+                *err = std::ptr::null();
+
+                Box::into_raw(Box::new(layer))
+            }
+        }
+        Err(e) => {
+            unsafe {
+                *err = error_to_cstring(e).into_raw();
+            }
+            std::ptr::null()
+        }
+    };
+    std::mem::forget(database_box);
+
+    result
+}
+
+#[no_mangle]
 pub extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
     unsafe { Box::from_raw(store) };
 }
@@ -64,6 +93,11 @@ pub extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelSt
 #[no_mangle]
 pub extern "C" fn cleanup_db(db: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>) {
     unsafe { Box::from_raw(db) };
+}
+
+#[no_mangle]
+pub extern "C" fn cleanup_layer(layer: *mut SyncDatabaseLayer<DirectoryLayerStore>) {
+    unsafe { Box::from_raw(layer) };
 }
 
 #[no_mangle]
