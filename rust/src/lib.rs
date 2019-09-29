@@ -1,15 +1,9 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
-use std::error::Error;
 use std::io;
 
-use terminus_store::layer::{
-    IdTriple, Layer, ObjectType, PredicateObjectPairsForSubject, StringTriple,
-};
-use terminus_store::storage::*;
 use terminus_store::storage::{
-    DirectoryLabelStore, DirectoryLayerStore, LabelStore, LayerStore, MemoryLabelStore,
-    MemoryLayerStore,
+    DirectoryLabelStore, DirectoryLayerStore,
 };
 use terminus_store::sync::store::*;
 
