@@ -36,15 +36,18 @@ static void throw_type_error(term_t term, char* type) {
     PL_throw(except);
 }
 
-static void check_blob_type(term_t term, PL_blob_t* expected_type) {
+static void* check_blob_type(term_t term, PL_blob_t* expected_type) {
     if (PL_term_type(term) == PL_VARIABLE) {
         throw_instantiation_err(term);
     }
 
+    void* blob;
     PL_blob_t *type;
-    if (!PL_get_blob(term, NULL, NULL, &type) || type != expected_type) {
+    if (!PL_get_blob(term, &blob, NULL, &type) || type != expected_type) {
         throw_type_error(term, expected_type->name);
     }
+
+    return blob;
 }
 
 static term_t check_string_or_atom_term(term_t term) {
@@ -196,7 +199,7 @@ static foreign_t pl_open_directory_store(term_t dir_name, term_t store_term) {
 }
 
 static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db_term) {
-    check_blob_type(store_blob, &store_blob_type);
+    void* store = check_blob_type(store_blob, &store_blob_type);
 
     if (PL_term_type(db_name) == PL_VARIABLE) {
         throw_instantiation_err(db_name);
@@ -210,8 +213,6 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
 
     char* db_name_char;
     assert(PL_get_chars(db_name, &db_name_char, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
-    void* store;
-    assert(PL_get_blob(store_blob, &store, NULL, NULL));
 
     char* err;
     void* db_ptr = create_database(db_name_char, store, &err);
@@ -224,10 +225,7 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name, term_t db
 }
 
 static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
-    check_blob_type(database_blob_term, &database_blob_type);
-
-    void* database;
-    assert(PL_get_blob(database_blob_term, &database, NULL, NULL));
+    void* database = check_blob_type(database_blob_term, &database_blob_type);
 
     char* err;
     void* layer_ptr = database_get_head(database, &err);
