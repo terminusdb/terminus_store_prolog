@@ -1,11 +1,28 @@
 :- module(terminus_store, [
-              create_database/3,
               open_directory_store/2,
+
+              create_database/3,
+              %open_database/3,
+
               head/2,
+              %set_head/2,
+
               open_write/2,
+
               nb_add_triple/4,
               nb_remove_triple/4,
               nb_commit/2
+
+              %node_and_value_count/2,
+              %predicate_count/2,
+              %subject_id/2,
+              %predicate_id/2,
+              %object_id/2,
+              %id_subject/2,
+              %id_predicate/2,
+              %id_object/2,
+
+              %triple/4
           ]).
 
 :- use_foreign_library(libterminus_store).
