@@ -16,6 +16,7 @@ test(open_directory_store_atom_exception) :-
     E =@= type_error('We only accept a string or atom as dir_name').
 
 test(create_db) :-
+    make_directory("testdir"),
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
 
