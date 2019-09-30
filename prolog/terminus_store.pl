@@ -179,4 +179,11 @@ test(predicate_count) :-
     predicate_count(Layer, Count),
     Count == 1.
 
+test(node_and_value_count) :-
+    open_directory_store("testdir", Store),
+    open_database(Store, "sometestdb", DB),
+    head(DB, Layer),
+    node_and_value_count(Layer, Count),
+    Count == 2.
+
 :- end_tests(terminus_store).
