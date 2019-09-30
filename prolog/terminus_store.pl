@@ -112,7 +112,7 @@ object_id(Layer, Object, Id) :-
     id_to_object(Layer, Id, Object_Atom, Type),
     Object =.. [Type, Object_Atom].
 
-:- begin_tests(terminus_store).
+:- begin_tests(terminus_store, [cleanup(clean)]).
 
 :- use_module(library(filesex)).
 
