@@ -114,3 +114,26 @@ PL_blob_t layer_builder_blob_type =
     NULL,
     &write_layer_builder_blob,
 };
+
+static int write_po_pairs_for_subject_blob(void *closure, atom_t a, int flags) {
+    IOSTREAM *out = closure;
+    char* contents = "#<po_pairs_for_subject>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
+}
+
+static int release_po_pairs_for_subject_blob(atom_t a) {
+    void* po_pairs_for_subject = PL_blob_data(a, NULL, NULL);
+    cleanup_po_pairs_for_subject(po_pairs_for_subject);
+    return TRUE;
+}
+
+PL_blob_t po_pairs_for_subject_blob_type =
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "po_pairs_for_subject",
+    &release_po_pairs_for_subject_blob,
+    NULL,
+    &write_po_pairs_for_subject_blob,
+};
