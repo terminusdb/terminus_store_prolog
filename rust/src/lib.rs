@@ -150,7 +150,9 @@ pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase<Directo
                 Box::into_raw(Box::new(builder))
             },
             Ok(None) => {
-                *err = std::ptr::null();
+                *err = CString::new("Create a base layer first before opening the database for write")
+                    .unwrap()
+                    .into_raw();
                 std::ptr::null()
             }
             Err(e) => {
@@ -246,7 +248,6 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDa
     match (*builder).remove_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
         Ok(r) => {
             *err = std::ptr::null();
-
             r
         }
         Err(e) => {
