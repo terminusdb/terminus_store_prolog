@@ -394,6 +394,17 @@ pub unsafe extern "C" fn objects_predicate(objects_for_po_pair: *const Box<dyn O
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn objects_iter(objects: *const Box<dyn ObjectsForSubjectPredicatePair>) -> *const Mutex<Box<dyn Iterator<Item=u64>>> {
+    let iter: Box<dyn Iterator<Item=u64>> = Box::new((*objects).triples().map(|t|t.object));
+    Box::into_raw(Box::new(Mutex::new(iter)))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn objects_has_object(objects: *const Box<dyn ObjectsForSubjectPredicatePair>, object: u64) -> bool {
+    (*objects).triple(object).is_some()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
     Box::from_raw(store);
 }
@@ -430,6 +441,11 @@ pub unsafe extern "C" fn cleanup_objects_for_po_pair(objects_for_po_pair: *mut B
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_objects_for_po_pair_iter(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectsForSubjectPredicatePair>>>>) {
+    let _iter = Box::from_raw(iter);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_objects_iter(iter: *mut Mutex<Box<dyn Iterator<Item=u64>>>) {
     let _iter = Box::from_raw(iter);
 }
 
