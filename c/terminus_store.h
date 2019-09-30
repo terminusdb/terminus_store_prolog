@@ -18,3 +18,15 @@ int builder_remove_id_triple(void* builder, uint64_t subject, uint64_t predicate
 int builder_remove_string_node_triple(void* builder, char* subject, char* predicate, char* object, char** err);
 int builder_remove_string_value_triple(void* builder, char* subject, char* predicate, char* object, char** err);
 void* builder_commit(void* builder, char** err);
+
+size_t layer_node_and_value_count(void* layer);
+size_t layer_predicate_count(void* layer);
+
+uint64_t layer_subject_id(void* layer, char* subject);
+uint64_t layer_predicate_id(void* layer, char* predicate);
+uint64_t layer_object_node_id(void* layer, char* object);
+uint64_t layer_object_value_id(void* layer, char* value);
+
+char* layer_id_subject(void* layer, uint64_t id);
+char* layer_id_predicate(void* layer, uint64_t id);
+char* layer_id_object(void* layer, uint64_t id, char* object_type);

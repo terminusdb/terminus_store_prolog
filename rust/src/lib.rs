@@ -6,7 +6,7 @@ use terminus_store::storage::{
     DirectoryLabelStore, DirectoryLayerStore,
 };
 use terminus_store::layer::{
-    StringTriple, IdTriple
+    Layer, StringTriple, IdTriple, ObjectType
 };
 use terminus_store::sync::store::*;
 
@@ -269,6 +269,68 @@ pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder<D
             std::ptr::null()
         }
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_node_and_value_count(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> usize {
+    (*layer).node_and_value_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_predicate_count(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> usize {
+    (*layer).predicate_count()
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_subject_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, subject: *const c_char) -> u64 {
+    let cstr = CStr::from_ptr(subject).to_string_lossy();
+    (*layer).subject_id(&cstr).unwrap_or(0)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_predicate_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, predicate: *const c_char) -> u64 {
+    let cstr = CStr::from_ptr(predicate).to_string_lossy();
+    (*layer).predicate_id(&cstr).unwrap_or(0)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_object_node_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, object: *const c_char) -> u64 {
+    let cstr = CStr::from_ptr(object).to_string_lossy();
+    (*layer).object_node_id(&cstr).unwrap_or(0)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_object_value_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, object: *const c_char) -> u64 {
+    let cstr = CStr::from_ptr(object).to_string_lossy();
+    (*layer).object_value_id(&cstr).unwrap_or(0)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_id_subject(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64) -> *const c_char {
+    (*layer).id_subject(id).map(|s|CString::new(s).unwrap().into_raw() as *const c_char)
+        .unwrap_or(std::ptr::null())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_id_predicate(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64) -> *const c_char {
+    (*layer).id_predicate(id).map(|s|CString::new(s).unwrap().into_raw() as *const c_char)
+        .unwrap_or(std::ptr::null())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_id_object(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64, object_type: *mut u8) -> *const c_char {
+    (*layer).id_object(id).map(|x| match x {
+        ObjectType::Node(s) => {
+            *object_type = 0;
+            s
+        },
+        ObjectType::Value(s) => {
+            *object_type = 1;
+            s
+        }
+    }).map(|s|CString::new(s).unwrap().into_raw() as *const c_char)
+        .unwrap_or(std::ptr::null())
 }
 
 #[no_mangle]

@@ -438,6 +438,102 @@ static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
     PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
 }
 
+static foreign_t pl_node_and_value_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_node_and_value_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_predicate_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_predicate_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t id_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(subject_term) == PL_VARIABLE) {
+	throw_instantiation_err(subject_term);
+    }
+    else {
+	char* subject;
+	assert(PL_get_chars(subject_term, &subject, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+	uint64_t id = layer_subject_id(layer, subject);
+
+	if (id == 0) {
+	    PL_fail;
+	}
+
+	return PL_unify_uint64(id_term, id);
+    }
+}
+
+static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subject_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(id_term) == PL_VARIABLE) {
+	throw_instantiation_err(id_term);
+    }
+    else {
+	uint64_t id;
+	if (!PL_get_int64(id_term, &id)) {
+	    PL_fail;
+	}
+
+	char* subject = layer_id_subject(layer, id);
+	if (subject == NULL) {
+	    PL_fail;
+	}
+	int result = PL_unify_atom_chars(subject_term, subject);
+	cleanup_cstring(subject);
+
+	return result;
+    }
+}
+
+static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, term_t id_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(predicate_term) == PL_VARIABLE) {
+	throw_instantiation_err(predicate_term);
+    }
+    else {
+	char* predicate;
+	assert(PL_get_chars(predicate_term, &predicate, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+	uint64_t id = layer_predicate_id(layer, predicate);
+
+	if (id == 0) {
+	    PL_fail;
+	}
+
+	return PL_unify_uint64(id_term, id);
+    }
+}
+
+static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t predicate_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(id_term) == PL_VARIABLE) {
+	throw_instantiation_err(id_term);
+    }
+    else {
+	uint64_t id;
+	if (!PL_get_int64(id_term, &id)) {
+	    PL_fail;
+	}
+
+	char* predicate = layer_id_predicate(layer, id);
+	if (predicate == NULL) {
+	    PL_fail;
+	}
+	int result = PL_unify_atom_chars(predicate_term, predicate);
+	cleanup_cstring(predicate);
+
+	return result;
+    }
+}
+
 install_t
 install()
 {
@@ -467,4 +563,16 @@ install()
                         pl_remove_string_value_triple, 0);
     PL_register_foreign("nb_commit", 2,
                         pl_builder_commit, 0);
+    PL_register_foreign("node_and_value_count", 2,
+                        pl_node_and_value_count, 0);
+    PL_register_foreign("predicate_count", 2,
+                        pl_predicate_count, 0);
+    PL_register_foreign("subject_to_id", 3,
+                        pl_subject_to_id, 0);
+    PL_register_foreign("id_to_subject", 3,
+                        pl_id_to_subject, 0);
+    PL_register_foreign("predicate_to_id", 3,
+                        pl_predicate_to_id, 0);
+    PL_register_foreign("id_to_predicate", 3,
+                        pl_id_to_predicate, 0);
 }

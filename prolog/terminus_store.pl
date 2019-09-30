@@ -11,16 +11,13 @@
 
               nb_add_triple/4,
               nb_remove_triple/4,
-              nb_commit/2
+              nb_commit/2,
 
-              %node_and_value_count/2,
-              %predicate_count/2,
-              %subject_id/2,
-              %predicate_id/2,
-              %object_id/2,
-              %id_subject/2,
-              %id_predicate/2,
-              %id_object/2,
+              node_and_value_count/2,
+              predicate_count/2,
+              subject_id/3,
+              predicate_id/3
+              %object_id/3,
 
               %triple/4
           ]).
@@ -62,6 +59,36 @@ nb_remove_triple(Builder, Subject, Predicate, value(Object)) :-
 
 nb_remove_triple(_,_,_,_) :-
     throw('triple must either be numeric, or object must be of format node(..) or value(..)').
+
+subject_id(Layer, Subject, Id) :-
+    ground(Id),
+    !,
+    id_to_subject(Layer, Id, Subject).
+
+subject_id(Layer, Subject, Id) :-
+    ground(Subject),
+    !,
+    subject_to_id(Layer, Subject, Id).
+
+subject_id(Layer, Subject, Id) :-
+    node_and_value_count(Layer, Count),
+    between(1, Count, Id),
+    id_to_subject(Layer, Id, Subject).
+
+predicate_id(Layer, Predicate, Id) :-
+    ground(Id),
+    !,
+    id_to_predicate(Layer, Id, Predicate).
+
+predicate_id(Layer, Predicate, Id) :-
+    ground(Predicate),
+    !,
+    predicate_to_id(Layer, Predicate, Id).
+
+predicate_id(Layer, Predicate, Id) :-
+    node_and_value_count(Layer, Count),
+    between(1, Count, Id),
+    id_to_predicate(Layer, Id, Predicate).
 
 :- begin_tests(terminus_store).
 test(open_directory_store_atom) :-
