@@ -534,6 +534,78 @@ static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t pr
     }
 }
 
+static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, term_t id_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(object_term) == PL_VARIABLE) {
+	throw_instantiation_err(object_term);
+    }
+    else {
+	char* object;
+	assert(PL_get_chars(object_term, &object, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+	uint64_t id = layer_object_node_id(layer, object);
+
+	if (id == 0) {
+	    PL_fail;
+	}
+
+	return PL_unify_uint64(id_term, id);
+    }
+}
+
+static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, term_t id_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(object_term) == PL_VARIABLE) {
+	throw_instantiation_err(object_term);
+    }
+    else {
+	char* object;
+	assert(PL_get_chars(object_term, &object, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+	uint64_t id = layer_object_value_id(layer, object);
+
+	if (id == 0) {
+	    PL_fail;
+	}
+
+	return PL_unify_uint64(id_term, id);
+    }
+}
+
+static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t object_term, term_t object_type_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    if (PL_term_type(id_term) == PL_VARIABLE) {
+	throw_instantiation_err(id_term);
+    }
+    else {
+	uint64_t id;
+	if (!PL_get_int64(id_term, &id)) {
+	    PL_fail;
+	}
+
+	char object_type;
+	char* object = layer_id_object(layer, id, &object_type);
+	if (object == NULL) {
+	    PL_fail;
+	}
+	if (object_type == 0) {
+	    if (!PL_unify_atom_chars(object_type_term, "node")) {
+		PL_fail;
+	    }
+	}
+	else if (object_type == 1) {
+	    if (!PL_unify_atom_chars(object_type_term, "value")) {
+		PL_fail;
+	    }
+	}
+	else {
+	    abort();
+	}
+	int result = PL_unify_atom_chars(object_term, object);
+	cleanup_cstring(object);
+
+	return result;
+    }
+}
+
 install_t
 install()
 {
@@ -575,4 +647,10 @@ install()
                         pl_predicate_to_id, 0);
     PL_register_foreign("id_to_predicate", 3,
                         pl_id_to_predicate, 0);
+    PL_register_foreign("object_node_to_id", 3,
+                        pl_object_node_to_id, 0);
+    PL_register_foreign("object_value_to_id", 3,
+                        pl_object_value_to_id, 0);
+    PL_register_foreign("id_to_object", 4,
+                        pl_id_to_object, 0);
 }
