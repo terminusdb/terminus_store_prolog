@@ -142,16 +142,34 @@ test(head_from_empty_db, [fail]) :-
     open_database(X, "sometestdb", DB),
     head(DB, _). % should be false because we have no HEAD yet
 
-test(open_write_from_db) :-%, [blocked("Crashes")]) :-
+test(open_write_from_db_without_head, [
+    throws(
+        terminus_store_rust_error('Create a base layer first before opening the database for write')
+    )]) :-
     open_directory_store("testdir", X),
     open_database(X, "sometestdb", DB),
     open_write(DB, _).
 
+test(create_base_layer) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, _).
 
-test(write_value_triple, [blocked("Crashes")]) :-
-    open_directory_store("testdir", X),
-    open_database(X, "sometestdb", DB),
-    open_write(DB, Builder),
+test(write_value_triple) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
+
+test(commit_and_set_header) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    open_database(Store, "sometestdb", DB),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object"),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer).
+
+test(head_after_first_commit) :-
+    open_directory_store("testdir", Store),
+    open_database(Store, "sometestdb", DB),
+    head(DB, _).
 
 :- end_tests(terminus_store).
