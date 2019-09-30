@@ -273,21 +273,20 @@ static foreign_t pl_set_head(term_t database_blob_term, term_t layer_blob_term) 
     }
 }
 
-static foreign_t pl_open_write(term_t layer_or_database_term, term_t builder_term) {
-    if (PL_term_type(layer_or_database_term) == PL_VARIABLE) {
-        throw_instantiation_err(layer_or_database_term);
+static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t builder_term) {
+    if (PL_term_type(layer_or_database_or_store_term) == PL_VARIABLE) {
+        throw_instantiation_err(layer_or_database_or_store_term);
     }
 
     PL_blob_t* blob_type;
     void* blob;
-    if (!PL_get_blob(layer_or_database_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type)) {
-        throw_type_error(layer_or_database_term, "layer");
+    if (!PL_get_blob(layer_or_database_or_store_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type && blob_type != &database_blob_type)) {
+        throw_type_error(layer_or_database_or_store_term, "layer");
     }
 
     if (PL_term_type(builder_term) != PL_VARIABLE) {
         PL_fail;
     }
-
 
     char* err;
     void* builder_ptr;
@@ -296,6 +295,9 @@ static foreign_t pl_open_write(term_t layer_or_database_term, term_t builder_ter
     }
     else if (blob_type == &layer_blob_type) {
         builder_ptr = layer_open_write(blob, &err);
+    }
+    else if (blob_type == &database_blob_type) {
+        builder_ptr = database_open_write(blob, &err);
     }
     else {
         abort();

@@ -137,6 +137,30 @@ pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer<Director
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<DirectoryLayerStore> {
+    match (*database)
+        .head()
+        .and_then(|layer|
+                  layer.map(|l|match l.open_write() {
+                      Ok(builder) => Ok(Some(builder)),
+                      Err(e) => Err(e)
+                  }).unwrap_or(Ok(None))) {
+            Ok(Some(builder)) => {
+                *err = std::ptr::null();
+                Box::into_raw(Box::new(builder))
+            },
+            Ok(None) => {
+                *err = std::ptr::null();
+                std::ptr::null()
+            }
+            Err(e) => {
+                *err = error_to_cstring(e).into_raw();
+                std::ptr::null()
+            }
+        }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
     match (*builder).add_id_triple(IdTriple::new(subject, predicate, object)) {
         Ok(r) => {
