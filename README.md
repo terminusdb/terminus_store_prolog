@@ -22,3 +22,28 @@ swipl prolog/terminus_store.pl
 make
 swipl -g run_tests -g halt prolog/terminus_store.pl
 ```
+
+
+## Examples
+
+### Creating a database and adding a triple
+
+```prolog
+open_directory_store("testdir", Store),
+open_write(Store, Builder),
+open_database(Store, "sometestdb", DB),
+nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+nb_commit(Builder, Layer),
+nb_set_head(DB, Layer).
+```
+
+### Add a triple to an existing database
+
+```prolog
+open_directory_store("testdir", Store),
+open_database(Store, "sometestdb", DB),
+open_write(DB, Builder),
+nb_add_triple(Builder, "Subject2", "Predicate2", value("Object2")),
+nb_commit(Builder, Layer),
+nb_set_head(DB, Layer),
+```
