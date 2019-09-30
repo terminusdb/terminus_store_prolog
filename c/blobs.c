@@ -116,6 +116,7 @@ PL_blob_t layer_builder_blob_type =
 };
 
 static int write_po_pairs_for_subject_blob(void *closure, atom_t a, int flags) {
+    printf("write po pairs\n");
     IOSTREAM *out = closure;
     char* contents = "#<po_pairs_for_subject>";
     Sfwrite(contents, 1, strlen(contents), out);
@@ -123,6 +124,7 @@ static int write_po_pairs_for_subject_blob(void *closure, atom_t a, int flags) {
 }
 
 static int release_po_pairs_for_subject_blob(atom_t a) {
+    printf("release po pairs\n");
     void* po_pairs_for_subject = PL_blob_data(a, NULL, NULL);
     cleanup_po_pairs_for_subject(po_pairs_for_subject);
     return TRUE;

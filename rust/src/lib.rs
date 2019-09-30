@@ -1,6 +1,7 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
 use std::io;
+use std::sync::Mutex;
 
 use terminus_store::storage::{
     DirectoryLabelStore, DirectoryLayerStore,
@@ -343,6 +344,19 @@ pub unsafe extern "C" fn layer_predicate_object_pairs_for_subject(layer: *const 
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_predicate_object_pairs_iter(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> *const Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>> {
+    Box::into_raw(Box::new(Mutex::new((*layer).subjects())))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn predicate_object_pairs_iter_next(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>>) -> *const Box<dyn PredicateObjectPairsForSubject> {
+    match (*iter).lock().expect("locking should succeed").next() {
+        None => std::ptr::null(),
+        Some(po_pairs) => Box::into_raw(Box::new(po_pairs))
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn predicate_object_pairs_subject(po_pairs: *const Box<dyn PredicateObjectPairsForSubject>) -> u64 {
     (*po_pairs).subject()
 }
@@ -370,6 +384,11 @@ pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseL
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_po_pairs_for_subject(po_pairs_for_subject: *mut Box<dyn PredicateObjectPairsForSubject>) {
     Box::from_raw(po_pairs_for_subject);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_po_pairs_iter(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>>) {
+    let _iter = Box::from_raw(iter);
 }
 
 #[no_mangle]
