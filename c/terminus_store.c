@@ -29,7 +29,7 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name_term, term
     void* db_ptr = create_database(store, db_name, &err);
     // Decent error handling, not only checking for null
     if (db_ptr == NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
     PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
     PL_succeed;
@@ -47,7 +47,7 @@ static foreign_t pl_open_database(term_t store_blob, term_t db_name_term, term_t
     void* db_ptr = open_database(store, db_name, &err);
     if (db_ptr == NULL) {
         if (err != NULL) {
-            throw_rust_err(err);
+            return throw_rust_err(err);
         }
         PL_fail;
     }
@@ -67,7 +67,7 @@ static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
             PL_fail;
         }
         else {
-            throw_rust_err(err);
+            return throw_rust_err(err);
         }
     }
     else {
@@ -92,13 +92,13 @@ static foreign_t pl_set_head(term_t database_blob_term, term_t layer_blob_term) 
 
 static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t builder_term) {
     if (PL_term_type(layer_or_database_or_store_term) == PL_VARIABLE) {
-        throw_instantiation_err(layer_or_database_or_store_term);
+        return throw_instantiation_err(layer_or_database_or_store_term);
     }
 
     PL_blob_t* blob_type;
     void* blob;
     if (!PL_get_blob(layer_or_database_or_store_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type && blob_type != &database_blob_type)) {
-        throw_type_error(layer_or_database_or_store_term, "layer");
+        return throw_type_error(layer_or_database_or_store_term, "layer");
     }
 
     if (PL_term_type(builder_term) != PL_VARIABLE) {
@@ -121,7 +121,7 @@ static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t bu
     }
 
     if (builder_ptr == NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
     else {
         PL_unify_blob(builder_term, builder_ptr, 0, &layer_builder_blob_type);
@@ -140,7 +140,7 @@ static foreign_t pl_add_id_triple(term_t builder_term, term_t subject_term, term
     char *err;
     int result = builder_add_id_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     if (result) {
@@ -160,7 +160,7 @@ static foreign_t pl_add_string_node_triple(term_t builder_term, term_t subject_t
     char *err;
     builder_add_string_node_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     PL_succeed;
@@ -175,7 +175,7 @@ static foreign_t pl_add_string_value_triple(term_t builder_term, term_t subject_
     char *err;
     builder_add_string_value_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     PL_succeed;
@@ -191,7 +191,7 @@ static foreign_t pl_remove_id_triple(term_t builder_term, term_t subject_term, t
     char *err;
     int result = builder_remove_id_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     if (result) {
@@ -211,7 +211,7 @@ static foreign_t pl_remove_string_node_triple(term_t builder_term, term_t subjec
     char *err;
     int result = builder_remove_string_node_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     if (result) {
@@ -231,7 +231,7 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
     char *err;
     int result = builder_remove_string_value_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     if (result) {
@@ -248,10 +248,11 @@ static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
     char* err;
     void* layer_ptr = builder_commit(builder, &err);
     if (layer_ptr == NULL) {
-        throw_rust_err(err);
+        return throw_rust_err(err);
     }
 
     PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
+    PL_succeed;
 }
 
 static foreign_t pl_node_and_value_count(term_t layer_term, term_t count_term) {
@@ -273,7 +274,7 @@ static foreign_t pl_predicate_count(term_t layer_term, term_t count_term) {
 static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(subject_term) == PL_VARIABLE) {
-	throw_instantiation_err(subject_term);
+	return throw_instantiation_err(subject_term);
     }
     else {
 	char* subject;
@@ -291,7 +292,7 @@ static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t
 static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subject_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(id_term) == PL_VARIABLE) {
-	throw_instantiation_err(id_term);
+	return throw_instantiation_err(id_term);
     }
     else {
 	uint64_t id;
@@ -313,7 +314,7 @@ static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subj
 static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(predicate_term) == PL_VARIABLE) {
-	throw_instantiation_err(predicate_term);
+	return throw_instantiation_err(predicate_term);
     }
     else {
 	char* predicate;
@@ -331,7 +332,7 @@ static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, te
 static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t predicate_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(id_term) == PL_VARIABLE) {
-	throw_instantiation_err(id_term);
+	return throw_instantiation_err(id_term);
     }
     else {
 	uint64_t id;
@@ -353,7 +354,7 @@ static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t pr
 static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(object_term) == PL_VARIABLE) {
-	throw_instantiation_err(object_term);
+      return throw_instantiation_err(object_term);
     }
     else {
 	char* object;
@@ -371,7 +372,7 @@ static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, ter
 static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(object_term) == PL_VARIABLE) {
-	throw_instantiation_err(object_term);
+	return throw_instantiation_err(object_term);
     }
     else {
 	char* object;
@@ -389,7 +390,7 @@ static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, te
 static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t object_term, term_t object_type_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     if (PL_term_type(id_term) == PL_VARIABLE) {
-	throw_instantiation_err(id_term);
+	return throw_instantiation_err(id_term);
     }
     else {
 	uint64_t id;

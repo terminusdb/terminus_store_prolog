@@ -5,26 +5,26 @@
 #include <string.h>
 #include "terminus_store.h"
 
-void throw_err(char* functor, char* err) {
+int throw_err(char* functor, char* err) {
     term_t except = PL_new_term_ref();
     assert(PL_unify_term(except,
                          PL_FUNCTOR_CHARS, functor, 1,
                          PL_UTF8_CHARS, err));
 
-    PL_throw(except);
+    return PL_throw(except);
 }
 
-void throw_instantiation_err(term_t term) {
+int throw_instantiation_err(term_t term) {
     term_t except = PL_new_term_ref();
     assert(PL_unify_term(except,
                          PL_FUNCTOR_CHARS, "error", 2,
                          PL_UTF8_CHARS, "instantiation_error",
                          PL_TERM, term));
 
-    PL_throw(except);
+    return PL_throw(except);
 }
 
-void throw_type_error(term_t term, char* type) {
+int throw_type_error(term_t term, char* type) {
     term_t except = PL_new_term_ref();
     assert(PL_unify_term(except,
                          PL_FUNCTOR_CHARS, "error", 2,
@@ -33,7 +33,7 @@ void throw_type_error(term_t term, char* type) {
                          PL_TERM, term,
                          PL_VARIABLE));
 
-    PL_throw(except);
+    return PL_throw(except);
 }
 
 void* check_blob_type(term_t term, PL_blob_t* expected_type) {
@@ -67,7 +67,7 @@ char* check_string_or_atom_term(term_t term) {
     return result;
 }
 
-void throw_rust_err(char* rust_err) {
+int throw_rust_err(char* rust_err) {
     term_t except = PL_new_term_ref();
     int unify_res = PL_unify_term(except,
                                   PL_FUNCTOR_CHARS, "terminus_store_rust_error", 1,
@@ -76,5 +76,5 @@ void throw_rust_err(char* rust_err) {
     cleanup_cstring(rust_err);
 
     assert(unify_res);
-    PL_throw(except);
+    return PL_throw(except);
 }
