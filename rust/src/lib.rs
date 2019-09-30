@@ -27,8 +27,8 @@ fn error_to_cstring(error: io::Error) -> CString {
 
 #[no_mangle]
 pub unsafe extern "C" fn create_database(
-    name: *const c_char,
     store_ptr: *mut c_void,
+    name: *const c_char,
     err: *mut *const c_char,
 ) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
     let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
@@ -43,6 +43,37 @@ pub unsafe extern "C" fn create_database(
     match result {
         Ok(database) => {
             Box::into_raw(Box::new(database))
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null()
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn open_database(
+    store_ptr: *mut c_void,
+    name: *const c_char,
+    err: *mut *const c_char,
+) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
+    let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
+    let store_box = Box::from_raw(store);
+    // We assume it to be somewhat safe because swipl will check string types
+    let db_name_cstr = CStr::from_ptr(name);
+    let db_name = db_name_cstr.to_str().unwrap();
+
+    let result = store_box.open(db_name);
+    std::mem::forget(store_box);
+    // Safe because we expect the swipl pointers to be decent
+    match result {
+        Ok(Some(database)) => {
+            *err = std::ptr::null();
+            Box::into_raw(Box::new(database))
+        }
+        Ok(None) => {
+            *err = std::ptr::null();
+            std::ptr::null()
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();

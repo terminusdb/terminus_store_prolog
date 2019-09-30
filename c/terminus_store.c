@@ -209,13 +209,35 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name_term, term
     }
 
     char* err;
-    void* db_ptr = create_database(db_name, store, &err);
+    void* db_ptr = create_database(store, db_name, &err);
     // Decent error handling, not only checking for null
     if (db_ptr == NULL) {
         throw_rust_err(err);
     }
     PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
     PL_succeed;
+}
+
+static foreign_t pl_open_database(term_t store_blob, term_t db_name_term, term_t db_term) {
+    void* store = check_blob_type(store_blob, &store_blob_type);
+    char* db_name = check_string_or_atom_term(db_name_term);
+
+    if (PL_term_type(db_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
+    char* err;
+    void* db_ptr = open_database(store, db_name, &err);
+    if (db_ptr == NULL) {
+        if (err != NULL) {
+            throw_rust_err(err);
+        }
+        PL_fail;
+    }
+    else {
+        PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
+        PL_succeed;
+    }
 }
 
 static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
@@ -406,6 +428,8 @@ install()
 {
     PL_register_foreign("create_database", 3,
                         pl_create_database, 0);
+    PL_register_foreign("open_database", 3,
+                        pl_open_database, 0);
     PL_register_foreign("open_directory_store", 2,
                         pl_open_directory_store, 0);
     PL_register_foreign("head", 2,

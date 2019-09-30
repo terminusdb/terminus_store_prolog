@@ -2,7 +2,7 @@
               open_directory_store/2,
 
               create_database/3,
-              %open_database/3,
+              open_database/3,
 
               head/2,
               %nb_set_head/2,
