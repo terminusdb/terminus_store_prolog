@@ -6,6 +6,7 @@ void cleanup_layer_builder(void* layer_builder);
 void cleanup_cstring(char* c_string);
 void cleanup_po_pairs_for_subject(void* po_pairs_for_subject);
 void cleanup_po_pairs_iter(void* iter);
+void cleanup_objects_for_po_pair(void* objects_for_po_pair);
 
 void* create_database(void* store, char* name, char** err);
 void* open_database(void* store, char* name, char** err);
@@ -38,3 +39,8 @@ void* layer_predicate_object_pairs_for_subject(void* layer, uint64_t subject);
 void* layer_predicate_object_pairs_iter(void* layer);
 void* predicate_object_pairs_iter_next(void* iter);
 uint64_t predicate_object_pairs_subject(void* po_pairs);
+
+void* predicate_object_pair_get_objects_for_predicate(void* po_pairs, uint64_t predicate);
+void* predicate_object_pair_get_objects_iter(void* po_pairs);
+uint64_t objects_subject(void* objects_for_po_pair);
+uint64_t objects_predicate(void* objects_for_po_pair);

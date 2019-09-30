@@ -8,6 +8,7 @@ use terminus_store::storage::{
 };
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, PredicateObjectPairsForSubject,
+    ObjectsForSubjectPredicatePair
 };
 use terminus_store::sync::store::*;
 
@@ -362,6 +363,37 @@ pub unsafe extern "C" fn predicate_object_pairs_subject(po_pairs: *const Box<dyn
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn predicate_object_pair_get_objects_for_predicate(po_pairs: *const Box<dyn PredicateObjectPairsForSubject>, predicate: u64) -> *const Box<dyn ObjectsForSubjectPredicatePair> {
+    match (*po_pairs).objects_for_predicate(predicate) {
+        None => std::ptr::null(),
+        Some(objects_for_po_pair) => Box::into_raw(Box::new(objects_for_po_pair))
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn predicate_object_pair_get_objects_iter(po_pairs: *const Box<dyn PredicateObjectPairsForSubject>) -> *const Mutex<Box<dyn Iterator<Item=Box<dyn ObjectsForSubjectPredicatePair>>>> {
+    Box::into_raw(Box::new(Mutex::new((*po_pairs).predicates())))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn objects_for_po_pair_iter_next(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectsForSubjectPredicatePair>>>>) -> *const Box<dyn ObjectsForSubjectPredicatePair> {
+    match (*iter).lock().expect("locking should succeed").next() {
+        None => std::ptr::null(),
+        Some(objects_for_po_pair) => Box::into_raw(Box::new(objects_for_po_pair))
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn objects_subject(objects_for_po_pair: *const Box<dyn ObjectsForSubjectPredicatePair>) -> u64 {
+    (*objects_for_po_pair).subject()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn objects_predicate(objects_for_po_pair: *const Box<dyn ObjectsForSubjectPredicatePair>) -> u64 {
+    (*objects_for_po_pair).predicate()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
     Box::from_raw(store);
 }
@@ -388,6 +420,16 @@ pub unsafe extern "C" fn cleanup_po_pairs_for_subject(po_pairs_for_subject: *mut
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_po_pairs_iter(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>>) {
+    let _iter = Box::from_raw(iter);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_objects_for_po_pair(objects_for_po_pair: *mut Box<dyn ObjectsForSubjectPredicatePair>) {
+    Box::from_raw(objects_for_po_pair);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_objects_for_po_pair_iter(iter: *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectsForSubjectPredicatePair>>>>) {
     let _iter = Box::from_raw(iter);
 }
 

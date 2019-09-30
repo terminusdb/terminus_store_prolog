@@ -320,7 +320,6 @@ static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, te
         char* predicate;
         assert(PL_get_chars(predicate_term, &predicate, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
         uint64_t id = layer_predicate_id(layer, predicate);
-
         if (id == 0) {
             PL_fail;
         }
@@ -462,14 +461,79 @@ static foreign_t pl_po_pairs_for_subject(term_t layer_term, term_t subject_term,
     PL_cvt_i_uint64(subject_term, &id);
 
     void* po_pairs = layer_predicate_object_pairs_for_subject(layer, (uint64_t) id);
-    return PL_unify_blob(po_pairs_term, po_pairs, 0, &po_pairs_for_subject_blob_type);
+    if (po_pairs) {
+        return PL_unify_blob(po_pairs_term, po_pairs, 0, &po_pairs_for_subject_blob_type);
+    }
+    else {
+        PL_fail;
+    }
 }
 
 static foreign_t pl_po_pairs_subject(term_t po_pairs_term, term_t subject_term) {
     void* po_pairs = check_blob_type(po_pairs_term, &po_pairs_for_subject_blob_type);
     uint64_t subject = predicate_object_pairs_subject(po_pairs);
+    return PL_unify_uint64(subject_term, subject);
+}
+
+static foreign_t pl_objects_for_predicate(term_t po_pairs_term, term_t predicate_term, term_t objects_term) {
+    void* po_pairs = check_blob_type(po_pairs_term, &po_pairs_for_subject_blob_type);
+    int64_t id;
+    PL_get_int64_ex(predicate_term, &id);
+
+    void* objects = predicate_object_pair_get_objects_for_predicate(po_pairs, id);
+    if (objects) {
+        return PL_unify_blob(objects_term, objects, 0, &objects_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_objects_subject(term_t objects_term, term_t subject_term) {
+    void* objects = check_blob_type(objects_term, &objects_blob_type);
+    uint64_t subject = objects_subject(objects);
 
     return PL_unify_uint64(subject_term, subject);
+}
+
+static foreign_t pl_objects_for_po_pair(term_t po_pair_term, term_t objects_term, control_t handle) {
+    void* po_pair;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        po_pair = check_blob_type(po_pair_term, &po_pairs_for_subject_blob_type);
+        iter = predicate_object_pair_get_objects_iter(po_pair);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_po_pairs_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = predicate_object_pairs_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(objects_term, next, 0, &objects_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_objects_predicate(term_t objects_term, term_t predicate_term) {
+    void* objects = check_blob_type(objects_term, &objects_blob_type);
+    uint64_t predicate = objects_predicate(objects);
+
+    return PL_unify_uint64(predicate_term, predicate);
 }
 
 install_t
@@ -525,4 +589,12 @@ install()
                         pl_po_pairs_for_subject, 0);
     PL_register_foreign("po_pairs_subject", 2,
                         pl_po_pairs_subject, 0);
+    PL_register_foreign("objects_for_po_pair", 2,
+                        pl_objects_for_po_pair, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("objects_for_predicate", 3,
+                        pl_objects_for_predicate, 0);
+    PL_register_foreign("objects_subject", 2,
+                        pl_objects_subject, 0);
+    PL_register_foreign("objects_predicate", 2,
+                        pl_objects_predicate, 0);
 }
