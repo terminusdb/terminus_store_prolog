@@ -134,8 +134,8 @@ static foreign_t pl_add_id_triple(term_t builder_term, term_t subject_term, term
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
     int64_t subject, predicate, object;
     PL_get_int64_ex(subject_term, &subject);
-    PL_get_int64_ex(predicate_term, &subject);
-    PL_get_int64_ex(object_term, &subject);
+    PL_get_int64_ex(predicate_term, &predicate);
+    PL_get_int64_ex(object_term, &object);
 
     char *err;
     int result = builder_add_id_triple(builder, subject, predicate, object, &err);
@@ -185,8 +185,8 @@ static foreign_t pl_remove_id_triple(term_t builder_term, term_t subject_term, t
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
     int64_t subject, predicate, object;
     PL_get_int64_ex(subject_term, &subject);
-    PL_get_int64_ex(predicate_term, &subject);
-    PL_get_int64_ex(object_term, &subject);
+    PL_get_int64_ex(predicate_term, &predicate);
+    PL_get_int64_ex(object_term, &object);
 
     char *err;
     int result = builder_remove_id_triple(builder, subject, predicate, object, &err);
