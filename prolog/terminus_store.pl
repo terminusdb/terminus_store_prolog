@@ -186,4 +186,22 @@ test(node_and_value_count) :-
     node_and_value_count(Layer, Count),
     Count == 2.
 
+test(predicate_count_2) :-
+    open_directory_store("testdir", Store),
+    open_database(Store, "sometestdb", DB),
+    open_write(DB, Builder),
+    nb_add_triple(Builder, "Subject2", "Predicate2", value("Object2")),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer),
+    predicate_count(Layer, Count),
+    Count == 2.
+
+test(remove_triple) :-
+    open_directory_store("testdir", Store),
+    open_database(Store, "sometestdb", DB),
+    open_write(DB, Builder),
+    nb_remove_triple(Builder, "Subject", "Predicate", value("Object")).
+
+
+
 :- end_tests(terminus_store).
