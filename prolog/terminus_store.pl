@@ -98,7 +98,7 @@ test(open_directory_store_atom) :-
 test(open_directory_store_atom_exception) :-
     catch(open_directory_store(234, _), E, true),
     print(E),
-    E =@= type_error('We only accept a string or atom as dir_name').
+    E =@= error(type_error(atom,234), _).
 
 test(create_db) :-
     (   exists_directory("testdir")
