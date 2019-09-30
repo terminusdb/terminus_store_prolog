@@ -260,6 +260,19 @@ static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
     PL_succeed;
 }
 
+static foreign_t pl_set_head(term_t database_blob_term, term_t layer_blob_term) {
+    void* database = check_blob_type(database_blob_term, &database_blob_type);
+    void* layer = check_blob_type(layer_blob_term, &layer_blob_type);
+
+    char* err;
+    if (database_set_head(database, layer, &err)) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
 static foreign_t pl_open_write(term_t layer_or_database_term, term_t builder_term) {
     if (PL_term_type(layer_or_database_term) == PL_VARIABLE) {
         throw_instantiation_err(layer_or_database_term);
@@ -434,6 +447,8 @@ install()
                         pl_open_directory_store, 0);
     PL_register_foreign("head", 2,
                         pl_head, 0);
+    PL_register_foreign("nb_set_head", 2,
+                        pl_set_head, 0);
     PL_register_foreign("open_write", 2,
                         pl_open_write, 0);
     PL_register_foreign("nb_add_id_triple", 4,

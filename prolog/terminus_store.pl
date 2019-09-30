@@ -5,7 +5,7 @@
               open_database/3,
 
               head/2,
-              %nb_set_head/2,
+              nb_set_head/2,
 
               open_write/2,
 

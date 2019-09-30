@@ -7,6 +7,7 @@ void cleanup_cstring(char* c_string);
 void* create_database(void* store, char* name, char** err);
 void* open_database(void* store, char* name, char** err);
 void* database_get_head(void* db, char** err);
+void* database_set_head(void* db, void* layer, char** err);
 void* store_create_base_layer(void* db, char** err);
 void* layer_open_write(void* layer, char** err);
 int builder_add_id_triple(void* builder, uint64_t subject, uint64_t predicate, uint64_t object, char** err);

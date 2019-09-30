@@ -105,6 +105,21 @@ pub unsafe extern "C" fn database_get_head(database_ptr: *mut SyncDatabase<Direc
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, layer_ptr: *const SyncDatabaseLayer<DirectoryLayerStore>, err: *mut *const c_char) -> bool {
+    match (*database).set_head(&*layer_ptr) {
+        Ok(b) => {
+            *err = std::ptr::null();
+            b
+
+        },
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            false
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn store_create_base_layer(store_ptr: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<DirectoryLayerStore> {
     let store = Box::from_raw(store_ptr);
     let result = match store.create_base_layer() {
