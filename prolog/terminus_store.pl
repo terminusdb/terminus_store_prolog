@@ -16,8 +16,8 @@
               node_and_value_count/2,
               predicate_count/2,
               subject_id/3,
-              predicate_id/3
-              %object_id/3,
+              predicate_id/3,
+              object_id/3
 
               %triple/4
           ]).
@@ -89,6 +89,28 @@ predicate_id(Layer, Predicate, Id) :-
     node_and_value_count(Layer, Count),
     between(1, Count, Id),
     id_to_predicate(Layer, Id, Predicate).
+
+object_id(Layer, Object, Id) :-
+    ground(Id),
+    !,
+    id_to_object(Layer, Id, Object_Atom, Type),
+    Object =.. [Type, Object_Atom].
+
+object_id(Layer, node(Object), Id) :-
+    ground(Object),
+    !,
+    object_node_to_id(Layer, Object, Id).
+
+object_id(Layer, value(Object), Id) :-
+    ground(Object),
+    !,
+    object_value_to_id(Layer, Object, Id).
+
+object_id(Layer, Object, Id) :-
+    node_and_value_count(Layer, Count),
+    between(1, Count, Id),
+    id_to_object(Layer, Id, Object_Atom, Type),
+    Object =.. [Type, Object_Atom].
 
 :- begin_tests(terminus_store).
 
