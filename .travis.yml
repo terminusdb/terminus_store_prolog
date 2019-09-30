@@ -9,6 +9,8 @@ before_script:
   - sudo apt-get install swi-prolog-nox autoconf libtool build-essential
 
 script:
+    # Check if tabs are used, fail if we do
+  - [[ $(grep -r -P "\t" rust/src/ prolog/ c/) -eq 0 ]]
   - make
   - swipl -g run_tests -g halt ./prolog/terminus_store.pl
   - swipl -g "show_coverage(run_tests)." -g halt prolog/terminus_store.pl
