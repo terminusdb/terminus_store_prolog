@@ -121,7 +121,6 @@ static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t bu
     }
 
     if (builder_ptr == NULL) {
-        assert(err);
         throw_rust_err(err);
     }
     else {
