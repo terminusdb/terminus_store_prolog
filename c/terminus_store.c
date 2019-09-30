@@ -422,6 +422,22 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
     }
 }
 
+static foreign_t pl_po_pairs_for_subject(term_t layer_term, term_t subject_term, term_t po_pairs_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    int64_t id;
+    PL_get_int64_ex(subject_term, &id);
+
+    void* po_pairs = layer_predicate_object_pairs_for_subject(layer, (uint64_t) id);
+    return PL_unify_blob(po_pairs_term, po_pairs, 0, &po_pairs_for_subject_blob_type);
+}
+
+static foreign_t pl_po_pairs_subject(term_t po_pairs_term, term_t subject_term) {
+    void* po_pairs = check_blob_type(po_pairs_term, &po_pairs_for_subject_blob_type);
+    uint64_t subject = predicate_object_pairs_subject(po_pairs);
+
+    return PL_unify_uint64(subject_term, subject);
+}
+
 install_t
 install()
 {
@@ -469,4 +485,8 @@ install()
                         pl_object_value_to_id, 0);
     PL_register_foreign("id_to_object", 4,
                         pl_id_to_object, 0);
+    PL_register_foreign("po_pairs_for_subject", 3,
+                        pl_po_pairs_for_subject, 0);
+    PL_register_foreign("po_pairs_subject", 2,
+                        pl_po_pairs_subject, 0);
 }

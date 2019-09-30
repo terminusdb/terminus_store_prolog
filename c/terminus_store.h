@@ -4,6 +4,8 @@ void cleanup_db(void* db);
 void cleanup_layer(void* layer);
 void cleanup_layer_builder(void* layer_builder);
 void cleanup_cstring(char* c_string);
+void cleanup_po_pairs_for_subject(void* po_pairs_for_subject);
+
 void* create_database(void* store, char* name, char** err);
 void* open_database(void* store, char* name, char** err);
 void* database_get_head(void* db, char** err);
@@ -30,3 +32,6 @@ uint64_t layer_object_value_id(void* layer, char* value);
 char* layer_id_subject(void* layer, uint64_t id);
 char* layer_id_predicate(void* layer, uint64_t id);
 char* layer_id_object(void* layer, uint64_t id, char* object_type);
+
+void* layer_predicate_object_pairs_for_subject(void* layer, uint64_t subject);
+uint64_t predicate_object_pairs_subject(void* po_pairs);

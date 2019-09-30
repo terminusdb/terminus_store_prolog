@@ -6,7 +6,7 @@ use terminus_store::storage::{
     DirectoryLabelStore, DirectoryLayerStore,
 };
 use terminus_store::layer::{
-    Layer, StringTriple, IdTriple, ObjectType
+    Layer, StringTriple, IdTriple, ObjectType, PredicateObjectPairsForSubject,
 };
 use terminus_store::sync::store::*;
 
@@ -335,6 +335,19 @@ pub unsafe extern "C" fn layer_id_object(layer: *const SyncDatabaseLayer<Directo
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_predicate_object_pairs_for_subject(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, subject: u64) -> *const Box<dyn PredicateObjectPairsForSubject> {
+    match (*layer).predicate_object_pairs_for_subject(subject) {
+        Some(result) => Box::into_raw(Box::new(result)),
+        None => std::ptr::null()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn predicate_object_pairs_subject(po_pairs: *const Box<dyn PredicateObjectPairsForSubject>) -> u64 {
+    (*po_pairs).subject()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
     Box::from_raw(store);
 }
@@ -352,6 +365,11 @@ pub unsafe extern "C" fn cleanup_layer(layer: *mut SyncDatabaseLayer<DirectoryLa
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>) {
     Box::from_raw(layer_builder);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_po_pairs_for_subject(po_pairs_for_subject: *mut Box<dyn PredicateObjectPairsForSubject>) {
+    Box::from_raw(po_pairs_for_subject);
 }
 
 #[no_mangle]
