@@ -15,6 +15,7 @@ build:
 	$(CC) $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L. -l:./$(RUST_LIB) $(INCLUDES)
 
 debug: RUST_TARGET = debug
+debug: CFLAGS += -ggdb
 debug:
 	cd rust; cargo build
 	$(CC) $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L. -l:./$(RUST_LIB) $(INCLUDES)
