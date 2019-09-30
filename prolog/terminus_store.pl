@@ -172,4 +172,11 @@ test(head_after_first_commit) :-
     open_database(Store, "sometestdb", DB),
     head(DB, _).
 
+test(predicate_count) :-
+    open_directory_store("testdir", Store),
+    open_database(Store, "sometestdb", DB),
+    head(DB, Layer),
+    predicate_count(Layer, Count),
+    Count == 1.
+
 :- end_tests(terminus_store).
