@@ -91,20 +91,45 @@ predicate_id(Layer, Predicate, Id) :-
     id_to_predicate(Layer, Id, Predicate).
 
 :- begin_tests(terminus_store).
+
+:- use_module(library(filesex)).
+
+clean :-
+    delete_directory_and_contents("testdir").
+
 test(open_directory_store_atom) :-
     open_directory_store(this_is_an_atom, _),
     open_directory_store("this is a string", _).
 
-test(open_directory_store_atom_exception) :-
-    catch(open_directory_store(234, _), E, true),
-    print(E),
-    E =@= error(type_error(atom,234), _).
+test(open_directory_store_atom_exception, [
+         throws(error(type_error(atom,234), _))
+     ]) :-
+    open_directory_store(234, _).
 
 test(create_db) :-
-    (   exists_directory("testdir")
-    ->  true
-    ;   make_directory("testdir")),
+    make_directory("testdir"),
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
+
+test(open_database) :-
+    open_directory_store("testdir", X),
+    open_database(X, "sometestdb", _).
+
+test(head_from_empty_db, [fail]) :-
+    open_directory_store("testdir", X),
+    open_database(X, "sometestdb", DB),
+    head(DB, _). % should be false because we have no HEAD yet
+
+test(open_write_from_db) :-%, [blocked("Crashes")]) :-
+    open_directory_store("testdir", X),
+    open_database(X, "sometestdb", DB),
+    open_write(DB, _).
+
+
+test(write_value_triple, [blocked("Crashes")]) :-
+    open_directory_store("testdir", X),
+    open_database(X, "sometestdb", DB),
+    open_write(DB, Builder),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
 :- end_tests(terminus_store).
