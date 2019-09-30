@@ -16,3 +16,9 @@ Prolog bindings for the terminus-store Rust library.
 make
 swipl prolog/terminus_store.pl
 ```
+
+## Running the tests
+```
+make
+swipl -g run_tests -g halt prolog/terminus_store.pl
+```
