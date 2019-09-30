@@ -163,7 +163,7 @@ test(commit_and_set_header) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     open_database(Store, "sometestdb", DB),
-    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object"),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
 
