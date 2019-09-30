@@ -1,12 +1,18 @@
+INCLUDES = -I/usr/lib/swi-prolog/include -I/usr/local/lib/swipl/include
+CC = gcc
+CFLAGS = -shared -fpic -Wall
+RUST_LIB = rust/target/debug/libterminus_store_prolog.so
+
+TARGET = libterminus_store.so
+
 all: build
 
-RUST_LIB = rust/target/debug/libterminus_store_prolog.so
 
 check::
 
 build:
 	cd rust; cargo build
-	gcc -shared -fPIC -o ./libterminus_store.so ./c/*.c -Isrc -L. -l:./$(RUST_LIB) -I/usr/lib/swi-prolog/include -I/usr/local/lib/swipl/include
+	$(CC) $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L. -l:./$(RUST_LIB) $(INCLUDES)
 
 install::
 
