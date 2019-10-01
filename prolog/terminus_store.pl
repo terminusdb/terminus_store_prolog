@@ -282,9 +282,9 @@ test(remove_triple, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
-    nb_commit(Builder, _),
-    open_write(Store, Builder2),
-    nb_remove_triple(Builder2, "Subject", "Predicate", value("Object")).
+    nb_commit(Builder, Layer),
+    open_write(Layer, LayerBuilder),
+    nb_remove_triple(LayerBuilder, "Subject", "Predicate", value("Object")).
 
 
 
