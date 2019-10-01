@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/terminusdb/terminus_store_prolog.svg?branch=master)](https://travis-ci.com/terminusdb/terminus_store_prolog)
 
-Prolog bindings for the terminus-store Rust library.
+Prolog bindings for the [terminus-store](https://github.com/terminusdb/terminus-store/) Rust library.
 
 ## Requirements
 
