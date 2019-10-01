@@ -112,12 +112,17 @@ object_id(Layer, Object, Id) :-
     id_to_object(Layer, Id, Object_Atom, Type),
     Object =.. [Type, Object_Atom].
 
-:- begin_tests(terminus_store, [cleanup(clean)]).
+:- begin_tests(terminus_store).
 
 :- use_module(library(filesex)).
 
 clean :-
     delete_directory_and_contents("testdir").
+
+createdb() :-
+    make_directory("testdir"),
+    open_directory_store("testdir", X),
+    create_database(X, "sometestdb", _).
 
 test(open_directory_store_atom) :-
     open_directory_store(this_is_an_atom, _),
@@ -128,21 +133,23 @@ test(open_directory_store_atom_exception, [
      ]) :-
     open_directory_store(234, _).
 
-test(create_db) :-
+test(create_db, [cleanup(clean)]) :-
     make_directory("testdir"),
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
 
-test(open_database) :-
+test(open_database, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", X),
     open_database(X, "sometestdb", _).
 
-test(head_from_empty_db, [fail]) :-
+test(head_from_empty_db, [fail, cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", X),
     open_database(X, "sometestdb", DB),
     head(DB, _). % should be false because we have no HEAD yet
 
 test(open_write_from_db_without_head, [
+    cleanup(clean),
+    setup(createdb),
     throws(
         terminus_store_rust_error('Create a base layer first before opening the database for write')
     )]) :-
@@ -150,16 +157,16 @@ test(open_write_from_db_without_head, [
     open_database(X, "sometestdb", DB),
     open_write(DB, _).
 
-test(create_base_layer) :-
+test(create_base_layer, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, _).
 
-test(write_value_triple) :-
+test(write_value_triple, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
-test(commit_and_set_header) :-
+test(commit_and_set_header, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     open_database(Store, "sometestdb", DB),
@@ -167,39 +174,49 @@ test(commit_and_set_header) :-
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
 
-test(head_after_first_commit) :-
+test(head_after_first_commit, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_database(Store, "sometestdb", DB),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer),
     head(DB, _).
 
-test(predicate_count) :-
+test(predicate_count, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_database(Store, "sometestdb", DB),
-    head(DB, Layer),
-    predicate_count(Layer, Count),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer),
+    head(DB, LayerHead),
+    predicate_count(LayerHead, Count),
     Count == 1.
 
-test(node_and_value_count) :-
+test(node_and_value_count, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
-    open_database(Store, "sometestdb", DB),
-    head(DB, Layer),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
     node_and_value_count(Layer, Count),
     Count == 2.
 
-test(predicate_count_2) :-
+test(predicate_count_2, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_database(Store, "sometestdb", DB),
-    open_write(DB, Builder),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_add_triple(Builder, "Subject2", "Predicate2", value("Object2")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer),
     predicate_count(Layer, Count),
     Count == 2.
 
-test(remove_triple) :-
+test(remove_triple, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
-    open_database(Store, "sometestdb", DB),
-    open_write(DB, Builder),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_remove_triple(Builder, "Subject", "Predicate", value("Object")).
 
 
