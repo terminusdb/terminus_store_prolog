@@ -116,37 +116,37 @@ object_id(Layer, Object, Id) :-
 triple_id(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
-    ground(Objects),
+    ground(Object),
     !,
 
-    po_pairs_for_subject(Layer, Subject, Pairs),
-    objects_for_predicate(Pairs, Predicate, Objects),
-    objects_has_object(Objects, Object).
+    lookup_subject(Layer, Subject, Subject_Lookup),
+    subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
+    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
 triple_id(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     !,
 
-    po_pairs_for_subject(Layer, Subject, Pairs),
-    objects_for_predicate(Pairs, Predicate, Objects),
-    objects_object(Objects, Object).
+    lookup_subject(Layer, Subject, Subject_Lookup),
+    subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
+    subject_predicate_lookup_object(Predicate_Lookup, Object).
 
 triple_id(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     !,
 
-    po_pairs_for_subject(Layer, Subject, Pairs),
-    objects_for_po_pair(Pairs, Objects),
-    objects_predicate(Objects, Predicate),
-    objects_object(Objects, Object).
+    lookup_subject(Layer, Subject, Subject_Lookup),
+    subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
+    subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
+    subject_predicate_lookup_object(Predicate_Lookup, Object).
 
 triple_id(Layer, Subject, Predicate, Object) :-
-    po_pairs(Layer, Pairs),
-    po_pairs_subject(Pairs, Subject),
-    objects_for_po_pair(Pairs, Objects),
-    objects_predicate(Objects, Predicate),
-    objects_object(Objects, Object).
+    lookup_subject(Layer, Subject_Lookup),
+    subject_lookup_subject(Subject_Lookup, Subject),
+    subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
+    subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
+    subject_predicate_lookup_object(Predicate_Lookup, Object).
 
 triple(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)

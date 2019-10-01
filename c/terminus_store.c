@@ -434,28 +434,28 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
     }
 }
 
-static foreign_t pl_po_pairs(term_t layer_term, term_t po_pairs_term, control_t handle) {
+static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term, control_t handle) {
     void* layer;
     void* iter;
     switch (PL_foreign_control(handle)) {
     case PL_FIRST_CALL:
         layer = check_blob_type(layer_term, &layer_blob_type);
-        iter = layer_predicate_object_pairs_iter(layer);
+        iter = layer_subjects_iter(layer);
         break;
     case PL_REDO:
         iter = PL_foreign_context_address(handle);
         break;
     case PL_PRUNED:
         iter = PL_foreign_context_address(handle);
-        cleanup_po_pairs_iter(iter);
+        cleanup_subjects_iter(iter);
         PL_succeed;
     default:
         abort();
     }
 
-    void* next = predicate_object_pairs_iter_next(iter);
+    void* next = subjects_iter_next(iter);
     if (next) {
-        if (PL_unify_blob(po_pairs_term, next, 0, &po_pairs_for_subject_blob_type)) {
+        if (PL_unify_blob(subject_lookup_term, next, 0, &subject_lookup_blob_type)) {
             PL_retry_address(iter);
         }
         else {
@@ -467,71 +467,50 @@ static foreign_t pl_po_pairs(term_t layer_term, term_t po_pairs_term, control_t 
     }
 }
 
-static foreign_t pl_po_pairs_for_subject(term_t layer_term, term_t subject_term, term_t po_pairs_term) {
+static foreign_t pl_layer_lookup_subject(term_t layer_term, term_t subject_term, term_t subject_lookup_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     uint64_t id;
     if (!PL_cvt_i_uint64(subject_term, &id)) {
         PL_fail;
     }
 
-    void* po_pairs = layer_predicate_object_pairs_for_subject(layer, (uint64_t) id);
-    if (po_pairs) {
-        return PL_unify_blob(po_pairs_term, po_pairs, 0, &po_pairs_for_subject_blob_type);
+    void* subject_lookup = layer_lookup_subject(layer, (uint64_t) id);
+    if (subject_lookup) {
+        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
     }
     else {
         PL_fail;
     }
 }
 
-static foreign_t pl_po_pairs_subject(term_t po_pairs_term, term_t subject_term) {
-    void* po_pairs = check_blob_type(po_pairs_term, &po_pairs_for_subject_blob_type);
-    uint64_t subject = predicate_object_pairs_subject(po_pairs);
+static foreign_t pl_subject_lookup_subject(term_t subject_lookup_term, term_t subject_term) {
+    void* subject_lookup = check_blob_type(subject_lookup_term, &subject_lookup_blob_type);
+    uint64_t subject = subject_lookup_subject(subject_lookup);
     return PL_unify_uint64(subject_term, subject);
 }
 
-static foreign_t pl_objects_for_predicate(term_t po_pairs_term, term_t predicate_term, term_t objects_term) {
-    void* po_pairs = check_blob_type(po_pairs_term, &po_pairs_for_subject_blob_type);
-    int64_t id;
-    PL_get_int64_ex(predicate_term, &id);
-
-    void* objects = predicate_object_pair_get_objects_for_predicate(po_pairs, id);
-    if (objects) {
-        return PL_unify_blob(objects_term, objects, 0, &objects_blob_type);
-    }
-    else {
-        PL_fail;
-    }
-}
-
-static foreign_t pl_objects_subject(term_t objects_term, term_t subject_term) {
-    void* objects = check_blob_type(objects_term, &objects_blob_type);
-    uint64_t subject = objects_subject(objects);
-
-    return PL_unify_uint64(subject_term, subject);
-}
-
-static foreign_t pl_objects_for_po_pair(term_t po_pair_term, term_t objects_term, control_t handle) {
-    void* po_pair;
+static foreign_t pl_subject_lookup_predicate(term_t subject_lookup_term, term_t subject_predicate_lookup_term, control_t handle) {
+    void* subject_lookup;
     void* iter;
     switch (PL_foreign_control(handle)) {
     case PL_FIRST_CALL:
-        po_pair = check_blob_type(po_pair_term, &po_pairs_for_subject_blob_type);
-        iter = predicate_object_pair_get_objects_iter(po_pair);
+        subject_lookup = check_blob_type(subject_lookup_term, &subject_lookup_blob_type);
+        iter = subject_lookup_predicates_iter(subject_lookup);
         break;
     case PL_REDO:
         iter = PL_foreign_context_address(handle);
         break;
     case PL_PRUNED:
         iter = PL_foreign_context_address(handle);
-        cleanup_po_pairs_iter(iter);
+        cleanup_subject_predicates_iter(iter);
         PL_succeed;
     default:
         abort();
     }
 
-    void* next = predicate_object_pairs_iter_next(iter);
+    void* next = subject_predicates_iter_next(iter);
     if (next) {
-        if (PL_unify_blob(objects_term, next, 0, &objects_blob_type)) {
+        if (PL_unify_blob(subject_predicate_lookup_term, next, 0, &subject_predicate_lookup_blob_type)) {
             PL_retry_address(iter);
         }
         else {
@@ -543,46 +522,68 @@ static foreign_t pl_objects_for_po_pair(term_t po_pair_term, term_t objects_term
     }
 }
 
-static foreign_t pl_objects_predicate(term_t objects_term, term_t predicate_term) {
-    void* objects = check_blob_type(objects_term, &objects_blob_type);
-    uint64_t predicate = objects_predicate(objects);
+static foreign_t pl_subject_lookup_lookup_predicate(term_t subject_lookup_term, term_t predicate_term, term_t subject_predicate_lookup_term) {
+    void* subject_lookup = check_blob_type(subject_lookup_term, &subject_lookup_blob_type);
+    int64_t id;
+    PL_get_int64_ex(predicate_term, &id);
+
+    void* subject_predicate_lookup = subject_lookup_lookup_predicate(subject_lookup, id);
+    if (subject_predicate_lookup) {
+        return PL_unify_blob(subject_predicate_lookup_term, subject_predicate_lookup, 0, &subject_predicate_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+
+static foreign_t pl_subject_predicate_lookup_subject(term_t subject_predicate_lookup_term, term_t subject_term) {
+    void* subject_predicate_lookup = check_blob_type(subject_predicate_lookup_term, &subject_predicate_lookup_blob_type);
+    uint64_t subject = subject_predicate_lookup_subject(subject_predicate_lookup);
+
+    return PL_unify_uint64(subject_term, subject);
+}
+
+static foreign_t pl_subject_predicate_lookup_predicate(term_t subject_predicate_lookup_term, term_t predicate_term) {
+    void* subject_predicate_lookup = check_blob_type(subject_predicate_lookup_term, &subject_predicate_lookup_blob_type);
+    uint64_t predicate = subject_predicate_lookup_predicate(subject_predicate_lookup);
 
     return PL_unify_uint64(predicate_term, predicate);
 }
 
-static foreign_t pl_objects_has_object(term_t objects_term, term_t object_term) {
-    void* objects = check_blob_type(objects_term, &objects_blob_type);
+static foreign_t pl_subject_predicate_lookup_has_object(term_t subject_predicate_lookup_term, term_t object_term) {
+    void* subject_predicate_lookup = check_blob_type(subject_predicate_lookup_term, &subject_predicate_lookup_blob_type);
     uint64_t id;
     if(!PL_cvt_i_uint64(object_term, &id)) {
         PL_fail;
     }
 
-    if (objects_has_object(objects, id)) {
+    if (subject_predicate_lookup_lookup_object(subject_predicate_lookup, id)) {
         PL_succeed;
     }
     PL_fail;
 }
 
-static foreign_t pl_objects_object(term_t objects_term, term_t object_term, control_t handle) {
-    void* objects;
+static foreign_t pl_subject_predicate_lookup_object(term_t subject_predicate_lookup_term, term_t object_term, control_t handle) {
+    void* subject_predicate_lookup;
     void* iter;
     switch (PL_foreign_control(handle)) {
     case PL_FIRST_CALL:
-        objects = check_blob_type(objects_term, &objects_blob_type);
-        iter = objects_iter(objects);
+        subject_predicate_lookup = check_blob_type(subject_predicate_lookup_term, &subject_predicate_lookup_blob_type);
+        iter = subject_predicate_lookup_objects_iter(subject_predicate_lookup);
         break;
     case PL_REDO:
         iter = PL_foreign_context_address(handle);
         break;
     case PL_PRUNED:
         iter = PL_foreign_context_address(handle);
-        cleanup_objects_iter(iter);
+        cleanup_subject_predicate_objects_iter(iter);
         PL_succeed;
     default:
         abort();
     }
 
-    uint64_t next = objects_iter_next(iter);
+    uint64_t next = subject_predicate_objects_iter_next(iter);
     if (next) {
         if (PL_unify_uint64(object_term, next)) {
             PL_retry_address(iter);
@@ -643,22 +644,22 @@ install()
                         pl_object_value_to_id, 0);
     PL_register_foreign("id_to_object", 4,
                         pl_id_to_object, 0);
-    PL_register_foreign("po_pairs", 2,
-                        pl_po_pairs, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("po_pairs_for_subject", 3,
-                        pl_po_pairs_for_subject, 0);
-    PL_register_foreign("po_pairs_subject", 2,
-                        pl_po_pairs_subject, 0);
-    PL_register_foreign("objects_for_po_pair", 2,
-                        pl_objects_for_po_pair, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("objects_for_predicate", 3,
-                        pl_objects_for_predicate, 0);
-    PL_register_foreign("objects_subject", 2,
-                        pl_objects_subject, 0);
-    PL_register_foreign("objects_predicate", 2,
-                        pl_objects_predicate, 0);
-    PL_register_foreign("objects_has_object", 2,
-                        pl_objects_has_object, 0);
-    PL_register_foreign("objects_object", 2,
-                        pl_objects_object, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_subject", 2,
+                        pl_layer_subjects, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_subject", 3,
+                        pl_layer_lookup_subject, 0);
+    PL_register_foreign("subject_lookup_subject", 2,
+                        pl_subject_lookup_subject, 0);
+    PL_register_foreign("subject_lookup_predicate", 2,
+                        pl_subject_lookup_predicate, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("subject_lookup_predicate", 3,
+                        pl_subject_lookup_lookup_predicate, 0);
+    PL_register_foreign("subject_predicate_lookup_subject", 2,
+                        pl_subject_predicate_lookup_subject, 0);
+    PL_register_foreign("subject_predicate_lookup_predicate", 2,
+                        pl_subject_predicate_lookup_predicate, 0);
+    PL_register_foreign("subject_predicate_lookup_has_object", 2,
+                        pl_subject_predicate_lookup_has_object, 0);
+    PL_register_foreign("subject_predicate_lookup_object", 2,
+                        pl_subject_predicate_lookup_object, PL_FA_NONDETERMINISTIC);
 }

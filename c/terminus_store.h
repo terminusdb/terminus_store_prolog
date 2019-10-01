@@ -4,10 +4,11 @@ void cleanup_db(void* db);
 void cleanup_layer(void* layer);
 void cleanup_layer_builder(void* layer_builder);
 void cleanup_cstring(char* c_string);
-void cleanup_po_pairs_for_subject(void* po_pairs_for_subject);
-void cleanup_po_pairs_iter(void* iter);
-void cleanup_objects_for_po_pair(void* objects_for_po_pair);
-void cleanup_objects_iter(void* iter);
+void cleanup_subject_lookup(void* subject_lookup);
+void cleanup_subjects_iter(void* iter);
+void cleanup_subject_predicate_lookup(void* subject_predicate_lookup);
+void cleanup_subject_predicates_iter(void* iter);
+void cleanup_subject_predicate_objects_iter(void* iter);
 
 void* create_database(void* store, char* name, char** err);
 void* open_database(void* store, char* name, char** err);
@@ -36,15 +37,17 @@ char* layer_id_subject(void* layer, uint64_t id);
 char* layer_id_predicate(void* layer, uint64_t id);
 char* layer_id_object(void* layer, uint64_t id, char* object_type);
 
-void* layer_predicate_object_pairs_for_subject(void* layer, uint64_t subject);
-void* layer_predicate_object_pairs_iter(void* layer);
-void* predicate_object_pairs_iter_next(void* iter);
-uint64_t predicate_object_pairs_subject(void* po_pairs);
+void* layer_lookup_subject(void* layer, uint64_t subject);
+void* layer_subjects_iter(void* layer);
+void* subjects_iter_next(void* iter);
 
-void* predicate_object_pair_get_objects_for_predicate(void* po_pairs, uint64_t predicate);
-void* predicate_object_pair_get_objects_iter(void* po_pairs);
-uint64_t objects_subject(void* objects_for_po_pair);
-uint64_t objects_predicate(void* objects_for_po_pair);
-_Bool objects_has_object(void* objects_for_po_pair, uint64_t object);
-void* objects_iter(void* objects_for_po_pair);
-uint64_t objects_iter_next(void* objects_for_po_pair);
+uint64_t subject_lookup_subject(void* subject_lookup);
+void* subject_lookup_lookup_predicate(void* subject_lookup, uint64_t predicate);
+void* subject_lookup_predicates_iter(void* subject_lookup);
+void* subject_predicates_iter_next(void* iter);
+
+uint64_t subject_predicate_lookup_subject(void* subject_predicate_lookup);
+uint64_t subject_predicate_lookup_predicate(void* subject_predicate_lookup);
+_Bool subject_predicate_lookup_lookup_object(void* subject_predicate_lookup, uint64_t object);
+void* subject_predicate_lookup_objects_iter(void* subject_predicate_lookup);
+uint64_t subject_predicate_objects_iter_next(void* iter);

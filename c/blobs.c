@@ -115,48 +115,48 @@ PL_blob_t layer_builder_blob_type =
     &write_layer_builder_blob,
 };
 
-static int write_po_pairs_for_subject_blob(void *closure, atom_t a, int flags) {
+static int write_subject_lookup_blob(void *closure, atom_t a, int flags) {
     IOSTREAM *out = closure;
-    char* contents = "#<po_pairs_for_subject>";
+    char* contents = "#<subject_lookup>";
     Sfwrite(contents, 1, strlen(contents), out);
     return TRUE;
 }
 
-static int release_po_pairs_for_subject_blob(atom_t a) {
-    void* po_pairs_for_subject = PL_blob_data(a, NULL, NULL);
-    cleanup_po_pairs_for_subject(po_pairs_for_subject);
+static int release_subject_lookup_blob(atom_t a) {
+    void* subject_lookup = PL_blob_data(a, NULL, NULL);
+    cleanup_subject_lookup(subject_lookup);
     return TRUE;
 }
 
-PL_blob_t po_pairs_for_subject_blob_type =
+PL_blob_t subject_lookup_blob_type =
 {
     PL_BLOB_MAGIC,
     PL_BLOB_NOCOPY,
-    "po_pairs_for_subject",
-    &release_po_pairs_for_subject_blob,
+    "subject_lookup",
+    &release_subject_lookup_blob,
     NULL,
-    &write_po_pairs_for_subject_blob,
+    &write_subject_lookup_blob,
 };
 
-static int write_objects_blob(void *closure, atom_t a, int flags) {
+static int write_subject_predicate_lookup_blob(void *closure, atom_t a, int flags) {
     IOSTREAM *out = closure;
-    char* contents = "#<objects_for_po_pair>";
+    char* contents = "#<subject_predicate_lookup>";
     Sfwrite(contents, 1, strlen(contents), out);
     return TRUE;
 }
 
-static int release_objects_blob(atom_t a) {
-    void* objects_for_po_pairs = PL_blob_data(a, NULL, NULL);
-    cleanup_objects_for_po_pair(objects_for_po_pairs);
+static int release_subject_predicate_lookup_blob(atom_t a) {
+    void* subject_predicate_lookups = PL_blob_data(a, NULL, NULL);
+    cleanup_subject_predicate_lookup(subject_predicate_lookups);
     return TRUE;
 }
 
-PL_blob_t objects_blob_type =
+PL_blob_t subject_predicate_lookup_blob_type =
 {
     PL_BLOB_MAGIC,
     PL_BLOB_NOCOPY,
-    "objects_for_po_pair",
-    &release_objects_blob,
+    "subject_predicate_lookup",
+    &release_subject_predicate_lookup_blob,
     NULL,
-    &write_objects_blob,
+    &write_subject_predicate_lookup_blob,
 };
