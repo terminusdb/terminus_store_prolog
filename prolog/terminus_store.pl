@@ -17,9 +17,10 @@
               predicate_count/2,
               subject_id/3,
               predicate_id/3,
-              object_id/3
+              object_id/3,
 
-              %triple/4
+              triple_id/4,
+              triple/4
           ]).
 
 :- use_foreign_library(libterminus_store).
@@ -111,6 +112,70 @@ object_id(Layer, Object, Id) :-
     between(1, Count, Id),
     id_to_object(Layer, Id, Object_Atom, Type),
     Object =.. [Type, Object_Atom].
+
+triple_id(Layer, Subject, Predicate, Object) :-
+    ground(Subject),
+    ground(Predicate),
+    ground(Objects),
+    !,
+
+    po_pairs_for_subject(Layer, Subject, Pairs),
+    objects_for_predicate(Pairs, Predicate, Objects),
+    objects_has_object(Objects, Object).
+
+triple_id(Layer, Subject, Predicate, Object) :-
+    ground(Subject),
+    ground(Predicate),
+    !,
+
+    po_pairs_for_subject(Layer, Subject, Pairs),
+    objects_for_predicate(Pairs, Predicate, Objects),
+    objects_object(Objects, Object).
+
+triple_id(Layer, Subject, Predicate, Object) :-
+    ground(Subject),
+    !,
+
+    po_pairs_for_subject(Layer, Subject, Pairs),
+    objects_for_po_pair(Pairs, Objects),
+    objects_predicate(Objects, Predicate),
+    objects_object(Objects, Object).
+
+triple_id(Layer, Subject, Predicate, Object) :-
+    po_pairs(Layer, Pairs),
+    po_pairs_subject(Pairs, Subject),
+    objects_for_po_pair(Pairs, Objects),
+    objects_predicate(Objects, Predicate),
+    objects_object(Objects, Object).
+
+triple(Layer, Subject, Predicate, Object) :-
+    (   ground(Subject)
+    ->  subject_id(Layer, Subject, S_Id)
+    ;   true),
+    
+    (   ground(Predicate)
+    ->  predicate_id(Layer, Predicate, P_Id)
+    ;   true),
+    
+    (   ground(Object)
+    ->  object_id(Layer, Object, O_Id)
+    ;   true),
+
+    triple_id(Layer, S_Id, P_Id, O_Id),
+
+    (   ground(Subject)
+    ->  true
+    ;   subject_id(Layer, Subject, S_Id)),
+
+
+    (   ground(Predicate)
+    ->  true
+    ;   predicate_id(Layer, Predicate, P_Id)),
+
+
+    (   ground(Object)
+    ->  true
+    ;   object_id(Layer,Object, O_Id)).
 
 :- begin_tests(terminus_store).
 

@@ -400,6 +400,11 @@ pub unsafe extern "C" fn objects_iter(objects: *const Box<dyn ObjectsForSubjectP
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn objects_iter_next(iter: *const Mutex<Box<dyn Iterator<Item=u64>>>) -> u64 {
+    (*iter).lock().expect("lock should succeed").next().unwrap_or(0)
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn objects_has_object(objects: *const Box<dyn ObjectsForSubjectPredicatePair>, object: u64) -> bool {
     (*objects).triple(object).is_some()
 }

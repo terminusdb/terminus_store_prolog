@@ -7,6 +7,7 @@ void cleanup_cstring(char* c_string);
 void cleanup_po_pairs_for_subject(void* po_pairs_for_subject);
 void cleanup_po_pairs_iter(void* iter);
 void cleanup_objects_for_po_pair(void* objects_for_po_pair);
+void cleanup_objects_iter(void* iter);
 
 void* create_database(void* store, char* name, char** err);
 void* open_database(void* store, char* name, char** err);
@@ -15,12 +16,12 @@ void* database_set_head(void* db, void* layer, char** err);
 void* store_create_base_layer(void* db, char** err);
 void* database_open_write(void* layer, char** err);
 void* layer_open_write(void* layer, char** err);
-int builder_add_id_triple(void* builder, uint64_t subject, uint64_t predicate, uint64_t object, char** err);
+_Bool builder_add_id_triple(void* builder, uint64_t subject, uint64_t predicate, uint64_t object, char** err);
 void builder_add_string_node_triple(void* builder, char* subject, char* predicate, char* object, char** err);
 void builder_add_string_value_triple(void* builder, char* subject, char* predicate, char* object, char** err);
-int builder_remove_id_triple(void* builder, uint64_t subject, uint64_t predicate, uint64_t object, char** err);
-int builder_remove_string_node_triple(void* builder, char* subject, char* predicate, char* object, char** err);
-int builder_remove_string_value_triple(void* builder, char* subject, char* predicate, char* object, char** err);
+_Bool builder_remove_id_triple(void* builder, uint64_t subject, uint64_t predicate, uint64_t object, char** err);
+_Bool builder_remove_string_node_triple(void* builder, char* subject, char* predicate, char* object, char** err);
+_Bool builder_remove_string_value_triple(void* builder, char* subject, char* predicate, char* object, char** err);
 void* builder_commit(void* builder, char** err);
 
 size_t layer_node_and_value_count(void* layer);
@@ -44,3 +45,6 @@ void* predicate_object_pair_get_objects_for_predicate(void* po_pairs, uint64_t p
 void* predicate_object_pair_get_objects_iter(void* po_pairs);
 uint64_t objects_subject(void* objects_for_po_pair);
 uint64_t objects_predicate(void* objects_for_po_pair);
+_Bool objects_has_object(void* objects_for_po_pair, uint64_t object);
+void* objects_iter(void* objects_for_po_pair);
+uint64_t objects_iter_next(void* objects_for_po_pair);

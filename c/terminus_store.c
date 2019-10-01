@@ -133,9 +133,15 @@ static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t bu
 static foreign_t pl_add_id_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
     uint64_t subject, predicate, object;
-    PL_cvt_i_uint64(subject_term, &subject);
-    PL_cvt_i_uint64(predicate_term, &predicate);
-    PL_cvt_i_uint64(object_term, &object);
+    if (!PL_cvt_i_uint64(subject_term, &subject)) {
+        PL_fail;
+    }
+    if (!PL_cvt_i_uint64(predicate_term, &predicate)) {
+        PL_fail;
+    }
+    if (!PL_cvt_i_uint64(object_term, &object)) {
+        PL_fail;
+    }
 
     char *err;
     int result = builder_add_id_triple(builder, subject, predicate, object, &err);
@@ -184,9 +190,15 @@ static foreign_t pl_add_string_value_triple(term_t builder_term, term_t subject_
 static foreign_t pl_remove_id_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
     uint64_t subject, predicate, object;
-    PL_cvt_i_uint64(subject_term, &subject);
-    PL_cvt_i_uint64(predicate_term, &predicate);
-    PL_cvt_i_uint64(object_term, &object);
+    if (!PL_cvt_i_uint64(subject_term, &subject)) {
+        PL_fail;
+    }
+    if (!PL_cvt_i_uint64(predicate_term, &predicate)) {
+        PL_fail;
+    }
+    if (!PL_cvt_i_uint64(object_term, &object)) {
+        PL_fail;
+    }
 
     char *err;
     int result = builder_remove_id_triple(builder, subject, predicate, object, &err);
@@ -458,7 +470,9 @@ static foreign_t pl_po_pairs(term_t layer_term, term_t po_pairs_term, control_t 
 static foreign_t pl_po_pairs_for_subject(term_t layer_term, term_t subject_term, term_t po_pairs_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     uint64_t id;
-    PL_cvt_i_uint64(subject_term, &id);
+    if (!PL_cvt_i_uint64(subject_term, &id)) {
+        PL_fail;
+    }
 
     void* po_pairs = layer_predicate_object_pairs_for_subject(layer, (uint64_t) id);
     if (po_pairs) {
@@ -536,6 +550,52 @@ static foreign_t pl_objects_predicate(term_t objects_term, term_t predicate_term
     return PL_unify_uint64(predicate_term, predicate);
 }
 
+static foreign_t pl_objects_has_object(term_t objects_term, term_t object_term) {
+    void* objects = check_blob_type(objects_term, &objects_blob_type);
+    uint64_t id;
+    if(!PL_cvt_i_uint64(object_term, &id)) {
+        PL_fail;
+    }
+
+    if (objects_has_object(objects, id)) {
+        PL_succeed;
+    }
+    PL_fail;
+}
+
+static foreign_t pl_objects_object(term_t objects_term, term_t object_term, control_t handle) {
+    void* objects;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        objects = check_blob_type(objects_term, &objects_blob_type);
+        iter = objects_iter(objects);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_objects_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    uint64_t next = objects_iter_next(iter);
+    if (next) {
+        if (PL_unify_uint64(object_term, next)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
 install_t
 install()
 {
@@ -597,4 +657,8 @@ install()
                         pl_objects_subject, 0);
     PL_register_foreign("objects_predicate", 2,
                         pl_objects_predicate, 0);
+    PL_register_foreign("objects_has_object", 2,
+                        pl_objects_has_object, 0);
+    PL_register_foreign("objects_object", 2,
+                        pl_objects_object, PL_FA_NONDETERMINISTIC);
 }
