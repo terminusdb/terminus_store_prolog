@@ -10,7 +10,7 @@ use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, PredicateObjectPairsForSubject,
     ObjectsForSubjectPredicatePair
 };
-use terminus_store::sync::store::*;
+use terminus_store::store::sync::*;
 
 #[no_mangle]
 pub unsafe extern "C" fn open_directory_store(
