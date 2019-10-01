@@ -4,7 +4,7 @@ use std::io;
 use std::sync::Mutex;
 
 use terminus_store::storage::{
-    DirectoryLabelStore, DirectoryLayerStore,
+    DirectoryLabelStore, DirectoryLayerStore, CachedLayerStore
 };
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, PredicateObjectPairsForSubject,
@@ -15,7 +15,7 @@ use terminus_store::store::sync::*;
 #[no_mangle]
 pub unsafe extern "C" fn open_directory_store(
     dir: *const c_char,
-) -> *const SyncStore<DirectoryLabelStore, DirectoryLayerStore> {
+) -> *const SyncStore<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>> {
     // Safe because swipl will always return a null-terminated string
     let dir_name_cstr = CStr::from_ptr(dir);
     let dir_name = dir_name_cstr.to_str().unwrap();
@@ -32,8 +32,8 @@ pub unsafe extern "C" fn create_database(
     store_ptr: *mut c_void,
     name: *const c_char,
     err: *mut *const c_char,
-) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
-    let store = store_ptr as *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>;
+) -> *const SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>> {
+    let store = store_ptr as *mut SyncStore<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>;
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = CStr::from_ptr(name);
     let db_name = db_name_cstr.to_str().unwrap();
@@ -52,10 +52,10 @@ pub unsafe extern "C" fn create_database(
 
 #[no_mangle]
 pub unsafe extern "C" fn open_database(
-    store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>,
+    store: *mut SyncStore<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>,
     name: *const c_char,
     err: *mut *const c_char,
-) -> *const SyncDatabase<DirectoryLabelStore, DirectoryLayerStore> {
+) -> *const SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>> {
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = CStr::from_ptr(name);
     let db_name = db_name_cstr.to_str().unwrap();
@@ -78,7 +78,7 @@ pub unsafe extern "C" fn open_database(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_get_head(database: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayer<DirectoryLayerStore> {
+pub unsafe extern "C" fn database_get_head(database: *mut SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>> {
     match (*database).head() {
         Ok(None) => {
             *err = std::ptr::null();
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn database_get_head(database: *mut SyncDatabase<Directory
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, layer_ptr: *const SyncDatabaseLayer<DirectoryLayerStore>, err: *mut *const c_char) -> bool {
+pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>, layer_ptr: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> bool {
     match (*database).set_head(&*layer_ptr) {
         Ok(b) => {
             *err = std::ptr::null();
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase<Directory
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<DirectoryLayerStore> {
+pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>> {
     match (*store).create_base_layer() {
         Ok(builder) => {
             *err = std::ptr::null();
@@ -125,7 +125,7 @@ pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore<Directory
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer<DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<DirectoryLayerStore> {
+pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>> {
     match (*layer).open_write() {
         Ok(builder) => {
             *err = std::ptr::null();
@@ -139,7 +139,7 @@ pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer<Director
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<DirectoryLayerStore> {
+pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> *const SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>> {
     match (*database)
         .head()
         .and_then(|layer|
@@ -165,7 +165,7 @@ pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase<Directo
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
+pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
     match (*builder).add_id_triple(IdTriple::new(subject, predicate, object)) {
         Ok(r) => {
             *err = std::ptr::null();
@@ -181,7 +181,7 @@ pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
+pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -193,7 +193,7 @@ pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncDataba
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
+pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -206,7 +206,7 @@ pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncDatab
 
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject: u64, predicate: u64, object: u64, err: *mut *const c_char) -> bool {
     match (*builder).remove_id_triple(IdTriple::new(subject, predicate, object)) {
         Ok(r) => {
             *err = std::ptr::null();
@@ -222,7 +222,7 @@ pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncDatabaseLaye
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -242,7 +242,7 @@ pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncDat
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, subject_ptr: *const c_char, predicate_ptr: *const c_char, object_ptr: *const c_char, err: *mut *const c_char) -> bool {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDa
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>, err: *mut *const c_char) -> *const SyncDatabaseLayer<DirectoryLayerStore> {
+pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>, err: *mut *const c_char) -> *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>> {
     match (*builder).commit() {
         Ok(layer) => {
             *err = std::ptr::null();
@@ -275,54 +275,54 @@ pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder<D
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_node_and_value_count(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> usize {
+pub unsafe extern "C" fn layer_node_and_value_count(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>) -> usize {
     (*layer).node_and_value_count()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_count(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> usize {
+pub unsafe extern "C" fn layer_predicate_count(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>) -> usize {
     (*layer).predicate_count()
 }
 
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_subject_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, subject: *const c_char) -> u64 {
+pub unsafe extern "C" fn layer_subject_id(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, subject: *const c_char) -> u64 {
     let cstr = CStr::from_ptr(subject).to_string_lossy();
     (*layer).subject_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, predicate: *const c_char) -> u64 {
+pub unsafe extern "C" fn layer_predicate_id(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, predicate: *const c_char) -> u64 {
     let cstr = CStr::from_ptr(predicate).to_string_lossy();
     (*layer).predicate_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_object_node_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, object: *const c_char) -> u64 {
+pub unsafe extern "C" fn layer_object_node_id(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, object: *const c_char) -> u64 {
     let cstr = CStr::from_ptr(object).to_string_lossy();
     (*layer).object_node_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_object_value_id(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, object: *const c_char) -> u64 {
+pub unsafe extern "C" fn layer_object_value_id(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, object: *const c_char) -> u64 {
     let cstr = CStr::from_ptr(object).to_string_lossy();
     (*layer).object_value_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_subject(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64) -> *const c_char {
+pub unsafe extern "C" fn layer_id_subject(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, id: u64) -> *const c_char {
     (*layer).id_subject(id).map(|s|CString::new(s).unwrap().into_raw() as *const c_char)
         .unwrap_or(std::ptr::null())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_predicate(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64) -> *const c_char {
+pub unsafe extern "C" fn layer_id_predicate(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, id: u64) -> *const c_char {
     (*layer).id_predicate(id).map(|s|CString::new(s).unwrap().into_raw() as *const c_char)
         .unwrap_or(std::ptr::null())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_object(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, id: u64, object_type: *mut u8) -> *const c_char {
+pub unsafe extern "C" fn layer_id_object(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, id: u64, object_type: *mut u8) -> *const c_char {
     (*layer).id_object(id).map(|x| match x {
         ObjectType::Node(s) => {
             *object_type = 0;
@@ -337,7 +337,7 @@ pub unsafe extern "C" fn layer_id_object(layer: *const SyncDatabaseLayer<Directo
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_object_pairs_for_subject(layer: *const SyncDatabaseLayer<DirectoryLayerStore>, subject: u64) -> *const Box<dyn PredicateObjectPairsForSubject> {
+pub unsafe extern "C" fn layer_predicate_object_pairs_for_subject(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>, subject: u64) -> *const Box<dyn PredicateObjectPairsForSubject> {
     match (*layer).predicate_object_pairs_for_subject(subject) {
         Some(result) => Box::into_raw(Box::new(result)),
         None => std::ptr::null()
@@ -345,7 +345,7 @@ pub unsafe extern "C" fn layer_predicate_object_pairs_for_subject(layer: *const 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_object_pairs_iter(layer: *const SyncDatabaseLayer<DirectoryLayerStore>) -> *const Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>> {
+pub unsafe extern "C" fn layer_predicate_object_pairs_iter(layer: *const SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>) -> *const Mutex<Box<dyn Iterator<Item=Box<dyn PredicateObjectPairsForSubject>>>> {
     Box::into_raw(Box::new(Mutex::new((*layer).subjects())))
 }
 
@@ -410,22 +410,22 @@ pub unsafe extern "C" fn objects_has_object(objects: *const Box<dyn ObjectsForSu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, DirectoryLayerStore>) {
+pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>) {
     Box::from_raw(store);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_db(db: *mut SyncDatabase<DirectoryLabelStore, DirectoryLayerStore>) {
+pub unsafe extern "C" fn cleanup_db(db: *mut SyncDatabase<DirectoryLabelStore, CachedLayerStore<DirectoryLayerStore>>) {
     Box::from_raw(db);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_layer(layer: *mut SyncDatabaseLayer<DirectoryLayerStore>) {
+pub unsafe extern "C" fn cleanup_layer(layer: *mut SyncDatabaseLayer<CachedLayerStore<DirectoryLayerStore>>) {
     Box::from_raw(layer);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseLayerBuilder<DirectoryLayerStore>) {
+pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseLayerBuilder<CachedLayerStore<DirectoryLayerStore>>) {
     Box::from_raw(layer_builder);
 }
 
