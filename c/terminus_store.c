@@ -7,6 +7,15 @@
 #include "error.h"
 #include "blobs.h"
 
+static foreign_t pl_open_memory_store(term_t store_term) {
+    if (PL_term_type(store_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+    void* store_ptr = open_memory_store();
+    PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
+    PL_succeed;
+}
+
 static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term) {
     if (PL_term_type(store_term) != PL_VARIABLE) {
         PL_fail;
@@ -600,12 +609,14 @@ static foreign_t pl_subject_predicate_lookup_object(term_t subject_predicate_loo
 install_t
 install()
 {
+    PL_register_foreign("open_memory_store", 1,
+                        pl_open_memory_store, 0);
+    PL_register_foreign("open_directory_store", 2,
+                        pl_open_directory_store, 0);
     PL_register_foreign("create_database", 3,
                         pl_create_database, 0);
     PL_register_foreign("open_database", 3,
                         pl_open_database, 0);
-    PL_register_foreign("open_directory_store", 2,
-                        pl_open_directory_store, 0);
     PL_register_foreign("head", 2,
                         pl_head, 0);
     PL_register_foreign("nb_set_head", 2,

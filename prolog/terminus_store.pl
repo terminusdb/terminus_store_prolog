@@ -1,4 +1,5 @@
 :- module(terminus_store, [
+              open_memory_store/1,
               open_directory_store/2,
 
               create_database/3,

@@ -10,6 +10,12 @@ use terminus_store::layer::{
 use terminus_store::store::sync::*;
 
 #[no_mangle]
+pub unsafe extern "C" fn open_memory_store() -> *const SyncStore {
+    let store = open_sync_memory_store();
+    Box::into_raw(Box::new(store))
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn open_directory_store(
     dir: *const c_char,
 ) -> *const SyncStore {
@@ -407,7 +413,7 @@ pub unsafe extern "C" fn subject_predicate_lookup_lookup_object(objects: *const 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_directory_store(store: *mut SyncStore) {
+pub unsafe extern "C" fn cleanup_store(store: *mut SyncStore) {
     Box::from_raw(store);
 }
 
