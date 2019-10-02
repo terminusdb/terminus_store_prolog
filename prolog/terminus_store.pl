@@ -190,6 +190,9 @@ createdb() :-
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
 
+test(open_memory_store) :-
+    open_memory_store(_).
+
 test(open_directory_store_atom) :-
     open_directory_store(this_is_an_atom, _),
     open_directory_store("this is a string", _).
@@ -204,8 +207,18 @@ test(create_db, [cleanup(clean)]) :-
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
 
+
+test(create_db_on_memory) :-
+    open_memory_store(X),
+    create_database(X, "sometestdb", _).
+
 test(open_database, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", X),
+    open_database(X, "sometestdb", _).
+
+test(open_database_memory) :-
+    open_memory_store(X),
+    create_database(X, "sometestdb", _),
     open_database(X, "sometestdb", _).
 
 test(head_from_empty_db, [fail, cleanup(clean), setup(createdb)]) :-
