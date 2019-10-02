@@ -26,6 +26,11 @@
 
 :- use_foreign_library(libterminus_store).
 
+/*
+ * nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet
+ *
+ * Add a trible to the builder
+ */
 nb_add_triple(Builder, Subject, Predicate, Object) :-
     integer(Subject),
     integer(Predicate),
@@ -44,6 +49,12 @@ nb_add_triple(Builder, Subject, Predicate, value(Object)) :-
 nb_add_triple(_,_,_,_) :-
     throw('triple must either be numeric, or object must be of format node(..) or value(..)').
 
+
+/*
+ * nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet
+ *
+ * Remove a trible from the builder
+ */
 nb_remove_triple(Builder, Subject, Predicate, Object) :-
     integer(Subject),
     integer(Predicate),
@@ -62,6 +73,11 @@ nb_remove_triple(Builder, Subject, Predicate, value(Object)) :-
 nb_remove_triple(_,_,_,_) :-
     throw('triple must either be numeric, or object must be of format node(..) or value(..)').
 
+/*
+ * subject_id(+Layer, +Subject, -Id) is semidet
+ *
+ * Get the ID from a subject
+ */
 subject_id(Layer, Subject, Id) :-
     ground(Id),
     !,
@@ -77,6 +93,12 @@ subject_id(Layer, Subject, Id) :-
     between(1, Count, Id),
     id_to_subject(Layer, Id, Subject).
 
+
+/*
+ * predicate_id(+Layer, +Predicate, -Id) is semidet
+ *
+ * Get the ID from a predicate
+ */
 predicate_id(Layer, Predicate, Id) :-
     ground(Id),
     !,
@@ -92,6 +114,12 @@ predicate_id(Layer, Predicate, Id) :-
     between(1, Count, Id),
     id_to_predicate(Layer, Id, Predicate).
 
+
+/*
+ * object_id(+Layer, +Predicate, -Id) is semidet
+ *
+ * Get the ID from an object
+ */
 object_id(Layer, Object, Id) :-
     ground(Id),
     !,
