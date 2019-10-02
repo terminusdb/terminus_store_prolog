@@ -190,6 +190,11 @@ createdb() :-
     open_directory_store("testdir", X),
     create_database(X, "sometestdb", _).
 
+create_memory_db(DB) :-
+    open_memory_store(X),
+    create_database(X, "sometestdb", DB).
+
+
 test(open_memory_store) :-
     open_memory_store(_).
 
@@ -226,6 +231,9 @@ test(head_from_empty_db, [fail, cleanup(clean), setup(createdb)]) :-
     open_database(X, "sometestdb", DB),
     head(DB, _). % should be false because we have no HEAD yet
 
+test(head_from_empty_db_memory, [fail, setup(create_memory_db(DB))]) :-
+     head(DB, _).
+
 test(open_write_from_db_without_head, [
     cleanup(clean),
     setup(createdb),
@@ -236,8 +244,21 @@ test(open_write_from_db_without_head, [
     open_database(X, "sometestdb", DB),
     open_write(DB, _).
 
+
+test(open_write_from_memory_db_without_head, [
+    setup(create_memory_db(DB)),
+    throws(
+        terminus_store_rust_error('Create a base layer first before opening the database for write')
+    )]) :-
+    open_write(DB, _).
+
 test(create_base_layer, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
+    open_write(Store, _).
+
+
+test(create_base_layer_memory) :-
+    open_memory_store(Store),
     open_write(Store, _).
 
 test(write_value_triple, [cleanup(clean), setup(createdb)]) :-
@@ -245,10 +266,24 @@ test(write_value_triple, [cleanup(clean), setup(createdb)]) :-
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
+test(write_value_triple_memory) :-
+    open_memory_store(Store),
+    open_write(Store, Builder),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
+
 test(commit_and_set_header, [cleanup(clean), setup(createdb)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     open_database(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer).
+
+
+test(commit_and_set_header_memory) :-
+    open_memory_store(Store),
+    open_write(Store, Builder),
+    create_database(Store, "sometestdb", DB),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
