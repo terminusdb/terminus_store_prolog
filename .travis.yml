@@ -12,3 +12,10 @@ script:
   - make
   - swipl -g run_tests -g halt ./prolog/terminus_store.pl
   - swipl -g "show_coverage(run_tests)." -g halt prolog/terminus_store.pl
+
+deploy:
+  provider: script
+  script:
+    - echo "pack_install('https://github.com/terminusdb/terminus_store_prolog.git', [interactive=false])." | swipl
+  on:
+    tags: true
