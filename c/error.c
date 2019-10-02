@@ -50,6 +50,23 @@ void* check_blob_type(term_t term, PL_blob_t* expected_type) {
     return blob;
 }
 
+char* check_atom_term(term_t term) {
+    if (PL_term_type(term) == PL_VARIABLE) {
+        throw_instantiation_err(term);
+    }
+
+    int term_type = PL_term_type(term);
+
+    if (term_type != PL_ATOM) {
+        throw_type_error(term, "atom");
+    }
+
+    char* result;
+    assert(PL_get_chars(term, &result, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+
+    return result;
+}
+
 char* check_string_or_atom_term(term_t term) {
     if (PL_term_type(term) == PL_VARIABLE) {
         throw_instantiation_err(term);

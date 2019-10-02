@@ -298,8 +298,7 @@ static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t
         return throw_instantiation_err(subject_term);
     }
     else {
-        char* subject;
-        assert(PL_get_chars(subject_term, &subject, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+        char* subject = check_atom_term(subject_term);
         uint64_t id = layer_subject_id(layer, subject);
 
         if (id == 0) {
@@ -338,8 +337,7 @@ static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, te
         return throw_instantiation_err(predicate_term);
     }
     else {
-        char* predicate;
-        assert(PL_get_chars(predicate_term, &predicate, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+        char* predicate = check_atom_term(predicate_term);
         uint64_t id = layer_predicate_id(layer, predicate);
         if (id == 0) {
             PL_fail;
@@ -377,8 +375,7 @@ static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, ter
         return throw_instantiation_err(object_term);
     }
     else {
-        char* object;
-        assert(PL_get_chars(object_term, &object, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+        char* object = check_atom_term(object_term);
         uint64_t id = layer_object_node_id(layer, object);
 
         if (id == 0) {
@@ -395,8 +392,7 @@ static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, te
         return throw_instantiation_err(object_term);
     }
     else {
-        char* object;
-        assert(PL_get_chars(object_term, &object, CVT_ATOM | CVT_EXCEPTION | REP_UTF8));
+        char* object = check_atom_term(object_term);
         uint64_t id = layer_object_value_id(layer, object);
 
         if (id == 0) {
