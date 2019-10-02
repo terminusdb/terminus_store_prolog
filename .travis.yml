@@ -19,3 +19,4 @@ deploy:
     - echo "pack_install('https://github.com/terminusdb/terminus_store_prolog.git', [interactive=false])." | swipl
   on:
     tags: true
+  skip_cleanup: true
