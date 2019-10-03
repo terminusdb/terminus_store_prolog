@@ -86,3 +86,25 @@ void *open_directory_store(char *dir);
 void *open_memory_store(void);
 
 void *store_create_base_layer(void *store, char **err);
+
+void cleanup_subject_lookup(void* subject_lookup);
+void cleanup_subjects_iter(void* iter);
+void cleanup_subject_predicate_lookup(void* subject_predicate_lookup);
+void cleanup_subject_predicates_iter(void* iter);
+void cleanup_subject_predicate_objects_iter(void* iter);
+
+void* layer_lookup_subject(void* layer, uint64_t subject);
+void* layer_subjects_iter(void* layer);
+void* subjects_iter_next(void* iter);
+
+uint64_t subject_lookup_subject(void* subject_lookup);
+void* subject_lookup_lookup_predicate(void* subject_lookup, uint64_t predicate);
+void* subject_lookup_predicates_iter(void* subject_lookup);
+void* subject_predicates_iter_next(void* iter);
+
+uint64_t subject_predicate_lookup_subject(void* subject_predicate_lookup);
+uint64_t subject_predicate_lookup_predicate(void* subject_predicate_lookup);
+_Bool subject_predicate_lookup_lookup_object(void* subject_predicate_lookup, uint64_t object);
+void* subject_predicate_lookup_objects_iter(void* subject_predicate_lookup);
+uint64_t subject_predicate_objects_iter_next(void* iter);
+
