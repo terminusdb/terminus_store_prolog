@@ -380,4 +380,13 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     setof(Y-X, triple(Layer, 'Subject', Y, value(X)), Bag),
     Bag == ['Predicate'-'Object'].
 
+
+test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    setof(X-Y-Z, triple(Layer, X, Y, value(Z)), Bag),
+    Bag == ['Subject'-'Predicate'-'Object'].
+
 :- end_tests(terminus_store).
