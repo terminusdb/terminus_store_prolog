@@ -371,4 +371,14 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     triple(Layer, 'Subject', 'Predicate', value(X)),
     X == 'Object'.
 
+
+test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    triple(Layer, 'Subject', Y, value(X)),
+    X == 'Object',
+    Y == 'Predicate'.
+
 :- end_tests(terminus_store).
