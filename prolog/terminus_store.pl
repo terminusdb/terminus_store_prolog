@@ -368,8 +368,8 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
-    triple(Layer, 'Subject', 'Predicate', value(X)),
-    X == 'Object'.
+    setof(X, triple(Layer, 'Subject', 'Predicate', value(X)), Bag),
+    Bag == ['Object'].
 
 
 test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
@@ -377,8 +377,7 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
-    triple(Layer, 'Subject', Y, value(X)),
-    X == 'Object',
-    Y == 'Predicate'.
+    setof(Y-X, triple(Layer, 'Subject', Y, value(X)), Bag),
+    Bag == ['Predicate'-'Object'].
 
 :- end_tests(terminus_store).
