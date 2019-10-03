@@ -1,7 +1,4 @@
-#include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
 
 bool builder_add_id_triple(void *builder,
                            uint64_t subject,

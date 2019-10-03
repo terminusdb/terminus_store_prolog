@@ -1,5 +1,8 @@
 language = "C"
 
+sys_includes = ["stdbool.h"]
+no_includes = true
+
 [export.rename]
 "SyncDatabaseLayerBuilder" = "void"
 "SyncDatabaseLayer" = "void"
