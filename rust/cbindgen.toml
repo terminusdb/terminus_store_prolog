@@ -1,0 +1,7 @@
+language = "C"
+
+[export.rename]
+"SyncDatabaseLayerBuilder" = "void"
+"SyncDatabaseLayer" = "void"
+"SyncDatabase" = "void"
+"SyncStore" = "void"

@@ -7,6 +7,8 @@ TARGET = libterminus_store.so
 
 all: build
 
+rust_bindings:
+	cbindgen --config rust/cbindgen.toml rust/src/lib.rs --output c/terminus_store.h
 
 check::
 
