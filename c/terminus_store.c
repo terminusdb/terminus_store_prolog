@@ -414,7 +414,7 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
             PL_fail;
         }
 
-        char object_type;
+        uint8_t object_type;
         char* object = layer_id_object(layer, id, &object_type);
         if (object == NULL) {
             PL_fail;
