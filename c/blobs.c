@@ -160,3 +160,26 @@ PL_blob_t subject_predicate_lookup_blob_type =
     NULL,
     &write_subject_predicate_lookup_blob,
 };
+
+static int write_object_lookup_blob(void *closure, atom_t a, int flags) {
+    IOSTREAM *out = closure;
+    char* contents = "#<object_lookup>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
+}
+
+static int release_object_lookup_blob(atom_t a) {
+    void* object_lookups = PL_blob_data(a, NULL, NULL);
+    cleanup_object_lookup(object_lookups);
+    return TRUE;
+}
+
+PL_blob_t object_lookup_blob_type =
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "object_lookup",
+    &release_object_lookup_blob,
+    NULL,
+    &write_object_lookup_blob,
+};

@@ -171,6 +171,13 @@ triple_id(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_object(Predicate_Lookup, Object).
 
 triple_id(Layer, Subject, Predicate, Object) :-
+    ground(Object),
+    !,
+
+    lookup_object(Layer, Object, Object_Lookup),
+    object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
+
+triple_id(Layer, Subject, Predicate, Object) :-
     lookup_subject(Layer, Subject_Lookup),
     subject_lookup_subject(Subject_Lookup, Subject),
     subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),

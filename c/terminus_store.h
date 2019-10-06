@@ -1,5 +1,10 @@
 #include <stdbool.h>
 
+typedef struct {
+  uint64_t subject;
+  uint64_t predicate;
+} SubjectPredicatePair;
+
 bool builder_add_id_triple(void *builder,
                            uint64_t subject,
                            uint64_t predicate,
@@ -46,6 +51,12 @@ void cleanup_layer(void *layer);
 
 void cleanup_layer_builder(void *layer_builder);
 
+void cleanup_object_lookup(void *object_lookup);
+
+void cleanup_object_subject_predicates_iter(void *iter);
+
+void cleanup_objects_iter(void *iter);
+
 void cleanup_store(void *store);
 
 void cleanup_subject_lookup(void *subject_lookup);
@@ -72,6 +83,8 @@ char *layer_id_predicate(void *layer, uint64_t id);
 
 char *layer_id_subject(void *layer, uint64_t id);
 
+void *layer_lookup_object(void *layer, uint64_t object);
+
 void *layer_lookup_subject(void *layer, uint64_t subject);
 
 uintptr_t layer_node_and_value_count(void *layer);
@@ -79,6 +92,8 @@ uintptr_t layer_node_and_value_count(void *layer);
 uint64_t layer_object_node_id(void *layer, char *object);
 
 uint64_t layer_object_value_id(void *layer, char *object);
+
+void *layer_objects_iter(void *layer);
 
 void *layer_open_write(void *layer, char **err);
 
@@ -89,6 +104,18 @@ uint64_t layer_predicate_id(void *layer, char *predicate);
 uint64_t layer_subject_id(void *layer, char *subject);
 
 void *layer_subjects_iter(void *layer);
+
+bool object_lookup_lookup_subject_predicate_pair(void *object_lookup,
+                                                 uint64_t subject,
+                                                 uint64_t predicate);
+
+uint64_t object_lookup_object(void *object_lookup);
+
+void *object_lookup_subject_predicate_pairs_iter(void *object_lookup);
+
+SubjectPredicatePair object_subject_predicate_pairs_iter_next(void *iter);
+
+void *objects_iter_next(void *iter);
 
 void *open_database(void *store, char *name, char **err);
 
