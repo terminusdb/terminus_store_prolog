@@ -24,7 +24,7 @@
               triple/4
           ]).
 
-:- use_foreign_library(libterminus_store).
+:- use_foreign_library(foreign(libterminus_store)).
 
 /*
  * nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet

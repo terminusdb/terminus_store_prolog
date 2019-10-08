@@ -1,9 +1,8 @@
-INCLUDES = -I/usr/lib/swi-prolog/include -I/usr/local/lib/swipl/include
-CC = gcc
-CFLAGS = -shared -fpic -Wall
+RUST_LIB_NAME = terminus_store_prolog
+RUST_LIB = lib$(RUST_LIB_NAME).$(SOEXT)
 RUST_TARGET=release
-RUST_LIB = rust/target/$(RUST_TARGET)/libterminus_store_prolog.so
-TARGET = libterminus_store.so
+RUST_SOURCE_PATH = rust/target/$(RUST_TARGET)/$(RUST_LIB)
+TARGET = $(PACKSODIR)/libterminus_store.$(SOEXT)
 
 all: build
 
@@ -13,14 +12,19 @@ rust_bindings:
 check::
 
 build:
+	mkdir -p $(PACKSODIR)
 	cd rust; cargo build --$(RUST_TARGET)
-	$(CC) $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L. -l:./$(RUST_LIB) $(INCLUDES)
+	mv $(RUST_SOURCE_PATH) ./$(PACKSODIR)
+	$(CC) -shared $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -Wl,-rpath $(CURDIR)/$(PACKSODIR) -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb
 debug:
+	mkdir -p $(PACKSODIR)
 	cd rust; cargo build
-	$(CC) $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L. -l:./$(RUST_LIB) $(INCLUDES)
+	mv $(RUST_SOURCE_PATH) ./$(PACKSODIR)
+	$(CC) -shared $(CFLAGS) -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -Wl,-rpath $(CURDIR)/$(PACKSODIR) -l$(RUST_LIB_NAME)
+
 
 install::
 
