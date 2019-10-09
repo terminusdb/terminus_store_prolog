@@ -1,7 +1,7 @@
 language: rust
 
 env:
-  - PACKSODIR=lib CFLAGS='-fPIC -pthread -I"/usr/lib/swipl-prolog/include"' SOEXT='so' CC=gcc
+  - PACKSODIR=lib CFLAGS='-fPIC -pthread -I"/usr/lib/swi-prolog/include"' SOEXT='so' CC=gcc
 
 rust:
   - stable
