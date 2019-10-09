@@ -324,7 +324,7 @@ static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subj
         if (subject == NULL) {
             PL_fail;
         }
-        int result = PL_unify_atom_chars(subject_term, subject);
+        int result = PL_unify_string_chars(subject_term, subject);
         cleanup_cstring(subject);
 
         return result;
@@ -362,7 +362,7 @@ static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t pr
         if (predicate == NULL) {
             PL_fail;
         }
-        int result = PL_unify_atom_chars(predicate_term, predicate);
+        int result = PL_unify_string_chars(predicate_term, predicate);
         cleanup_cstring(predicate);
 
         return result;
@@ -432,7 +432,7 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
         else {
             abort();
         }
-        int result = PL_unify_atom_chars(object_term, object);
+        int result = PL_unify_string_chars(object_term, object);
         cleanup_cstring(object);
 
         return result;
