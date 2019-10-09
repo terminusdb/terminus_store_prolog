@@ -1,0 +1,3 @@
+#!/bin/sh
+# launch prolog with the built library
+swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g version $*

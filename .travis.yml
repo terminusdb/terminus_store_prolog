@@ -1,8 +1,5 @@
 language: rust
 
-env:
-  - PACKSODIR=lib CFLAGS='-fPIC -pthread -I"/usr/lib/swi-prolog/include"' SOEXT='so' CC=gcc
-
 rust:
   - stable
 
@@ -13,8 +10,8 @@ before_script:
 
 script:
   - make
-  - swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g run_tests -g halt
-  - swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g "show_coverage(run_tests)" -g halt
+  - ./run_swipl -g run_tests -g halt
+  - ./run_swipl -g "show_coverage(run_tests)" -g halt
 
 deploy:
   provider: script
