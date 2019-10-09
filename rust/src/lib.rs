@@ -35,7 +35,7 @@ pub unsafe extern "C" fn create_database(
     store_ptr: *mut c_void,
     name: *mut c_char,
     err: *mut *mut c_char,
-) -> *mut SyncDatabase {
+) -> *mut SyncNamedGraph {
     let store = store_ptr as *mut SyncStore;
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = CStr::from_ptr(name);
@@ -58,7 +58,7 @@ pub unsafe extern "C" fn open_database(
     store: *mut SyncStore,
     name: *mut c_char,
     err: *mut *mut c_char,
-) -> *mut SyncDatabase {
+) -> *mut SyncNamedGraph {
     // We assume it to be somewhat safe because swipl will check string types
     let db_name_cstr = CStr::from_ptr(name);
     let db_name = db_name_cstr.to_str().unwrap();
@@ -81,7 +81,7 @@ pub unsafe extern "C" fn open_database(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_get_head(database: *mut SyncDatabase, err: *mut *mut c_char) -> *mut SyncDatabaseLayer {
+pub unsafe extern "C" fn database_get_head(database: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayer {
     match (*database).head() {
         Ok(None) => {
             *err = std::ptr::null_mut();
@@ -99,7 +99,7 @@ pub unsafe extern "C" fn database_get_head(database: *mut SyncDatabase, err: *mu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase, layer_ptr: *mut SyncDatabaseLayer, err: *mut *mut c_char) -> bool {
+pub unsafe extern "C" fn database_set_head(database: *mut SyncNamedGraph, layer_ptr: *mut SyncStoreLayer, err: *mut *mut c_char) -> bool {
     match (*database).set_head(&*layer_ptr) {
         Ok(b) => {
             *err = std::ptr::null_mut();
@@ -114,7 +114,7 @@ pub unsafe extern "C" fn database_set_head(database: *mut SyncDatabase, layer_pt
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore, err: *mut *mut c_char) -> *mut SyncDatabaseLayerBuilder {
+pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore, err: *mut *mut c_char) -> *mut SyncStoreLayerBuilder {
     match (*store).create_base_layer() {
         Ok(builder) => {
             *err = std::ptr::null_mut();
@@ -128,7 +128,7 @@ pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore, err: *mu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer, err: *mut *mut c_char) -> *mut SyncDatabaseLayerBuilder {
+pub unsafe extern "C" fn layer_open_write(layer: *mut SyncStoreLayer, err: *mut *mut c_char) -> *mut SyncStoreLayerBuilder {
     match (*layer).open_write() {
         Ok(builder) => {
             *err = std::ptr::null_mut();
@@ -142,7 +142,7 @@ pub unsafe extern "C" fn layer_open_write(layer: *mut SyncDatabaseLayer, err: *m
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase, err: *mut *mut c_char) -> *mut SyncDatabaseLayerBuilder {
+pub unsafe extern "C" fn database_open_write(database: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayerBuilder {
     match (*database)
         .head()
         .and_then(|layer|
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn database_open_write(database: *mut SyncDatabase, err: *
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBuilder, subject: u64, predicate: u64, object: u64, err: *mut *mut c_char) -> bool {
+pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncStoreLayerBuilder, subject: u64, predicate: u64, object: u64, err: *mut *mut c_char) -> bool {
     match (*builder).add_id_triple(IdTriple::new(subject, predicate, object)) {
         Ok(r) => {
             *err = std::ptr::null_mut();
@@ -184,7 +184,7 @@ pub unsafe extern "C" fn builder_add_id_triple(builder: *mut SyncDatabaseLayerBu
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncDatabaseLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) {
+pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncStoreLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -196,7 +196,7 @@ pub unsafe extern "C" fn builder_add_string_node_triple(builder: *mut SyncDataba
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncDatabaseLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) {
+pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncStoreLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -209,7 +209,7 @@ pub unsafe extern "C" fn builder_add_string_value_triple(builder: *mut SyncDatab
 
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncDatabaseLayerBuilder, subject: u64, predicate: u64, object: u64, err: *mut *mut c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncStoreLayerBuilder, subject: u64, predicate: u64, object: u64, err: *mut *mut c_char) -> bool {
     match (*builder).remove_id_triple(IdTriple::new(subject, predicate, object)) {
         Ok(r) => {
             *err = std::ptr::null_mut();
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn builder_remove_id_triple(builder: *mut SyncDatabaseLaye
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncDatabaseLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncStoreLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) -> bool {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -245,7 +245,7 @@ pub unsafe extern "C" fn builder_remove_string_node_triple(builder: *mut SyncDat
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDatabaseLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) -> bool {
+pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncStoreLayerBuilder, subject_ptr: *mut c_char, predicate_ptr: *mut c_char, object_ptr: *mut c_char, err: *mut *mut c_char) -> bool {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -264,7 +264,7 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(builder: *mut SyncDa
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder, err: *mut *mut c_char) -> *mut SyncDatabaseLayer {
+pub unsafe extern "C" fn builder_commit(builder: *mut SyncStoreLayerBuilder, err: *mut *mut c_char) -> *mut SyncStoreLayer {
     match (*builder).commit() {
         Ok(layer) => {
             *err = std::ptr::null_mut();
@@ -278,54 +278,54 @@ pub unsafe extern "C" fn builder_commit(builder: *mut SyncDatabaseLayerBuilder, 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_node_and_value_count(layer: *mut SyncDatabaseLayer) -> usize {
+pub unsafe extern "C" fn layer_node_and_value_count(layer: *mut SyncStoreLayer) -> usize {
     (*layer).node_and_value_count()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_count(layer: *mut SyncDatabaseLayer) -> usize {
+pub unsafe extern "C" fn layer_predicate_count(layer: *mut SyncStoreLayer) -> usize {
     (*layer).predicate_count()
 }
 
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_subject_id(layer: *mut SyncDatabaseLayer, subject: *mut c_char) -> u64 {
+pub unsafe extern "C" fn layer_subject_id(layer: *mut SyncStoreLayer, subject: *mut c_char) -> u64 {
     let cstr = CStr::from_ptr(subject).to_string_lossy();
     (*layer).subject_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_predicate_id(layer: *mut SyncDatabaseLayer, predicate: *mut c_char) -> u64 {
+pub unsafe extern "C" fn layer_predicate_id(layer: *mut SyncStoreLayer, predicate: *mut c_char) -> u64 {
     let cstr = CStr::from_ptr(predicate).to_string_lossy();
     (*layer).predicate_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_object_node_id(layer: *mut SyncDatabaseLayer, object: *mut c_char) -> u64 {
+pub unsafe extern "C" fn layer_object_node_id(layer: *mut SyncStoreLayer, object: *mut c_char) -> u64 {
     let cstr = CStr::from_ptr(object).to_string_lossy();
     (*layer).object_node_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_object_value_id(layer: *mut SyncDatabaseLayer, object: *mut c_char) -> u64 {
+pub unsafe extern "C" fn layer_object_value_id(layer: *mut SyncStoreLayer, object: *mut c_char) -> u64 {
     let cstr = CStr::from_ptr(object).to_string_lossy();
     (*layer).object_value_id(&cstr).unwrap_or(0)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_subject(layer: *mut SyncDatabaseLayer, id: u64) -> *mut c_char {
+pub unsafe extern "C" fn layer_id_subject(layer: *mut SyncStoreLayer, id: u64) -> *mut c_char {
     (*layer).id_subject(id).map(|s|CString::new(s).unwrap().into_raw() as *mut c_char)
         .unwrap_or(std::ptr::null_mut())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_predicate(layer: *mut SyncDatabaseLayer, id: u64) -> *mut c_char {
+pub unsafe extern "C" fn layer_id_predicate(layer: *mut SyncStoreLayer, id: u64) -> *mut c_char {
     (*layer).id_predicate(id).map(|s|CString::new(s).unwrap().into_raw() as *mut c_char)
         .unwrap_or(std::ptr::null_mut())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_object(layer: *mut SyncDatabaseLayer, id: u64, object_type: *mut u8) -> *mut c_char {
+pub unsafe extern "C" fn layer_id_object(layer: *mut SyncStoreLayer, id: u64, object_type: *mut u8) -> *mut c_char {
     (*layer).id_object(id).map(|x| match x {
         ObjectType::Node(s) => {
             *object_type = 0;
@@ -340,7 +340,7 @@ pub unsafe extern "C" fn layer_id_object(layer: *mut SyncDatabaseLayer, id: u64,
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_lookup_subject(layer: *mut SyncDatabaseLayer, subject: u64) -> *mut c_void {
+pub unsafe extern "C" fn layer_lookup_subject(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void {
     match (*layer).lookup_subject(subject) {
         Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
         None => std::ptr::null_mut()
@@ -348,7 +348,7 @@ pub unsafe extern "C" fn layer_lookup_subject(layer: *mut SyncDatabaseLayer, sub
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_lookup_object(layer: *mut SyncDatabaseLayer, object: u64) -> *mut c_void {
+pub unsafe extern "C" fn layer_lookup_object(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
     match (*layer).lookup_object(object) {
         Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
         None => std::ptr::null_mut()
@@ -356,7 +356,7 @@ pub unsafe extern "C" fn layer_lookup_object(layer: *mut SyncDatabaseLayer, obje
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_subjects_iter(layer: *mut SyncDatabaseLayer) -> *mut c_void {
+pub unsafe extern "C" fn layer_subjects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
     Box::into_raw(Box::new(Mutex::new((*layer).subjects()))) as *mut c_void
 }
 
@@ -370,7 +370,7 @@ pub unsafe extern "C" fn subjects_iter_next(iter: *mut c_void) -> *mut c_void {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_objects_iter(layer: *mut SyncDatabaseLayer) -> *mut c_void {
+pub unsafe extern "C" fn layer_objects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
     Box::into_raw(Box::new(Mutex::new((*layer).objects()))) as *mut c_void
 }
 
@@ -490,17 +490,17 @@ pub unsafe extern "C" fn cleanup_store(store: *mut SyncStore) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_db(db: *mut SyncDatabase) {
+pub unsafe extern "C" fn cleanup_db(db: *mut SyncNamedGraph) {
     Box::from_raw(db);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_layer(layer: *mut SyncDatabaseLayer) {
+pub unsafe extern "C" fn cleanup_layer(layer: *mut SyncStoreLayer) {
     Box::from_raw(layer);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncDatabaseLayerBuilder) {
+pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncStoreLayerBuilder) {
     Box::from_raw(layer_builder);
 }
 
