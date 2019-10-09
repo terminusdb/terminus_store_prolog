@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # launch prolog with the built library
-swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g version $*
+source buildenv.sh
+swipl -g "asserta(file_search_path(foreign,'$PWD/$PACKSODIR'))" -g "['./prolog/terminus_store.pl']" -g version $*
