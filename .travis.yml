@@ -1,5 +1,11 @@
 language: rust
 
+env:
+  - PACKSODIR=lib
+  - CFLAGS='-fPIC -pthread -I"/usr/local/lib/swipl/include" -I"/usr/lib/swipl/include"'
+  - SOEXT='so'
+  - CC=gcc
+
 rust:
   - stable
 
@@ -9,7 +15,7 @@ before_script:
   - sudo apt-get install swi-prolog-nox autoconf libtool build-essential
 
 script:
-  - make
+  - PACKSODIR='make
   - swipl -g run_tests -g halt ./prolog/terminus_store.pl
   - swipl -g "show_coverage(run_tests)." -g halt prolog/terminus_store.pl
 
