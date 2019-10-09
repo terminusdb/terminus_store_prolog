@@ -123,8 +123,8 @@ predicate_id(Layer, Predicate, Id) :-
 object_id(Layer, Object, Id) :-
     ground(Id),
     !,
-    id_to_object(Layer, Id, Object_Atom, Type),
-    Object =.. [Type, Object_Atom].
+    id_to_object(Layer, Id, Object_String, Type),
+    Object =.. [Type, Object_String].
 
 object_id(Layer, node(Object), Id) :-
     ground(Object),
@@ -139,8 +139,8 @@ object_id(Layer, value(Object), Id) :-
 object_id(Layer, Object, Id) :-
     node_and_value_count(Layer, Count),
     between(1, Count, Id),
-    id_to_object(Layer, Id, Object_Atom, Type),
-    Object =.. [Type, Object_Atom].
+    id_to_object(Layer, Id, Object_String, Type),
+    Object =.. [Type, Object_String].
 
 id_triple(Layer, Subject, Predicate, Object) :-
     ground(Subject),

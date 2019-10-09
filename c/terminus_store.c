@@ -375,7 +375,7 @@ static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, ter
         return throw_instantiation_err(object_term);
     }
     else {
-        char* object = check_atom_term(object_term);
+        char* object = check_string_or_atom_term(object_term);
         uint64_t id = layer_object_node_id(layer, object);
 
         if (id == 0) {
@@ -392,7 +392,7 @@ static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, te
         return throw_instantiation_err(object_term);
     }
     else {
-        char* object = check_atom_term(object_term);
+        char* object = check_string_or_atom_term(object_term);
         uint64_t id = layer_object_value_id(layer, object);
 
         if (id == 0) {
