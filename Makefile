@@ -29,5 +29,5 @@ debug:
 install::
 
 clean:
-	rm -rf *.so
+	rm -rf ./$(PACKSODIR)/*.$(SOEXT)
 	cd rust; cargo clean
