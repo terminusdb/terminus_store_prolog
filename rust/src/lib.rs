@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,
-    SubjectPredicateLookup, ObjectLookup
+    SubjectPredicateLookup, PredicateLookup, ObjectLookup
 };
 use terminus_store::store::sync::*;
 
@@ -287,7 +287,6 @@ pub unsafe extern "C" fn layer_predicate_count(layer: *mut SyncStoreLayer) -> us
     (*layer).predicate_count()
 }
 
-
 #[no_mangle]
 pub unsafe extern "C" fn layer_subject_id(layer: *mut SyncStoreLayer, subject: *mut c_char) -> u64 {
     let cstr = CStr::from_ptr(subject).to_string_lossy();
@@ -348,6 +347,14 @@ pub unsafe extern "C" fn layer_lookup_subject(layer: *mut SyncStoreLayer, subjec
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_lookup_predicate(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    match (*layer).lookup_predicate(predicate) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_lookup_object(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
     match (*layer).lookup_object(object) {
         Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
@@ -366,6 +373,20 @@ pub unsafe extern "C" fn subjects_iter_next(iter: *mut c_void) -> *mut c_void {
     match (*iter).lock().expect("locking should succeed").next() {
         None => std::ptr::null_mut(),
         Some(subject_lookup) => Box::into_raw(Box::new(subject_lookup)) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_predicates_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).predicates()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn predicates_iter_next(iter: *mut c_void) -> *mut c_void {
+    let iter = iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectLookup>>>>;
+    match (*iter).lock().expect("locking should succeed").next() {
+        None => std::ptr::null_mut(),
+        Some(object_lookup) => Box::into_raw(Box::new(object_lookup)) as *mut c_void
     }
 }
 
@@ -450,6 +471,18 @@ pub unsafe extern "C" fn subject_predicate_lookup_lookup_object(objects: *mut c_
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn predicate_lookup_predicate(predicate_lookup: *mut c_void) -> u64 {
+    let predicate_lookup = predicate_lookup as *mut Box<dyn PredicateLookup>;
+    (*predicate_lookup).predicate()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn predicate_lookup_subject_predicate_pairs_iter(predicate_lookup: *mut c_void) -> *mut c_void {
+    let predicate_lookup = predicate_lookup as *mut Box<dyn PredicateLookup>;
+    Box::into_raw(Box::new(Mutex::new((*predicate_lookup).subject_predicate_pairs()))) as *mut c_void
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn object_lookup_object(object_lookup: *mut c_void) -> u64 {
     let object_lookup = object_lookup as *mut Box<dyn ObjectLookup>;
     (*object_lookup).object()
@@ -510,19 +543,39 @@ pub unsafe extern "C" fn cleanup_subject_lookup(subject_lookup: *mut c_void) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_subjects_iter(iter: *mut c_void) {
-    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn SubjectLookup>>>>);
+pub unsafe extern "C" fn cleanup_subject_predicate_lookup(objects_for_po_pair: *mut c_void) {
+    Box::from_raw(objects_for_po_pair as *mut Box<dyn SubjectPredicateLookup>);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_subject_predicate_lookup(objects_for_po_pair: *mut c_void) {
-    Box::from_raw(objects_for_po_pair as *mut Box<dyn SubjectPredicateLookup>);
+pub unsafe extern "C" fn cleanup_predicate_lookup(subject_lookup: *mut c_void) {
+    Box::from_raw(subject_lookup as *mut Box<dyn PredicateLookup>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_object_lookup(object_lookup: *mut c_void) {
+    Box::from_raw(object_lookup as *mut Box<dyn ObjectLookup>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_subjects_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn SubjectLookup>>>>);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_subject_predicates_iter(iter: *mut c_void) {
     let _iter = Box::from_raw(iter as
                               *mut Mutex<Box<dyn Iterator<Item=Box<dyn SubjectPredicateLookup>>>>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_predicates_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn PredicateLookup>>>>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_objects_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectLookup>>>>);
 }
 
 #[no_mangle]
@@ -535,17 +588,6 @@ pub unsafe extern "C" fn cleanup_object_subject_predicates_iter(iter: *mut c_voi
     let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=(u64, u64)>>>);
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_objects_iter(iter: *mut c_void) {
-    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectLookup>>>>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_object_lookup(object_lookup: *mut c_void) {
-    Box::from_raw(object_lookup as *mut Box<dyn ObjectLookup>);
-}
-
-#[no_mangle]
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_cstring(cstring_ptr: *mut c_char) {
     CString::from_raw(cstring_ptr);

@@ -161,6 +161,29 @@ PL_blob_t subject_predicate_lookup_blob_type =
     &write_subject_predicate_lookup_blob,
 };
 
+static int write_predicate_lookup_blob(void *closure, atom_t a, int flags) {
+    IOSTREAM *out = closure;
+    char* contents = "#<predicate_lookup>";
+    Sfwrite(contents, 1, strlen(contents), out);
+    return TRUE;
+}
+
+static int release_predicate_lookup_blob(atom_t a) {
+    void* predicate_lookups = PL_blob_data(a, NULL, NULL);
+    cleanup_predicate_lookup(predicate_lookups);
+    return TRUE;
+}
+
+PL_blob_t predicate_lookup_blob_type =
+{
+    PL_BLOB_MAGIC,
+    PL_BLOB_NOCOPY,
+    "predicate_lookup",
+    &release_predicate_lookup_blob,
+    NULL,
+    &write_predicate_lookup_blob,
+};
+
 static int write_object_lookup_blob(void *closure, atom_t a, int flags) {
     IOSTREAM *out = closure;
     char* contents = "#<object_lookup>";

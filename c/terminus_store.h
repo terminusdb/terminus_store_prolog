@@ -57,6 +57,10 @@ void cleanup_object_subject_predicates_iter(void *iter);
 
 void cleanup_objects_iter(void *iter);
 
+void cleanup_predicate_lookup(void *subject_lookup);
+
+void cleanup_predicates_iter(void *iter);
+
 void cleanup_store(void *store);
 
 void cleanup_subject_lookup(void *subject_lookup);
@@ -79,6 +83,8 @@ char *layer_id_subject(void *layer, uint64_t id);
 
 void *layer_lookup_object(void *layer, uint64_t object);
 
+void *layer_lookup_predicate(void *layer, uint64_t predicate);
+
 void *layer_lookup_subject(void *layer, uint64_t subject);
 
 uintptr_t layer_node_and_value_count(void *layer);
@@ -94,6 +100,8 @@ void *layer_open_write(void *layer, char **err);
 uintptr_t layer_predicate_count(void *layer);
 
 uint64_t layer_predicate_id(void *layer, char *predicate);
+
+void *layer_predicates_iter(void *layer);
 
 uint64_t layer_subject_id(void *layer, char *subject);
 
@@ -122,6 +130,12 @@ void *open_directory_store(char *dir);
 void *open_memory_store(void);
 
 void *open_named_graph(void *store, char *name, char **err);
+
+uint64_t predicate_lookup_predicate(void *predicate_lookup);
+
+void *predicate_lookup_subject_predicate_pairs_iter(void *predicate_lookup);
+
+void *predicates_iter_next(void *iter);
 
 void *store_create_base_layer(void *store, char **err);
 
