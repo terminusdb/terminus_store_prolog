@@ -69,13 +69,7 @@ void cleanup_subject_predicates_iter(void *iter);
 
 void cleanup_subjects_iter(void *iter);
 
-void *create_database(void *store_ptr, char *name, char **err);
-
-void *database_get_head(void *database, char **err);
-
-void *database_open_write(void *database, char **err);
-
-bool database_set_head(void *database, void *layer_ptr, char **err);
+void *create_named_graph(void *store_ptr, char *name, char **err);
 
 char *layer_id_object(void *layer, uint64_t id, uint8_t *object_type);
 
@@ -105,6 +99,12 @@ uint64_t layer_subject_id(void *layer, char *subject);
 
 void *layer_subjects_iter(void *layer);
 
+void *named_graph_get_head(void *named_graph, char **err);
+
+void *named_graph_open_write(void *named_graph, char **err);
+
+bool named_graph_set_head(void *named_graph, void *layer_ptr, char **err);
+
 bool object_lookup_lookup_subject_predicate_pair(void *object_lookup,
                                                  uint64_t subject,
                                                  uint64_t predicate);
@@ -117,11 +117,11 @@ SubjectPredicatePair object_subject_predicate_pairs_iter_next(void *iter);
 
 void *objects_iter_next(void *iter);
 
-void *open_database(void *store, char *name, char **err);
-
 void *open_directory_store(char *dir);
 
 void *open_memory_store(void);
+
+void *open_named_graph(void *store, char *name, char **err);
 
 void *store_create_base_layer(void *store, char **err);
 

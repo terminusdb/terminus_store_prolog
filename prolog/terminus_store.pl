@@ -2,8 +2,8 @@
               open_memory_store/1,
               open_directory_store/2,
 
-              create_database/3,
-              open_database/3,
+              create_named_graph/3,
+              open_named_graph/3,
 
               head/2,
               nb_set_head/2,
@@ -220,14 +220,14 @@ triple(Layer, Subject, Predicate, Object) :-
 clean :-
     delete_directory_and_contents("testdir").
 
-createdb() :-
+createng() :-
     make_directory("testdir"),
     open_directory_store("testdir", X),
-    create_database(X, "sometestdb", _).
+    create_named_graph(X, "sometestdb", _).
 
-create_memory_db(DB) :-
+create_memory_ng(DB) :-
     open_memory_store(X),
-    create_database(X, "sometestdb", DB).
+    create_named_graph(X, "sometestdb", DB).
 
 
 test(open_memory_store) :-
@@ -245,49 +245,49 @@ test(open_directory_store_atom_exception, [
 test(create_db, [cleanup(clean)]) :-
     make_directory("testdir"),
     open_directory_store("testdir", X),
-    create_database(X, "sometestdb", _).
+    create_named_graph(X, "sometestdb", _).
 
 
 test(create_db_on_memory) :-
     open_memory_store(X),
-    create_database(X, "sometestdb", _).
+    create_named_graph(X, "sometestdb", _).
 
-test(open_database, [cleanup(clean), setup(createdb)]) :-
+test(open_named_graph, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", X),
-    open_database(X, "sometestdb", _).
+    open_named_graph(X, "sometestdb", _).
 
-test(open_database_memory) :-
+test(open_named_graph_memory) :-
     open_memory_store(X),
-    create_database(X, "sometestdb", _),
-    open_database(X, "sometestdb", _).
+    create_named_graph(X, "sometestdb", _),
+    open_named_graph(X, "sometestdb", _).
 
-test(head_from_empty_db, [fail, cleanup(clean), setup(createdb)]) :-
+test(head_from_empty_db, [fail, cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", X),
-    open_database(X, "sometestdb", DB),
+    open_named_graph(X, "sometestdb", DB),
     head(DB, _). % should be false because we have no HEAD yet
 
-test(head_from_empty_db_memory, [fail, setup(create_memory_db(DB))]) :-
+test(head_from_empty_db_memory, [fail, setup(create_memory_ng(DB))]) :-
      head(DB, _).
 
 test(open_write_from_db_without_head, [
     cleanup(clean),
-    setup(createdb),
+    setup(createng),
     throws(
-        terminus_store_rust_error('Create a base layer first before opening the database for write')
+        terminus_store_rust_error('Create a base layer first before opening the named graph for write')
     )]) :-
     open_directory_store("testdir", X),
-    open_database(X, "sometestdb", DB),
+    open_named_graph(X, "sometestdb", DB),
     open_write(DB, _).
 
 
-test(open_write_from_memory_db_without_head, [
-    setup(create_memory_db(DB)),
+test(open_write_from_memory_ng_without_head, [
+    setup(create_memory_ng(DB)),
     throws(
-        terminus_store_rust_error('Create a base layer first before opening the database for write')
+        terminus_store_rust_error('Create a base layer first before opening the named graph for write')
     )]) :-
     open_write(DB, _).
 
-test(create_base_layer, [cleanup(clean), setup(createdb)]) :-
+test(create_base_layer, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, _).
 
@@ -296,7 +296,7 @@ test(create_base_layer_memory) :-
     open_memory_store(Store),
     open_write(Store, _).
 
-test(write_value_triple, [cleanup(clean), setup(createdb)]) :-
+test(write_value_triple, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
@@ -306,10 +306,10 @@ test(write_value_triple_memory) :-
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
-test(commit_and_set_header, [cleanup(clean), setup(createdb)]) :-
+test(commit_and_set_header, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
-    open_database(Store, "sometestdb", DB),
+    open_named_graph(Store, "sometestdb", DB),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
@@ -318,23 +318,23 @@ test(commit_and_set_header, [cleanup(clean), setup(createdb)]) :-
 test(commit_and_set_header_memory) :-
     open_memory_store(Store),
     open_write(Store, Builder),
-    create_database(Store, "sometestdb", DB),
+    create_named_graph(Store, "sometestdb", DB),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
 
-test(head_after_first_commit, [cleanup(clean), setup(createdb)]) :-
+test(head_after_first_commit, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
-    open_database(Store, "sometestdb", DB),
+    open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer),
     head(DB, _).
 
-test(predicate_count, [cleanup(clean), setup(createdb)]) :-
+test(predicate_count, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
-    open_database(Store, "sometestdb", DB),
+    open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
@@ -343,7 +343,7 @@ test(predicate_count, [cleanup(clean), setup(createdb)]) :-
     predicate_count(LayerHead, Count),
     Count == 1.
 
-test(node_and_value_count, [cleanup(clean), setup(createdb)]) :-
+test(node_and_value_count, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -351,9 +351,9 @@ test(node_and_value_count, [cleanup(clean), setup(createdb)]) :-
     node_and_value_count(Layer, Count),
     Count == 2.
 
-test(predicate_count_2, [cleanup(clean), setup(createdb)]) :-
+test(predicate_count_2, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
-    open_database(Store, "sometestdb", DB),
+    open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_add_triple(Builder, "Subject2", "Predicate2", value("Object2")),
@@ -362,7 +362,7 @@ test(predicate_count_2, [cleanup(clean), setup(createdb)]) :-
     predicate_count(Layer, Count),
     Count == 2.
 
-test(remove_triple, [cleanup(clean), setup(createdb)]) :-
+test(remove_triple, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -370,7 +370,7 @@ test(remove_triple, [cleanup(clean), setup(createdb)]) :-
     open_write(Layer, LayerBuilder),
     nb_remove_triple(LayerBuilder, "Subject", "Predicate", value("Object")).
 
-test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
+test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -379,7 +379,7 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     Bag == ['Object'].
 
 
-test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
+test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -388,7 +388,7 @@ test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
     Bag == ['Predicate'-'Object'].
 
 
-test(triple_search_test, [cleanup(clean), setup(createdb)]) :-
+test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),

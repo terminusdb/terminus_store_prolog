@@ -37,33 +37,33 @@ PL_blob_t store_blob_type =
 };
 
 
-static int write_database_blob(void *closure, atom_t a, int flags) {
+static int write_named_graph_blob(void *closure, atom_t a, int flags) {
     IOSTREAM *out = closure;
-    char* contents = "#<database>";
+    char* contents = "#<named_graph>";
     Sfwrite(contents, 1, strlen(contents), out);
     return TRUE;
 }
 
-static int release_database_blob(atom_t a) {
+static int release_named_graph_blob(atom_t a) {
     void* db = PL_blob_data(a, NULL, NULL);
     cleanup_db(db);
     return TRUE;
 }
 
-PL_blob_t database_blob_type =
+PL_blob_t named_graph_blob_type =
 {
     PL_BLOB_MAGIC,
     PL_BLOB_NOCOPY,
-    "database",
+    "named_graph",
     /*
       int           (*release)(atom_t a);
       int           (*compare)(atom_t a, atom_t b);
       int           (*write)(IOSTREAM *s, atom_t a, int flags);
       void          (*acquire)(atom_t a);
     */
-    &release_database_blob,
+    &release_named_graph_blob,
     NULL,
-    &write_database_blob,
+    &write_named_graph_blob,
     NULL,
 };
 

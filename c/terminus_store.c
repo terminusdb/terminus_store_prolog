@@ -26,7 +26,7 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     PL_succeed;
 }
 
-static foreign_t pl_create_database(term_t store_blob, term_t db_name_term, term_t db_term) {
+static foreign_t pl_create_named_graph(term_t store_blob, term_t db_name_term, term_t db_term) {
     void* store = check_blob_type(store_blob, &store_blob_type);
     char* db_name = check_string_or_atom_term(db_name_term);
 
@@ -35,16 +35,16 @@ static foreign_t pl_create_database(term_t store_blob, term_t db_name_term, term
     }
 
     char* err;
-    void* db_ptr = create_database(store, db_name, &err);
+    void* db_ptr = create_named_graph(store, db_name, &err);
     // Decent error handling, not only checking for null
     if (db_ptr == NULL) {
         return throw_rust_err(err);
     }
-    PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
+    PL_unify_blob(db_term, db_ptr, 0, &named_graph_blob_type);
     PL_succeed;
 }
 
-static foreign_t pl_open_database(term_t store_blob, term_t db_name_term, term_t db_term) {
+static foreign_t pl_open_named_graph(term_t store_blob, term_t db_name_term, term_t db_term) {
     void* store = check_blob_type(store_blob, &store_blob_type);
     char* db_name = check_string_or_atom_term(db_name_term);
 
@@ -53,7 +53,7 @@ static foreign_t pl_open_database(term_t store_blob, term_t db_name_term, term_t
     }
 
     char* err;
-    void* db_ptr = open_database(store, db_name, &err);
+    void* db_ptr = open_named_graph(store, db_name, &err);
     if (db_ptr == NULL) {
         if (err != NULL) {
             return throw_rust_err(err);
@@ -61,16 +61,16 @@ static foreign_t pl_open_database(term_t store_blob, term_t db_name_term, term_t
         PL_fail;
     }
     else {
-        PL_unify_blob(db_term, db_ptr, 0, &database_blob_type);
+        PL_unify_blob(db_term, db_ptr, 0, &named_graph_blob_type);
         PL_succeed;
     }
 }
 
-static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
-    void* database = check_blob_type(database_blob_term, &database_blob_type);
+static foreign_t pl_head(term_t named_graph_blob_term, term_t layer_term) {
+    void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
 
     char* err;
-    void* layer_ptr = database_get_head(database, &err);
+    void* layer_ptr = named_graph_get_head(named_graph, &err);
     if (layer_ptr == NULL) {
         if (err == NULL) {
             PL_fail;
@@ -86,12 +86,12 @@ static foreign_t pl_head(term_t database_blob_term, term_t layer_term) {
     PL_succeed;
 }
 
-static foreign_t pl_set_head(term_t database_blob_term, term_t layer_blob_term) {
-    void* database = check_blob_type(database_blob_term, &database_blob_type);
+static foreign_t pl_set_head(term_t named_graph_blob_term, term_t layer_blob_term) {
+    void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
     void* layer = check_blob_type(layer_blob_term, &layer_blob_type);
 
     char* err;
-    if (database_set_head(database, layer, &err)) {
+    if (named_graph_set_head(named_graph, layer, &err)) {
         PL_succeed;
     }
     else {
@@ -99,15 +99,15 @@ static foreign_t pl_set_head(term_t database_blob_term, term_t layer_blob_term) 
     }
 }
 
-static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t builder_term) {
-    if (PL_term_type(layer_or_database_or_store_term) == PL_VARIABLE) {
-        return throw_instantiation_err(layer_or_database_or_store_term);
+static foreign_t pl_open_write(term_t layer_or_named_graph_or_store_term, term_t builder_term) {
+    if (PL_term_type(layer_or_named_graph_or_store_term) == PL_VARIABLE) {
+        return throw_instantiation_err(layer_or_named_graph_or_store_term);
     }
 
     PL_blob_t* blob_type;
     void* blob;
-    if (!PL_get_blob(layer_or_database_or_store_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type && blob_type != &database_blob_type)) {
-        return throw_type_error(layer_or_database_or_store_term, "layer");
+    if (!PL_get_blob(layer_or_named_graph_or_store_term, &blob, NULL, &blob_type) || (blob_type != &store_blob_type && blob_type != &layer_blob_type && blob_type != &named_graph_blob_type)) {
+        return throw_type_error(layer_or_named_graph_or_store_term, "layer");
     }
 
     if (PL_term_type(builder_term) != PL_VARIABLE) {
@@ -122,8 +122,8 @@ static foreign_t pl_open_write(term_t layer_or_database_or_store_term, term_t bu
     else if (blob_type == &layer_blob_type) {
         builder_ptr = layer_open_write(blob, &err);
     }
-    else if (blob_type == &database_blob_type) {
-        builder_ptr = database_open_write(blob, &err);
+    else if (blob_type == &named_graph_blob_type) {
+        builder_ptr = named_graph_open_write(blob, &err);
     }
     else {
         abort();
@@ -715,10 +715,10 @@ install()
                         pl_open_memory_store, 0);
     PL_register_foreign("open_directory_store", 2,
                         pl_open_directory_store, 0);
-    PL_register_foreign("create_database", 3,
-                        pl_create_database, 0);
-    PL_register_foreign("open_database", 3,
-                        pl_open_database, 0);
+    PL_register_foreign("create_named_graph", 3,
+                        pl_create_named_graph, 0);
+    PL_register_foreign("open_named_graph", 3,
+                        pl_open_named_graph, 0);
     PL_register_foreign("head", 2,
                         pl_head, 0);
     PL_register_foreign("nb_set_head", 2,

@@ -31,7 +31,7 @@ fn error_to_cstring(error: io::Error) -> CString {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn create_database(
+pub unsafe extern "C" fn create_named_graph(
     store_ptr: *mut c_void,
     name: *mut c_char,
     err: *mut *mut c_char,
@@ -43,8 +43,8 @@ pub unsafe extern "C" fn create_database(
 
     // Safe because we expect the swipl pointers to be decent
     match (*store).create(db_name) {
-        Ok(database) => {
-            Box::into_raw(Box::new(database))
+        Ok(named_graph) => {
+            Box::into_raw(Box::new(named_graph))
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
@@ -54,7 +54,7 @@ pub unsafe extern "C" fn create_database(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn open_database(
+pub unsafe extern "C" fn open_named_graph(
     store: *mut SyncStore,
     name: *mut c_char,
     err: *mut *mut c_char,
@@ -65,9 +65,9 @@ pub unsafe extern "C" fn open_database(
 
     // Safe because we expect the swipl pointers to be decent
     match (*store).open(db_name) {
-        Ok(Some(database)) => {
+        Ok(Some(named_graph)) => {
             *err = std::ptr::null_mut();
-            Box::into_raw(Box::new(database))
+            Box::into_raw(Box::new(named_graph))
         }
         Ok(None) => {
             *err = std::ptr::null_mut();
@@ -81,8 +81,8 @@ pub unsafe extern "C" fn open_database(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_get_head(database: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayer {
-    match (*database).head() {
+pub unsafe extern "C" fn named_graph_get_head(named_graph: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayer {
+    match (*named_graph).head() {
         Ok(None) => {
             *err = std::ptr::null_mut();
             std::ptr::null_mut()
@@ -99,8 +99,8 @@ pub unsafe extern "C" fn database_get_head(database: *mut SyncNamedGraph, err: *
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_set_head(database: *mut SyncNamedGraph, layer_ptr: *mut SyncStoreLayer, err: *mut *mut c_char) -> bool {
-    match (*database).set_head(&*layer_ptr) {
+pub unsafe extern "C" fn named_graph_set_head(named_graph: *mut SyncNamedGraph, layer_ptr: *mut SyncStoreLayer, err: *mut *mut c_char) -> bool {
+    match (*named_graph).set_head(&*layer_ptr) {
         Ok(b) => {
             *err = std::ptr::null_mut();
             b
@@ -142,8 +142,8 @@ pub unsafe extern "C" fn layer_open_write(layer: *mut SyncStoreLayer, err: *mut 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn database_open_write(database: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayerBuilder {
-    match (*database)
+pub unsafe extern "C" fn named_graph_open_write(named_graph: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayerBuilder {
+    match (*named_graph)
         .head()
         .and_then(|layer|
                   layer.map(|l|match l.open_write() {
@@ -155,7 +155,7 @@ pub unsafe extern "C" fn database_open_write(database: *mut SyncNamedGraph, err:
                 Box::into_raw(Box::new(builder))
             },
             Ok(None) => {
-                *err = CString::new("Create a base layer first before opening the database for write")
+                *err = CString::new("Create a base layer first before opening the named graph for write")
                     .unwrap()
                     .into_raw();
                 std::ptr::null_mut()
