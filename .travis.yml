@@ -12,7 +12,7 @@ before_script:
   - sudo apt-get install swi-prolog-nox autoconf libtool build-essential
 
 script:
-  - PACKSODIR='make
+  - make
   - swipl -g run_tests -g halt ./prolog/terminus_store.pl
   - swipl -g "show_coverage(run_tests)." -g halt prolog/terminus_store.pl
 
