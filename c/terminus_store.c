@@ -298,7 +298,7 @@ static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t
         return throw_instantiation_err(subject_term);
     }
     else {
-        char* subject = check_atom_term(subject_term);
+        char* subject = check_string_or_atom_term(subject_term);
         uint64_t id = layer_subject_id(layer, subject);
 
         if (id == 0) {
@@ -337,7 +337,7 @@ static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, te
         return throw_instantiation_err(predicate_term);
     }
     else {
-        char* predicate = check_atom_term(predicate_term);
+        char* predicate = check_string_or_atom_term(predicate_term);
         uint64_t id = layer_predicate_id(layer, predicate);
         if (id == 0) {
             PL_fail;
