@@ -13,8 +13,8 @@ before_script:
 
 script:
   - make
-  - swipl -g run_tests -g halt ./prolog/terminus_store.pl
-  - swipl -g "show_coverage(run_tests)." -g halt prolog/terminus_store.pl
+  - swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g run_tests -g halt
+  - swipl -g "assertz(file_search_path(foreign,'$PWD/lib'))" -g "['./prolog/terminus_store.pl']" -g "show_coverage(run_tests)" -g halt
 
 deploy:
   provider: script
