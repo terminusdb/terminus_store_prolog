@@ -9,7 +9,7 @@ before_script:
   - sudo apt-get install swi-prolog-nox autoconf libtool build-essential
 
 script:
-  - make
+  - ./make
   - ./run_swipl -g run_tests -g halt
   - ./run_swipl -g "show_coverage(run_tests)" -g halt
 
