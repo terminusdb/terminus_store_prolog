@@ -11,7 +11,7 @@ Prolog bindings for the [terminus-store](https://github.com/terminusdb/terminus-
 * swi-prolog (with the include headers)
 
 ## Installing
-in a swipl instance, run
+This library is downloadable through SWI-Prolog's package management system. In a swipl instance, run
 ```prolog
 pack_install(terminus_store_prolog).
 ```
@@ -33,7 +33,7 @@ Also, use the provided `./run_swipl` script to start a test instance. This will 
 
 ## Running the tests
 ```
-make
+./make
 ./run_swipl -g run_tests -g halt
 ```
 
