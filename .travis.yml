@@ -19,7 +19,7 @@ script:
 deploy:
   provider: script
   script:
-    - echo "pack_install('https://github.com/terminusdb/terminus_store_prolog/${TRAVIS_TAG}.zip', [interactive=false])." | swipl
+    - echo "pack_install('https://github.com/terminusdb/terminus_store_prolog/archive/${TRAVIS_TAG}.zip', [interactive=false])." | swipl
   on:
     tags: true
   skip_cleanup: true
