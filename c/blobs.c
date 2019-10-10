@@ -1,13 +1,12 @@
 #include <assert.h>
-#include <SWI-Prolog.h>
 #include <SWI-Stream.h>
+#include <SWI-Prolog.h>
 #include <stdio.h>
 #include <string.h>
 #include "terminus_store.h"
 #include "error.h"
 
-static int write_store_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_store_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<store_blob>");
     return TRUE;
 }
@@ -36,8 +35,7 @@ PL_blob_t store_blob_type =
 };
 
 
-static int write_named_graph_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_named_graph_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<named_graph>");
     return TRUE;
 }
@@ -65,8 +63,7 @@ PL_blob_t named_graph_blob_type =
     NULL,
 };
 
-static int write_layer_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_layer_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<layer>");
     return TRUE;
 }
@@ -89,8 +86,7 @@ PL_blob_t layer_blob_type =
     NULL,
 };
 
-static int write_layer_builder_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_layer_builder_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<layer_builder>");
     return TRUE;
 }
@@ -111,8 +107,7 @@ PL_blob_t layer_builder_blob_type =
     &write_layer_builder_blob,
 };
 
-static int write_subject_lookup_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_subject_lookup_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<subject_lookup>");
     return TRUE;
 }
@@ -133,8 +128,7 @@ PL_blob_t subject_lookup_blob_type =
     &write_subject_lookup_blob,
 };
 
-static int write_subject_predicate_lookup_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_subject_predicate_lookup_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<subject_predicate_lookup>");
     return TRUE;
 }
@@ -155,8 +149,7 @@ PL_blob_t subject_predicate_lookup_blob_type =
     &write_subject_predicate_lookup_blob,
 };
 
-static int write_predicate_lookup_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_predicate_lookup_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<predicate_lookup>");
     return TRUE;
 }
@@ -177,8 +170,7 @@ PL_blob_t predicate_lookup_blob_type =
     &write_predicate_lookup_blob,
 };
 
-static int write_object_lookup_blob(void *closure, atom_t a, int flags) {
-    IOSTREAM *out = closure;
+static int write_object_lookup_blob(IOSTREAM *out, atom_t a, int flags) {
     Sfprintf(out, "<object_lookup>");
     return TRUE;
 }
