@@ -347,8 +347,40 @@ pub unsafe extern "C" fn layer_lookup_subject(layer: *mut SyncStoreLayer, subjec
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_lookup_subject_addition(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void {
+    match (*layer).lookup_subject_addition(subject) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_lookup_subject_removal(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void {
+    match (*layer).lookup_subject_removal(subject) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_lookup_predicate(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
     match (*layer).lookup_predicate(predicate) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_lookup_predicate_addition(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    match (*layer).lookup_predicate_addition(predicate) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_lookup_predicate_removal(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    match (*layer).lookup_predicate_removal(predicate) {
         Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
         None => std::ptr::null_mut()
     }
@@ -363,8 +395,34 @@ pub unsafe extern "C" fn layer_lookup_object(layer: *mut SyncStoreLayer, object:
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_lookup_object_addition(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
+    match (*layer).lookup_object_addition(object) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_lookup_object_removal(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
+    match (*layer).lookup_object_removal(object) {
+        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_subjects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
     Box::into_raw(Box::new(Mutex::new((*layer).subjects()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_subject_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).subject_additions()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_subject_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).subject_removals()))) as *mut c_void
 }
 
 #[no_mangle]
@@ -382,6 +440,16 @@ pub unsafe extern "C" fn layer_predicates_iter(layer: *mut SyncStoreLayer) -> *m
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_predicate_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).predicate_additions()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_predicate_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).predicate_removals()))) as *mut c_void
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn predicates_iter_next(iter: *mut c_void) -> *mut c_void {
     let iter = iter as *mut Mutex<Box<dyn Iterator<Item=Box<dyn ObjectLookup>>>>;
     match (*iter).lock().expect("locking should succeed").next() {
@@ -393,6 +461,16 @@ pub unsafe extern "C" fn predicates_iter_next(iter: *mut c_void) -> *mut c_void 
 #[no_mangle]
 pub unsafe extern "C" fn layer_objects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
     Box::into_raw(Box::new(Mutex::new((*layer).objects()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_object_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).object_additions()))) as *mut c_void
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_object_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    Box::into_raw(Box::new(Mutex::new((*layer).object_removals()))) as *mut c_void
 }
 
 #[no_mangle]

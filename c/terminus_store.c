@@ -472,6 +472,72 @@ static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term
     }
 }
 
+static foreign_t pl_layer_subject_additions(term_t layer_term, term_t subject_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_subject_additions_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_subjects_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = subjects_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(subject_lookup_term, next, 0, &subject_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_subject_removals(term_t layer_term, term_t subject_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_subject_removals_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_subjects_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = subjects_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(subject_lookup_term, next, 0, &subject_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
 static foreign_t pl_layer_lookup_subject(term_t layer_term, term_t subject_term, term_t subject_lookup_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     uint64_t id;
@@ -480,6 +546,38 @@ static foreign_t pl_layer_lookup_subject(term_t layer_term, term_t subject_term,
     }
 
     void* subject_lookup = layer_lookup_subject(layer, (uint64_t) id);
+    if (subject_lookup) {
+        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_subject_addition(term_t layer_term, term_t subject_term, term_t subject_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(subject_term, &id)) {
+        PL_fail;
+    }
+
+    void* subject_lookup = layer_lookup_subject_addition(layer, (uint64_t) id);
+    if (subject_lookup) {
+        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_subject_removal(term_t layer_term, term_t subject_term, term_t subject_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(subject_term, &id)) {
+        PL_fail;
+    }
+
+    void* subject_lookup = layer_lookup_subject_removal(layer, (uint64_t) id);
     if (subject_lookup) {
         return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
     }
@@ -520,6 +618,73 @@ static foreign_t pl_layer_predicates(term_t layer_term, term_t predicate_lookup_
         PL_fail;
     }
 }
+
+static foreign_t pl_layer_predicate_additions(term_t layer_term, term_t predicate_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_predicate_additions_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_predicates_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = predicates_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(predicate_lookup_term, next, 0, &predicate_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_predicate_removals(term_t layer_term, term_t predicate_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_predicate_removals_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_predicates_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = predicates_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(predicate_lookup_term, next, 0, &predicate_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
 static foreign_t pl_layer_lookup_predicate(term_t layer_term, term_t predicate_term, term_t predicate_lookup_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     uint64_t id;
@@ -528,6 +693,38 @@ static foreign_t pl_layer_lookup_predicate(term_t layer_term, term_t predicate_t
     }
 
     void* predicate_lookup = layer_lookup_predicate(layer, (uint64_t) id);
+    if (predicate_lookup) {
+        return PL_unify_blob(predicate_lookup_term, predicate_lookup, 0, &predicate_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_predicate_addition(term_t layer_term, term_t predicate_term, term_t predicate_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(predicate_term, &id)) {
+        PL_fail;
+    }
+
+    void* predicate_lookup = layer_lookup_predicate_addition(layer, (uint64_t) id);
+    if (predicate_lookup) {
+        return PL_unify_blob(predicate_lookup_term, predicate_lookup, 0, &predicate_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_predicate_removal(term_t layer_term, term_t predicate_term, term_t predicate_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(predicate_term, &id)) {
+        PL_fail;
+    }
+
+    void* predicate_lookup = layer_lookup_predicate_removal(layer, (uint64_t) id);
     if (predicate_lookup) {
         return PL_unify_blob(predicate_lookup_term, predicate_lookup, 0, &predicate_lookup_blob_type);
     }
@@ -568,6 +765,73 @@ static foreign_t pl_layer_objects(term_t layer_term, term_t object_lookup_term, 
         PL_fail;
     }
 }
+
+static foreign_t pl_layer_object_additions(term_t layer_term, term_t object_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_object_additions_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_objects_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = objects_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(object_lookup_term, next, 0, &object_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_object_removals(term_t layer_term, term_t object_lookup_term, control_t handle) {
+    void* layer;
+    void* iter;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        layer = check_blob_type(layer_term, &layer_blob_type);
+        iter = layer_object_removals_iter(layer);
+        break;
+    case PL_REDO:
+        iter = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        iter = PL_foreign_context_address(handle);
+        cleanup_objects_iter(iter);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    void* next = objects_iter_next(iter);
+    if (next) {
+        if (PL_unify_blob(object_lookup_term, next, 0, &object_lookup_blob_type)) {
+            PL_retry_address(iter);
+        }
+        else {
+            PL_fail;
+        }
+    }
+    else {
+        PL_fail;
+    }
+}
+
 static foreign_t pl_layer_lookup_object(term_t layer_term, term_t object_term, term_t object_lookup_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
     uint64_t id;
@@ -576,6 +840,38 @@ static foreign_t pl_layer_lookup_object(term_t layer_term, term_t object_term, t
     }
 
     void* object_lookup = layer_lookup_object(layer, (uint64_t) id);
+    if (object_lookup) {
+        return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_object_addition(term_t layer_term, term_t object_term, term_t object_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(object_term, &id)) {
+        PL_fail;
+    }
+
+    void* object_lookup = layer_lookup_object_addition(layer, (uint64_t) id);
+    if (object_lookup) {
+        return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
+    }
+    else {
+        PL_fail;
+    }
+}
+
+static foreign_t pl_layer_lookup_object_removal(term_t layer_term, term_t object_term, term_t object_lookup_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    uint64_t id;
+    if (!PL_cvt_i_uint64(object_term, &id)) {
+        PL_fail;
+    }
+
+    void* object_lookup = layer_lookup_object_removal(layer, (uint64_t) id);
     if (object_lookup) {
         return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
     }
@@ -857,6 +1153,36 @@ install()
                         pl_layer_lookup_predicate, 0);
     PL_register_foreign("lookup_object", 3,
                         pl_layer_lookup_object, 0);
+    PL_register_foreign("lookup_subject_addition", 2,
+                        pl_layer_subject_additions, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_predicate_addition", 2,
+                        pl_layer_predicate_additions, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_object_addition", 2,
+                        pl_layer_object_additions, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_subject_removal", 2,
+                        pl_layer_subject_removals, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_predicate_removal", 2,
+                        pl_layer_predicate_removals, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_object_removal", 2,
+                        pl_layer_object_removals, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("lookup_subject", 3,
+                        pl_layer_lookup_subject, 0);
+    PL_register_foreign("lookup_predicate", 3,
+                        pl_layer_lookup_predicate, 0);
+    PL_register_foreign("lookup_object", 3,
+                        pl_layer_lookup_object, 0);
+    PL_register_foreign("lookup_subject_addition", 3,
+                        pl_layer_lookup_subject_addition, 0);
+    PL_register_foreign("lookup_predicate_addition", 3,
+                        pl_layer_lookup_predicate_addition, 0);
+    PL_register_foreign("lookup_object_addition", 3,
+                        pl_layer_lookup_object_addition, 0);
+    PL_register_foreign("lookup_subject_removal", 3,
+                        pl_layer_lookup_subject_removal, 0);
+    PL_register_foreign("lookup_predicate_removal", 3,
+                        pl_layer_lookup_predicate_removal, 0);
+    PL_register_foreign("lookup_object_removal", 3,
+                        pl_layer_lookup_object_removal, 0);
     PL_register_foreign("subject_lookup_subject", 2,
                         pl_subject_lookup_subject, 0);
     PL_register_foreign("subject_lookup_predicate", 2,

@@ -83,13 +83,29 @@ char *layer_id_subject(void *layer, uint64_t id);
 
 void *layer_lookup_object(void *layer, uint64_t object);
 
+void *layer_lookup_object_addition(void *layer, uint64_t object);
+
+void *layer_lookup_object_removal(void *layer, uint64_t object);
+
 void *layer_lookup_predicate(void *layer, uint64_t predicate);
+
+void *layer_lookup_predicate_addition(void *layer, uint64_t predicate);
+
+void *layer_lookup_predicate_removal(void *layer, uint64_t predicate);
 
 void *layer_lookup_subject(void *layer, uint64_t subject);
 
+void *layer_lookup_subject_addition(void *layer, uint64_t subject);
+
+void *layer_lookup_subject_removal(void *layer, uint64_t subject);
+
 uintptr_t layer_node_and_value_count(void *layer);
 
+void *layer_object_additions_iter(void *layer);
+
 uint64_t layer_object_node_id(void *layer, char *object);
+
+void *layer_object_removals_iter(void *layer);
 
 uint64_t layer_object_value_id(void *layer, char *object);
 
@@ -97,13 +113,21 @@ void *layer_objects_iter(void *layer);
 
 void *layer_open_write(void *layer, char **err);
 
+void *layer_predicate_additions_iter(void *layer);
+
 uintptr_t layer_predicate_count(void *layer);
 
 uint64_t layer_predicate_id(void *layer, char *predicate);
 
+void *layer_predicate_removals_iter(void *layer);
+
 void *layer_predicates_iter(void *layer);
 
+void *layer_subject_additions_iter(void *layer);
+
 uint64_t layer_subject_id(void *layer, char *subject);
+
+void *layer_subject_removals_iter(void *layer);
 
 void *layer_subjects_iter(void *layer);
 
