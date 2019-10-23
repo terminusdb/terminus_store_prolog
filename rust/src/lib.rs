@@ -278,6 +278,14 @@ pub unsafe extern "C" fn builder_commit(builder: *mut SyncStoreLayerBuilder, err
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_parent(layer: *mut SyncStoreLayer) -> *mut SyncStoreLayer {
+    match (*layer).parent() {
+        Some(parent) => Box::into_raw(Box::new(parent)),
+        None => std::ptr::null_mut()
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_node_and_value_count(layer: *mut SyncStoreLayer) -> usize {
     (*layer).node_and_value_count()
 }

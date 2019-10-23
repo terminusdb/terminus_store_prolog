@@ -439,6 +439,23 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
     }
 }
 
+static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    if (PL_term_type(layer_term) == PL_VARIABLE) {
+        return throw_instantiation_err(layer_term);
+    }
+
+    void* parent = layer_parent(layer);
+    if (parent == NULL) {
+        PL_fail;
+    }
+
+    PL_unify_blob(parent_term, parent, 0, &layer_blob_type);
+
+    PL_succeed;
+}
+
 static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term, control_t handle) {
     void* layer;
     void* iter;
@@ -1141,6 +1158,8 @@ install()
                         pl_object_value_to_id, 0);
     PL_register_foreign("id_to_object", 4,
                         pl_id_to_object, 0);
+    PL_register_foreign("parent", 2,
+                        pl_layer_parent, 0);
     PL_register_foreign("lookup_subject", 2,
                         pl_layer_subjects, PL_FA_NONDETERMINISTIC);
     PL_register_foreign("lookup_predicate", 2,

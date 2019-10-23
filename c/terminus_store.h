@@ -113,6 +113,8 @@ void *layer_objects_iter(void *layer);
 
 void *layer_open_write(void *layer, char **err);
 
+void *layer_parent(void *layer);
+
 void *layer_predicate_additions_iter(void *layer);
 
 uintptr_t layer_predicate_count(void *layer);

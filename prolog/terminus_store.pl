@@ -27,7 +27,9 @@
               triple_addition/4,
 
               id_triple_removal/4,
-              triple_removal/4]).
+              triple_removal/4,
+
+              parent/2]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 
