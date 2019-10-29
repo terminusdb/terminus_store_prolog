@@ -1095,18 +1095,20 @@ static foreign_t pl_object_lookup_subject_predicate(term_t object_lookup_term, t
         abort();
     }
 
+    fid_t f = PL_open_foreign_frame();
     SubjectPredicatePair next = object_subject_predicate_pairs_iter_next(iter);
-    if (next.subject) {
+    while (next.subject) {
         if (PL_unify_uint64(subject_term, next.subject) && PL_unify_uint64(predicate_term, next.predicate)) {
             PL_retry_address(iter);
         }
         else {
-            PL_fail;
+            next = object_subject_predicate_pairs_iter_next(iter);
+            PL_rewind_foreign_frame(f);
         }
     }
-    else {
-        PL_fail;
-    }
+    PL_close_foreign_frame(f);
+
+    PL_fail;
 }
 
 install_t
