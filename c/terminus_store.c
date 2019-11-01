@@ -1099,6 +1099,7 @@ static foreign_t pl_object_lookup_subject_predicate(term_t object_lookup_term, t
     SubjectPredicatePair next = object_subject_predicate_pairs_iter_next(iter);
     while (next.subject) {
         if (PL_unify_uint64(subject_term, next.subject) && PL_unify_uint64(predicate_term, next.predicate)) {
+            PL_close_foreign_frame(f);
             PL_retry_address(iter);
         }
         else {
