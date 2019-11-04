@@ -68,6 +68,9 @@ static foreign_t pl_open_named_graph(term_t store_blob, term_t db_name_term, ter
 
 static foreign_t pl_head(term_t named_graph_blob_term, term_t layer_term) {
     void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
+    if (PL_term_type(layer_term) != PL_VARIABLE) {
+        PL_fail;
+    }
 
     char* err;
     void* layer_ptr = named_graph_get_head(named_graph, &err);
@@ -264,6 +267,10 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
 }
 
 static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
+    if (PL_term_type(layer_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
 
     char* err;
@@ -446,6 +453,10 @@ static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
         return throw_instantiation_err(layer_term);
     }
 
+    if (PL_term_type(parent_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* parent = layer_parent(layer);
     if (parent == NULL) {
         PL_fail;
@@ -481,10 +492,13 @@ static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_lookup(next);
+            cleanup_subjects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subjects_iter(iter);
         PL_fail;
     }
 }
@@ -514,10 +528,13 @@ static foreign_t pl_layer_subject_additions(term_t layer_term, term_t subject_lo
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_lookup(next);
+            cleanup_subjects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subjects_iter(iter);
         PL_fail;
     }
 }
@@ -547,10 +564,13 @@ static foreign_t pl_layer_subject_removals(term_t layer_term, term_t subject_loo
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_lookup(next);
+            cleanup_subjects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subjects_iter(iter);
         PL_fail;
     }
 }
@@ -562,9 +582,14 @@ static foreign_t pl_layer_lookup_subject(term_t layer_term, term_t subject_term,
         PL_fail;
     }
 
+    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* subject_lookup = layer_lookup_subject(layer, (uint64_t) id);
     if (subject_lookup) {
-        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
+        assert(PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -578,9 +603,14 @@ static foreign_t pl_layer_lookup_subject_addition(term_t layer_term, term_t subj
         PL_fail;
     }
 
+    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* subject_lookup = layer_lookup_subject_addition(layer, (uint64_t) id);
     if (subject_lookup) {
-        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
+        assert(PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -594,9 +624,14 @@ static foreign_t pl_layer_lookup_subject_removal(term_t layer_term, term_t subje
         PL_fail;
     }
 
+    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* subject_lookup = layer_lookup_subject_removal(layer, (uint64_t) id);
     if (subject_lookup) {
-        return PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type);
+        assert(PL_unify_blob(subject_lookup_term, subject_lookup, 0, &subject_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -628,10 +663,13 @@ static foreign_t pl_layer_predicates(term_t layer_term, term_t predicate_lookup_
             PL_retry_address(iter);
         }
         else {
+            cleanup_predicate_lookup(next);
+            cleanup_predicates_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_predicates_iter(iter);
         PL_fail;
     }
 }
@@ -661,10 +699,13 @@ static foreign_t pl_layer_predicate_additions(term_t layer_term, term_t predicat
             PL_retry_address(iter);
         }
         else {
+            cleanup_predicate_lookup(next);
+            cleanup_predicates_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_predicates_iter(iter);
         PL_fail;
     }
 }
@@ -694,10 +735,13 @@ static foreign_t pl_layer_predicate_removals(term_t layer_term, term_t predicate
             PL_retry_address(iter);
         }
         else {
+            cleanup_predicate_lookup(next);
+            cleanup_predicates_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_predicates_iter(iter);
         PL_fail;
     }
 }
@@ -775,10 +819,13 @@ static foreign_t pl_layer_objects(term_t layer_term, term_t object_lookup_term, 
             PL_retry_address(iter);
         }
         else {
+            cleanup_object_lookup(next);
+            cleanup_objects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_objects_iter(iter);
         PL_fail;
     }
 }
@@ -808,10 +855,13 @@ static foreign_t pl_layer_object_additions(term_t layer_term, term_t object_look
             PL_retry_address(iter);
         }
         else {
+            cleanup_object_lookup(next);
+            cleanup_objects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_objects_iter(iter);
         PL_fail;
     }
 }
@@ -841,10 +891,13 @@ static foreign_t pl_layer_object_removals(term_t layer_term, term_t object_looku
             PL_retry_address(iter);
         }
         else {
+            cleanup_object_lookup(next);
+            cleanup_objects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_objects_iter(iter);
         PL_fail;
     }
 }
@@ -856,9 +909,14 @@ static foreign_t pl_layer_lookup_object(term_t layer_term, term_t object_term, t
         PL_fail;
     }
 
+    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* object_lookup = layer_lookup_object(layer, (uint64_t) id);
     if (object_lookup) {
-        return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
+        assert(PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -872,9 +930,14 @@ static foreign_t pl_layer_lookup_object_addition(term_t layer_term, term_t objec
         PL_fail;
     }
 
+    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* object_lookup = layer_lookup_object_addition(layer, (uint64_t) id);
     if (object_lookup) {
-        return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
+        assert(PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -888,9 +951,14 @@ static foreign_t pl_layer_lookup_object_removal(term_t layer_term, term_t object
         PL_fail;
     }
 
+    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* object_lookup = layer_lookup_object_removal(layer, (uint64_t) id);
     if (object_lookup) {
-        return PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type);
+        assert(PL_unify_blob(object_lookup_term, object_lookup, 0, &object_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -928,10 +996,13 @@ static foreign_t pl_subject_lookup_predicate(term_t subject_lookup_term, term_t 
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_predicate_lookup(next);
+            cleanup_subject_predicates_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subject_predicates_iter(iter);
         PL_fail;
     }
 }
@@ -941,9 +1012,14 @@ static foreign_t pl_subject_lookup_lookup_predicate(term_t subject_lookup_term, 
     int64_t id;
     PL_get_int64_ex(predicate_term, &id);
 
+    if (PL_term_type(subject_predicate_lookup_term) != PL_VARIABLE) {
+        PL_fail;
+    }
+
     void* subject_predicate_lookup = subject_lookup_lookup_predicate(subject_lookup, id);
     if (subject_predicate_lookup) {
-        return PL_unify_blob(subject_predicate_lookup_term, subject_predicate_lookup, 0, &subject_predicate_lookup_blob_type);
+        assert(PL_unify_blob(subject_predicate_lookup_term, subject_predicate_lookup, 0, &subject_predicate_lookup_blob_type));
+        PL_succeed;
     }
     else {
         PL_fail;
@@ -1003,10 +1079,12 @@ static foreign_t pl_subject_predicate_lookup_object(term_t subject_predicate_loo
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_predicate_objects_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subject_predicate_objects_iter(iter);
         PL_fail;
     }
 }
@@ -1043,10 +1121,13 @@ static foreign_t pl_predicate_lookup_subject_predicate_pair(term_t predicate_loo
             PL_retry_address(iter);
         }
         else {
+            cleanup_subject_predicate_lookup(next);
+            cleanup_subject_predicates_iter(iter);
             PL_fail;
         }
     }
     else {
+        cleanup_subject_predicates_iter(iter);
         PL_fail;
     }
 }
@@ -1108,6 +1189,8 @@ static foreign_t pl_object_lookup_subject_predicate(term_t object_lookup_term, t
         }
     }
     PL_close_foreign_frame(f);
+
+    cleanup_subject_predicate_objects_iter(iter);
 
     PL_fail;
 }
