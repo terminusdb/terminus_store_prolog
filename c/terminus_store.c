@@ -48,7 +48,7 @@ static foreign_t pl_open_named_graph(term_t store_blob, term_t db_name_term, ter
     void* store = check_blob_type(store_blob, &store_blob_type);
     char* db_name = check_string_or_atom_term(db_name_term);
 
-    if (PL_term_type(db_term) != PL_VARIABLE) {
+    if (!PL_is_variable(db_term)) {
         PL_fail;
     }
 
