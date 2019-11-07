@@ -8,7 +8,7 @@
 #include "blobs.h"
 
 static foreign_t pl_open_memory_store(term_t store_term) {
-    if (PL_term_type(store_term) != PL_VARIABLE) {
+    if (!PL_is_variable(store_term)) {
         PL_fail;
     }
     void* store_ptr = open_memory_store();
@@ -17,7 +17,7 @@ static foreign_t pl_open_memory_store(term_t store_term) {
 }
 
 static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term) {
-    if (PL_term_type(store_term) != PL_VARIABLE) {
+    if (!PL_is_variable(store_term)) {
         PL_fail;
     }
     char* dir_name = check_string_or_atom_term(dir_name_term);
@@ -30,7 +30,7 @@ static foreign_t pl_create_named_graph(term_t store_blob, term_t db_name_term, t
     void* store = check_blob_type(store_blob, &store_blob_type);
     char* db_name = check_string_or_atom_term(db_name_term);
 
-    if (PL_term_type(db_term) != PL_VARIABLE) {
+    if (!PL_is_variable(db_term)) {
         PL_fail;
     }
 
@@ -68,7 +68,7 @@ static foreign_t pl_open_named_graph(term_t store_blob, term_t db_name_term, ter
 
 static foreign_t pl_head(term_t named_graph_blob_term, term_t layer_term) {
     void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
-    if (PL_term_type(layer_term) != PL_VARIABLE) {
+    if (!PL_is_variable(layer_term)) {
         PL_fail;
     }
 
@@ -103,7 +103,7 @@ static foreign_t pl_set_head(term_t named_graph_blob_term, term_t layer_blob_ter
 }
 
 static foreign_t pl_open_write(term_t layer_or_named_graph_or_store_term, term_t builder_term) {
-    if (PL_term_type(layer_or_named_graph_or_store_term) == PL_VARIABLE) {
+    if (PL_is_variable(layer_or_named_graph_or_store_term)) {
         return throw_instantiation_err(layer_or_named_graph_or_store_term);
     }
 
@@ -113,7 +113,7 @@ static foreign_t pl_open_write(term_t layer_or_named_graph_or_store_term, term_t
         return throw_type_error(layer_or_named_graph_or_store_term, "layer");
     }
 
-    if (PL_term_type(builder_term) != PL_VARIABLE) {
+    if (!PL_is_variable(builder_term)) {
         PL_fail;
     }
 
@@ -267,7 +267,7 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
 }
 
 static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
-    if (PL_term_type(layer_term) != PL_VARIABLE) {
+    if (!PL_is_variable(layer_term)) {
         PL_fail;
     }
 
@@ -301,7 +301,7 @@ static foreign_t pl_predicate_count(term_t layer_term, term_t count_term) {
 
 static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(subject_term) == PL_VARIABLE) {
+    if (PL_is_variable(subject_term)) {
         return throw_instantiation_err(subject_term);
     }
     else {
@@ -318,7 +318,7 @@ static foreign_t pl_subject_to_id(term_t layer_term, term_t subject_term, term_t
 
 static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subject_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(id_term) == PL_VARIABLE) {
+    if (PL_is_variable(id_term)) {
         return throw_instantiation_err(id_term);
     }
     else {
@@ -340,7 +340,7 @@ static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subj
 
 static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(predicate_term) == PL_VARIABLE) {
+    if (PL_is_variable(predicate_term)) {
         return throw_instantiation_err(predicate_term);
     }
     else {
@@ -356,7 +356,7 @@ static foreign_t pl_predicate_to_id(term_t layer_term, term_t predicate_term, te
 
 static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t predicate_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(id_term) == PL_VARIABLE) {
+    if (PL_is_variable(id_term)) {
         return throw_instantiation_err(id_term);
     }
     else {
@@ -378,7 +378,7 @@ static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t pr
 
 static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(object_term) == PL_VARIABLE) {
+    if (PL_is_variable(object_term)) {
         return throw_instantiation_err(object_term);
     }
     else {
@@ -395,7 +395,7 @@ static foreign_t pl_object_node_to_id(term_t layer_term, term_t object_term, ter
 
 static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, term_t id_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(object_term) == PL_VARIABLE) {
+    if (PL_is_variable(object_term)) {
         return throw_instantiation_err(object_term);
     }
     else {
@@ -412,7 +412,7 @@ static foreign_t pl_object_value_to_id(term_t layer_term, term_t object_term, te
 
 static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t object_term, term_t object_type_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
-    if (PL_term_type(id_term) == PL_VARIABLE) {
+    if (PL_is_variable(id_term)) {
         return throw_instantiation_err(id_term);
     }
     else {
@@ -449,11 +449,11 @@ static foreign_t pl_id_to_object(term_t layer_term, term_t id_term, term_t objec
 static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
-    if (PL_term_type(layer_term) == PL_VARIABLE) {
+    if (PL_is_variable(layer_term)) {
         return throw_instantiation_err(layer_term);
     }
 
-    if (PL_term_type(parent_term) != PL_VARIABLE) {
+    if (!PL_is_variable(parent_term)) {
         PL_fail;
     }
 
@@ -582,7 +582,7 @@ static foreign_t pl_layer_lookup_subject(term_t layer_term, term_t subject_term,
         PL_fail;
     }
 
-    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(subject_lookup_term)) {
         PL_fail;
     }
 
@@ -603,7 +603,7 @@ static foreign_t pl_layer_lookup_subject_addition(term_t layer_term, term_t subj
         PL_fail;
     }
 
-    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(subject_lookup_term)) {
         PL_fail;
     }
 
@@ -624,7 +624,7 @@ static foreign_t pl_layer_lookup_subject_removal(term_t layer_term, term_t subje
         PL_fail;
     }
 
-    if (PL_term_type(subject_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(subject_lookup_term)) {
         PL_fail;
     }
 
@@ -909,7 +909,7 @@ static foreign_t pl_layer_lookup_object(term_t layer_term, term_t object_term, t
         PL_fail;
     }
 
-    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(object_lookup_term)) {
         PL_fail;
     }
 
@@ -930,7 +930,7 @@ static foreign_t pl_layer_lookup_object_addition(term_t layer_term, term_t objec
         PL_fail;
     }
 
-    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(object_lookup_term)) {
         PL_fail;
     }
 
@@ -951,7 +951,7 @@ static foreign_t pl_layer_lookup_object_removal(term_t layer_term, term_t object
         PL_fail;
     }
 
-    if (PL_term_type(object_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(object_lookup_term)) {
         PL_fail;
     }
 
@@ -1012,7 +1012,7 @@ static foreign_t pl_subject_lookup_lookup_predicate(term_t subject_lookup_term, 
     int64_t id;
     PL_get_int64_ex(predicate_term, &id);
 
-    if (PL_term_type(subject_predicate_lookup_term) != PL_VARIABLE) {
+    if (!PL_is_variable(subject_predicate_lookup_term)) {
         PL_fail;
     }
 
