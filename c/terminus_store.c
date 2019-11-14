@@ -1195,6 +1195,38 @@ static foreign_t pl_object_lookup_subject_predicate(term_t object_lookup_term, t
     PL_fail;
 }
 
+static foreign_t pl_num_store_blobs(term_t num) {
+    return PL_unify_uint64(num, n_store_blobs);
+}
+
+static foreign_t pl_num_named_graph_blobs(term_t num) {
+    return PL_unify_uint64(num, n_named_graph_blobs);
+}
+
+static foreign_t pl_num_layer_blobs(term_t num) {
+    return PL_unify_uint64(num, n_layer_blobs);
+}
+
+static foreign_t pl_num_layer_builder_blobs(term_t num) {
+    return PL_unify_uint64(num, n_layer_builder_blobs);
+}
+
+static foreign_t pl_num_subject_lookup_blobs(term_t num) {
+    return PL_unify_uint64(num, n_subject_lookup_blobs);
+}
+
+static foreign_t pl_num_subject_predicate_lookup_blobs(term_t num) {
+    return PL_unify_uint64(num, n_subject_predicate_lookup_blobs);
+}
+
+static foreign_t pl_num_predicate_lookup_blobs(term_t num) {
+    return PL_unify_uint64(num, n_predicate_lookup_blobs);
+}
+
+static foreign_t pl_num_object_lookup_blobs(term_t num) {
+    return PL_unify_uint64(num, n_object_lookup_blobs);
+}
+
 install_t
 install()
 {
@@ -1312,4 +1344,20 @@ install()
                         pl_object_lookup_has_subject_predicate, 0);
     PL_register_foreign("object_lookup_subject_predicate", 3,
                         pl_object_lookup_subject_predicate, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("num_store_blobs", 1,
+                        pl_num_store_blobs, 0);
+    PL_register_foreign("num_named_graph_blobs", 1,
+                        pl_num_named_graph_blobs, 0);
+    PL_register_foreign("num_layer_blobs", 1,
+                        pl_num_layer_blobs, 0);
+    PL_register_foreign("num_layer_builder_blobs", 1,
+                        pl_num_layer_builder_blobs, 0);
+    PL_register_foreign("num_subject_lookup_blobs", 1,
+                        pl_num_subject_lookup_blobs, 0);
+    PL_register_foreign("num_subject_predicate_lookup_blobs", 1,
+                        pl_num_subject_predicate_lookup_blobs, 0);
+    PL_register_foreign("num_predicate_lookup_blobs", 1,
+                        pl_num_predicate_lookup_blobs, 0);
+    PL_register_foreign("num_object_lookup_blobs", 1,
+                        pl_num_object_lookup_blobs, 0);
 }

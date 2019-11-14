@@ -29,7 +29,9 @@
               id_triple_removal/4,
               triple_removal/4,
 
-              parent/2]).
+              parent/2,
+
+              blob_allocations/1]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 
@@ -388,6 +390,23 @@ triple_removal(Layer, Subject, Predicate, Object) :-
     (   ground(Object)
     ->  true
     ;   object_id(Layer,Object, O_Id)).
+
+blob_allocations(allocations{stores:Stores,
+                             named_graphs:Named_Graphs,
+                             layers:Layers,
+                             layer_builders:Layer_Builders,
+                             subject_lookups:Subject_Lookups,
+                             subject_predicate_lookups:Subject_Predicate_Lookups,
+                             predicate_lookups:Predicate_Lookups,
+                             object_lookups:Object_Lookups}) :-
+    num_store_blobs(Stores),
+    num_named_graph_blobs(Named_Graphs),
+    num_layer_blobs(Layers),
+    num_layer_builder_blobs(Layer_Builders),
+    num_subject_lookup_blobs(Subject_Lookups),
+    num_subject_predicate_lookup_blobs(Subject_Predicate_Lookups),
+    num_predicate_lookup_blobs(Predicate_Lookups),
+    num_object_lookup_blobs(Object_Lookups).
 
 :- begin_tests(terminus_store).
 
