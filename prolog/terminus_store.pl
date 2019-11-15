@@ -204,11 +204,11 @@ triple(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
     ->  subject_id(Layer, Subject, S_Id)
     ;   true),
-    
+
     (   ground(Predicate)
     ->  predicate_id(Layer, Predicate, P_Id)
     ;   true),
-    
+
     (   ground(Object)
     ->  object_id(Layer, Object, O_Id)
     ;   true),
