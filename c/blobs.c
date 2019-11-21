@@ -47,6 +47,10 @@ static void acquire_named_graph_blob(atom_t a) {
 }
 
 static int write_named_graph_blob(IOSTREAM *out, atom_t a, int flags) {
+    //void* named_graph = PL_blob_data(a, NULL, NULL);
+    //char* name = named_graph_get_name(named_graph);
+    //Sfprintf(out, "<named_graph %s>", name);
+    //cleanup_cstring(name);
     Sfprintf(out, "<named_graph>");
     return TRUE;
 }
@@ -81,7 +85,10 @@ static void acquire_layer_blob(atom_t a) {
 }
 
 static int write_layer_blob(IOSTREAM *out, atom_t a, int flags) {
-    Sfprintf(out, "<layer>");
+    void* layer = PL_blob_data(a, NULL, NULL);
+    char* layer_id = layer_get_id(layer);
+    Sfprintf(out, "<layer %s>", layer_id);
+    cleanup_cstring(layer_id);
     return TRUE;
 }
 
@@ -110,7 +117,10 @@ static void acquire_layer_builder_blob(atom_t a) {
 }
 
 static int write_layer_builder_blob(IOSTREAM *out, atom_t a, int flags) {
-    Sfprintf(out, "<layer_builder>");
+    void* builder = PL_blob_data(a, NULL, NULL);
+    char* layer_id = layer_builder_get_id(builder);
+    Sfprintf(out, "<builder %s>", layer_id);
+    cleanup_cstring(layer_id);
     return TRUE;
 }
 

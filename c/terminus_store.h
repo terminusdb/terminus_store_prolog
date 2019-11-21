@@ -75,6 +75,10 @@ void cleanup_subjects_iter(void *iter);
 
 void *create_named_graph(void *store_ptr, char *name, char **err);
 
+char *layer_builder_get_id(void *builder);
+
+char *layer_get_id(void *layer);
+
 char *layer_id_object(void *layer, uint64_t id, uint8_t *object_type);
 
 char *layer_id_predicate(void *layer, uint64_t id);

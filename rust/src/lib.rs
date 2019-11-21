@@ -7,6 +7,7 @@ use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,
     SubjectPredicateLookup, PredicateLookup, ObjectLookup
 };
+use terminus_store::storage::name_to_string;
 use terminus_store::store::sync::*;
 
 #[no_mangle]
@@ -80,6 +81,11 @@ pub unsafe extern "C" fn open_named_graph(
     }
 }
 
+//#[no_mangle]
+//pub unsafe extern "C" fn named_graph_get_name(named_graph: *mut SyncNamedGraph) -> *mut c_char {
+//    CString::new((*named_graph).name()).into_raw()
+//}
+
 #[no_mangle]
 pub unsafe extern "C" fn named_graph_get_head(named_graph: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayer {
     match (*named_graph).head() {
@@ -125,6 +131,16 @@ pub unsafe extern "C" fn store_create_base_layer(store: *mut SyncStore, err: *mu
             std::ptr::null_mut()
         }
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_builder_get_id(builder: *mut SyncStoreLayerBuilder) -> *mut c_char {
+    CString::new(name_to_string((*builder).name())).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_get_id(layer: *mut SyncStoreLayer) -> *mut c_char {
+    CString::new(name_to_string((*layer).name())).unwrap().into_raw()
 }
 
 #[no_mangle]
