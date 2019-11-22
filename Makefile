@@ -2,7 +2,6 @@ RUST_LIB_NAME = terminus_store_prolog
 RUST_LIB = lib$(RUST_LIB_NAME).$(SOEXT)
 RUST_TARGET=release
 RUST_TARGET_DIR = rust/target/$(RUST_TARGET)/
-SOEXT = so 
 CC = gcc
 ARCH = 
 TARGET = $(PACKSODIR)/libterminus_store.$(SOEXT)
