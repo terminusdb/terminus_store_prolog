@@ -41,11 +41,12 @@ Also, use the provided `./run_swipl` script to start a test instance. This will 
 ## Examples
 
 ### Creating a named graph and adding a triple
+Create a new directory (`testdir` in this example), then do the following:
 
 ```prolog
 open_directory_store("testdir", Store),
 open_write(Store, Builder),
-open_named_graph(Store, "sometestdb", DB),
+create_named_graph(Store, "sometestdb", DB),
 nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
 nb_commit(Builder, Layer),
 nb_set_head(DB, Layer).
