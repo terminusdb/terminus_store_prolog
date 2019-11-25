@@ -413,7 +413,7 @@ blob_allocations(allocations{stores:Stores,
 clean :-
     delete_directory_and_contents("testdir").
 
-createng() :-
+createng :-
     make_directory("testdir"),
     open_directory_store("testdir", X),
     create_named_graph(X, "sometestdb", _).
