@@ -99,6 +99,17 @@ static int release_layer_blob(atom_t a) {
     return TRUE;
 }
 
+static int compare_layer_blob(atom_t a, atom_t b) {
+    void* layer_a = PL_blob_data(a, NULL, NULL);
+    void* layer_b = PL_blob_data(b, NULL, NULL);
+    char* layer_id_a = layer_get_id(layer_a);
+    char* layer_id_b = layer_get_id(layer_b);
+    int compare = strcmp(layer_id_a, layer_id_b);
+    cleanup_cstring(layer_id_a);
+    cleanup_cstring(layer_id_b);
+    return compare;
+}
+
 
 PL_blob_t layer_blob_type =
 {
@@ -106,7 +117,7 @@ PL_blob_t layer_blob_type =
     PL_BLOB_NOCOPY,
     "layer",
     &release_layer_blob,
-    NULL,
+    &compare_layer_blob,
     &write_layer_blob,
     &acquire_layer_blob,
 };
