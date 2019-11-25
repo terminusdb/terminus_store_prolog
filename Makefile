@@ -31,5 +31,5 @@ release: build
 install::
 
 clean:
-	rm -rf *.so lib buildenv.sh
+	rm -rf *.$(SOEXT) lib buildenv.sh
 	cd rust; cargo clean
