@@ -81,10 +81,10 @@ pub unsafe extern "C" fn open_named_graph(
     }
 }
 
-//#[no_mangle]
-//pub unsafe extern "C" fn named_graph_get_name(named_graph: *mut SyncNamedGraph) -> *mut c_char {
-//    CString::new((*named_graph).name()).into_raw()
-//}
+#[no_mangle]
+pub unsafe extern "C" fn named_graph_get_name(named_graph: *mut SyncNamedGraph) -> *mut c_char {
+    CString::new((*named_graph).name()).unwrap().into_raw()
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn named_graph_get_head(named_graph: *mut SyncNamedGraph, err: *mut *mut c_char) -> *mut SyncStoreLayer {

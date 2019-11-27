@@ -47,11 +47,10 @@ static void acquire_named_graph_blob(atom_t a) {
 }
 
 static int write_named_graph_blob(IOSTREAM *out, atom_t a, int flags) {
-    //void* named_graph = PL_blob_data(a, NULL, NULL);
-    //char* name = named_graph_get_name(named_graph);
-    //Sfprintf(out, "<named_graph %s>", name);
-    //cleanup_cstring(name);
-    Sfprintf(out, "<named_graph>");
+    void* named_graph = PL_blob_data(a, NULL, NULL);
+    char* name = named_graph_get_name(named_graph);
+    Sfprintf(out, "<named_graph %s>", name);
+    cleanup_cstring(name);
     return TRUE;
 }
 

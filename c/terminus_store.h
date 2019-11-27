@@ -139,6 +139,8 @@ void *layer_subjects_iter(void *layer);
 
 void *named_graph_get_head(void *named_graph, char **err);
 
+char *named_graph_get_name(void *named_graph);
+
 void *named_graph_open_write(void *named_graph, char **err);
 
 bool named_graph_set_head(void *named_graph, void *layer_ptr, char **err);
