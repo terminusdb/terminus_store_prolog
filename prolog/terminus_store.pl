@@ -53,8 +53,14 @@ nb_add_triple(Builder, Subject, Predicate, value(Object)) :-
     !,
     nb_add_string_value_triple(Builder, Subject, Predicate, Object).
 
-nb_add_triple(_,_,_,_) :-
-    throw('triple must either be numeric, or object must be of format node(..) or value(..)').
+nb_add_triple(_,_,_,Object) :-
+    throw(
+        error(
+            domain_error(oneof([node(), value(), number]), Object),
+                         context(terminus_store:nb_remove_triple/4,
+       'triple must either be numeric, or object must be of format node(..) or value(..)')
+        )).
+
 
 
 /*
@@ -77,8 +83,14 @@ nb_remove_triple(Builder, Subject, Predicate, value(Object)) :-
     !,
     nb_remove_string_value_triple(Builder, Subject, Predicate, Object).
 
-nb_remove_triple(_,_,_,_) :-
-    throw('triple must either be numeric, or object must be of format node(..) or value(..)').
+nb_remove_triple(_,_,_,Object) :-
+    throw(
+        error(
+            domain_error(oneof([node(), value(), number]), Object),
+                         context(terminus_store:nb_remove_triple/4,
+       'triple must either be numeric, or object must be of format node(..) or value(..)')
+        )).
+
 
 /*
  * subject_id(+Layer, +Subject, -Id) is semidet
