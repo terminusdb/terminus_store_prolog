@@ -6,10 +6,10 @@ language: rust
 rust:
   - stable
 
+
 script:
-  - ./make
-  - ./run_swipl -g run_tests -g halt
-  - ./run_swipl -g "show_coverage(run_tests)" -g halt
+  - docker build -t terminusdb/terminus_store_prolog:latest .
+  - docker run -it --rm terminusdb/termius_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
 
 deploy:
   provider: script
