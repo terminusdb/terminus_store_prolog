@@ -331,7 +331,7 @@ static foreign_t pl_id_to_subject(term_t layer_term, term_t id_term, term_t subj
         if (subject == NULL) {
             PL_fail;
         }
-        int result = PL_put_chars(subject_term, PL_STRING|REP_UTF8, -1, subject);
+        int result = PL_unify_chars(subject_term, PL_STRING|REP_UTF8, -1, subject);
         cleanup_cstring(subject);
 
         return result;
@@ -369,7 +369,7 @@ static foreign_t pl_id_to_predicate(term_t layer_term, term_t id_term, term_t pr
         if (predicate == NULL) {
             PL_fail;
         }
-        int result = PL_put_chars(predicate_term, PL_STRING|REP_UTF8, -1, predicate);
+        int result = PL_unify_chars(predicate_term, PL_STRING|REP_UTF8, -1, predicate);
         cleanup_cstring(predicate);
 
         return result;
