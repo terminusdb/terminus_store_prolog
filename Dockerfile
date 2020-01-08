@@ -1,5 +1,6 @@
 FROM swipl:stable
 WORKDIR /usr/lib/swipl/pack/terminus_store_prolog
+COPY . .
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
         git \
