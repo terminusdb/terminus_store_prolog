@@ -1,7 +1,7 @@
 services:
   - docker
 
-language: rust
+language: shell
 
 rust:
   - stable
@@ -9,7 +9,7 @@ rust:
 
 script:
   - docker build -t terminusdb/terminus_store_prolog:latest .
-  - docker run -it --rm terminusdb/termius_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
+  - docker run -it --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
 
 deploy:
   provider: script
