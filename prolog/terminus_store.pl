@@ -601,4 +601,20 @@ test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     setof(X-Y-Z, triple(Layer, X, Y, value(Z)), Bag),
     Bag == ["Subject"-"Predicate"-"Object"].
 
+test(backtracking_test, [cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    create_named_graph(Store, "testdb", DB),
+    nb_add_triple(Builder, "A", "B", node("C")),
+    nb_add_triple(Builder, "A", "D", node("C")),
+    nb_add_triple(Builder, "A", "E", node("C")),
+    nb_add_triple(Builder, "A", "E", node("O")),
+    nb_add_triple(Builder, "A", "D", node("O")),
+    nb_commit(Builder, Layer),
+    nb_set_head(DB, Layer),
+    triple(Layer, Subject, Predicate, Object),
+    triple(Layer, Subject, P, Object),
+    Object = node("O").
+
+
 :- end_tests(terminus_store).
