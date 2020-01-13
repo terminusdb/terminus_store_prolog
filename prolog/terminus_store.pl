@@ -642,9 +642,7 @@ test(backtracking_test, [cleanup(clean), setup(createng)]) :-
     nb_add_triple(Builder, "A", "D", node("O")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer),
-    triple(Layer, Subject, Predicate, Object),
-    triple(Layer, Subject, P, Object),
-    Object = node("O").
 
-
+    findall(P, triple(Layer, "A", P, node("O")), Ps),
+    Ps = ["D", "E"].
 :- end_tests(terminus_store).
