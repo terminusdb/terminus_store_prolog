@@ -20,7 +20,7 @@ Then you can use the library with
 ```prolog
 use_module(library(terminus_store)).
 ```
-## Compiling and running
+## Compiling and running without installing (for testing purposes)
 If you need to compile manually, for example to test a change without reinstalling the pack, follow these instructions.
 
 Use the wrapper script `./make` rather than the Makefile directly. The wrapper script will set up swipl environment variables which the build needs.
