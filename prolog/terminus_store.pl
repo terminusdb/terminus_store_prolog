@@ -29,7 +29,10 @@
               id_triple_removal/4,
               triple_removal/4,
 
-              parent/2]).
+              parent/2,
+
+              layer_to_id/2,
+              store_id_layer/3]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 

@@ -1227,6 +1227,41 @@ static foreign_t pl_num_object_lookup_blobs(term_t num) {
     return PL_unify_uint64(num, n_object_lookup_blobs);
 }
 
+static foreign_t pl_layer_to_id(term_t layer_term, term_t id_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    char* id = layer_get_id(layer);
+    foreign_t result = PL_unify_chars(id_term, PL_STRING|REP_UTF8, -1, id);
+    cleanup_cstring(id);
+
+    return result;
+}
+
+static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t layer_term) {
+    void* store = check_blob_type(store_term, &store_blob_type);
+
+    if (PL_is_variable(id_term)) {
+        if (PL_is_variable(layer_term)) {
+            return throw_instantiation_err(layer_term);
+        }
+
+        return pl_layer_to_id(layer_term, id_term);
+    }
+
+    char* id = check_string_or_atom_term(id_term);
+    char* err;
+    void* layer = store_get_layer_from_id(store, id, &err);
+    if (layer == NULL) {
+        if (err != NULL) {
+            return throw_rust_err(err);
+        }
+
+        PL_fail;
+    }
+
+    return PL_unify_blob(layer_term, layer, 0, &layer_blob_type);
+}
+
 install_t
 install()
 {
@@ -1360,4 +1395,8 @@ install()
                         pl_num_predicate_lookup_blobs, 0);
     PL_register_foreign("num_object_lookup_blobs", 1,
                         pl_num_object_lookup_blobs, 0);
+    PL_register_foreign("layer_to_id", 2,
+                        pl_layer_to_id, 0);
+    PL_register_foreign("store_id_layer", 3,
+                        pl_store_id_layer, 0);
 }

@@ -171,6 +171,8 @@ void *predicates_iter_next(void *iter);
 
 void *store_create_base_layer(void *store, char **err);
 
+void *store_get_layer_from_id(void *store, char *id, char **err);
+
 void *subject_lookup_lookup_predicate(void *subject_lookup, uint64_t predicate);
 
 void *subject_lookup_predicates_iter(void *subject_lookup);

@@ -7,7 +7,7 @@ use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,
     SubjectPredicateLookup, PredicateLookup, ObjectLookup
 };
-use terminus_store::storage::name_to_string;
+use terminus_store::storage::{name_to_string,string_to_name};
 use terminus_store::store::sync::*;
 
 #[no_mangle]
@@ -616,6 +616,26 @@ pub unsafe extern "C" fn object_subject_predicate_pairs_iter_next(iter: *mut c_v
 
     SubjectPredicatePair {
         subject, predicate
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn store_get_layer_from_id(store: *mut SyncStore,
+                                               id: *mut c_char,
+                                               err: *mut *mut c_char) -> *mut SyncStoreLayer {
+    let id_cstr = CStr::from_ptr(id);
+    let id_str = id_cstr.to_str().unwrap();
+
+    match string_to_name(id_str).and_then(|id|(*store).get_layer_from_id(id)) {
+        Ok(Some(layer)) => Box::into_raw(Box::new(layer)),
+        Ok(None) => {
+            *err = std::ptr::null_mut();
+            std::ptr::null_mut()
+        },
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null_mut()
+        }
     }
 }
 
