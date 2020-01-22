@@ -36,11 +36,287 @@
 
 :- use_foreign_library(foreign(libterminus_store)).
 
-/*
- * nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet
- *
- * Add a trible to the builder
- */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% pldocs for the foreign predicates %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%! open_memory_store(-Store:store) is det.
+%
+% Opens an in-memory store and unifies it with Store.
+%
+% @arg Store the returned in-memory store.
+
+%! open_directory_store(+Path:text, -Store:store) is det.
+%
+% Opens a store backed by a directory, and unifies it with Store.
+%
+% This predicate does not check if the directory actually exists, but
+% other store-related predicates will error when used with a store
+% backed by a non-existent directory.
+%
+% @arg Path a file system path to the store directory. This can be either absolute and relative.
+% @arg Store the returned directory store.
+
+%! create_named_graph(+Store:store, +Name:text, -Graph:named_graph) is det.
+%
+% Create a new named graph with the given name, and unifies it with Graph.
+%
+% @arg Store the store to create the graph in.
+% @arg Name the name which the new graph should have.
+% @arg Graph the returned named graph.
+% @throws if a graph with the given name already exists.
+
+%! open_named_graph(+Store:store, +Name:text, -Graph:named_graph) is semidet.
+%
+% Opens an existing named graph with the given name.
+%
+% Fails if no graph with that name exists.
+%
+% @arg Store the store to create the graph in.
+% @arg Name the name of the graph to be opened.
+% @arg Graph the returned named graph.
+
+%! head(+Graph:named_graph, -Layer:layer) is semidet.
+%
+% Retrieve the layer that a named graph points at.
+% This is the equivalent of opening a read transaction with snapshot isolation on a named graph.
+%
+% Fails if the given graph has no head yet.
+%
+% @arg Graph the named graph to retrieve the head layer from.
+% @arg Layer the returned head layer.
+
+%! nb_set_head(+Graph:named_graph, +Layer:layer) is semidet.
+%
+% Set the given layer as the new head of the given graph.
+%
+% Fails if the new layer is not a proper child of the current head.
+%
+% This predicate does not support backtracking.
+%
+% @arg Graph the named graph to set the head layer of.
+% @arg Layer the layer to make the new head of the graph.
+
+%! open_write(+Store_Or_Layer:term, -Builder:layer_builder) is det.
+%
+% Creates a layer builder from either a parent layer, or a store.
+%
+% When Store_Or_Layer is a store, the resulting builder will create a
+% base layer.
+%
+% When Store_Or_Layer is a layer, the resulting builder will create a
+% child layer whose parent is the given layer.
+%
+% @arg Store_Or_layer a store when creating a new base layer, or the parent layer when creating a child layer.
+% @arg Builder a layer builder to create the new layer.
+
+%! nb_add_id_triple(+Builder:layer_builder, +Subject_Id:integer, +Predicate_Id:integer, +Object_Id: integer) is semidet.
+%
+% Add the given subject, predicate and object as a triple to the builder object.
+%
+% This fails if any of the Ids is out of range, or if the triple
+% already exists, either in this builder or in a parent layer.
+%
+% @arg Builder the builder object to add this triple to.
+% @arg Subject_Id the id of the triple subject.
+% @arg Predicate_Id the id of the triple predicate.
+% @arg Object_Id the id of the triple object.
+
+%! nb_add_string_node_triple(+Builder:layer_builder, +Subject:text, +Predicate:text, +Object:text) is semidet.
+%
+% Add the given subject, predicate, and object as a triple to the
+% builder object. The object is interpreted as pointing at a node,
+% rather than being a literal value.
+%
+% This fails if the triple already exists in this builder object or a parent layer.
+%
+% @arg Builder the builder object to add this triple to.
+% @arg Subject the triple subject.
+% @arg Predicate the triple predicate.
+% @arg Object the triple object, which is interpreted as a node.
+
+%! nb_add_string_value_triple(+Builder:layer_builder, +Subject:text, +Predicate:text, +Object:text) is semidet.
+%
+% Add the given subject, predicate, and object as a triple to the
+% builder object. The object is interpreted as a value, rather than a node.
+%
+% This fails if the triple already exists in this builder object or a parent layer.
+%
+% @arg Builder the builder object to add this triple to.
+% @arg Subject the triple subject.
+% @arg Predicate the triple predicate.
+% @arg Object the triple object, which is interpreted as a value.
+
+%! nb_remove_id_triple(+Builder:layer_builder, +Subject_Id:integer, +Predicate_Id:integer, +Object_Id: integer) is semidet.
+%
+% Add the given subject, predicate and object as a triple removal to the builder object.
+%
+% This fails if any of the Ids is out of range, or if the triple does
+% not exist in a parent layer, or if the removal has already been
+% registered in this builder.
+%
+% @arg Builder the builder object to add this triple removal to.
+% @arg Subject_Id the id of the triple subject.
+% @arg Predicate_Id the id of the triple predicate.
+% @arg Object_Id the id of the triple object.
+
+%! nb_remove_string_node_triple(+Builder:layer_builder, +Subject:text, +Predicate:text, +Object:text) is semidet.
+%
+% Add the given subject, predicate, and object as a triple removal to the
+% builder object. The object is interpreted as pointing at a node,
+% rather than being a literal value.
+%
+% This fails if the triple does not exist in a parent layer, or if the
+% removal has already been registered in this builder.
+%
+% @arg Builder the builder object to add this triple removal to.
+% @arg Subject the triple subject.
+% @arg Predicate the triple predicate.
+% @arg Object the triple object, which is interpreted as a node.
+
+%! nb_remove_string_value_triple(+Builder:layer_builder, +Subject:text, +Predicate:text, +Object:text) is semidet.
+%
+% Add the given subject, predicate, and object as a triple removal to
+% the builder object. The object is interpreted as a value, rather
+% than a node.
+%
+% This fails if the triple does not exist in a parent layer, or if the
+% removal has already been registered in this builder.
+%
+% @arg Builder the builder object to add this triple removal to.
+% @arg Subject the triple subject.
+% @arg Predicate the triple predicate.
+% @arg Object the triple object, which is interpreted as a node.
+
+%! nb_commit(+Builder:layer_builder, -Layer:layer) is det.
+%
+% Commit the layer builder, turning it into a layer.
+%
+% @arg Builder the layer builder to commit.
+% @arg Layer the layer that will be returned.
+% @throws if the builder has already been committed.
+
+%! node_and_value_count(+Layer:layer, -Count:integer) is det.
+%
+% Unify Count with the amount of nodes and values known to this layer,
+% including all parent layers.
+%
+% @arg Layer the layer for which to get a count.
+% @arg Count the returned count.
+
+%! predicate_count(+Layer:layer, -Count:integer) is det.
+%
+% Unify Count with the amount of predicates known to this layer,
+% including all parent layers.
+%
+% @arg Layer the layer for which to get a count.
+% @arg Count the returned count.
+
+%! subject_to_id(+Layer:layer, +Subject:text, -Id:integer) is semidet.
+%
+% Convert the given subject to its id representation in the given layer.
+% Fails if this subject is not known in the given layer.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Subject an atom or string containing the subject.
+% @arg Id the id of the subject in the given layer.
+
+%! id_to_subject(Layer:layer, +Id:integer, -Subject:string) is semidet.
+%
+% Convert the given id to a subject using the given layer.
+% Fails if the id is out of range for subjects.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Id the id to convert into a subject.
+% @arg Subject the subject which the id refers to.
+
+%! predicate_to_id(+Layer:layer, +Predicate:text, -Id:integer) is semidet.
+%
+% Convert the given predicate to its id representation in the given layer.
+% Fails if this predicate is not known in the given layer.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Predicate an atom or string containing the predicate.
+% @arg Id the id of the predicate in the given layer.
+
+%! id_to_predicate(Layer:layer, +Id:integer, -Predicate:string) is semidet.
+%
+% Convert the given id to a predicate using the given layer.
+% Fails if the id is out of range for predicates.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Id the id to convert into a predicate.
+% @arg Predicate the predicate which the id refers to.
+
+%! object_node_to_id(+Layer:layer, +Object:text, -Id:integer) is semidet.
+%
+% Convert the given node object to its id representation in the given layer.
+% Fails if this subject is not known in the given layer.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Object an atom or string containing the object. The object is assumed to refer to a node.
+% @arg Id the id of the object in the given layer.
+
+%! object_value_to_id(+Layer:layer, +Object:text, -Id:integer) is semidet.
+%
+% Convert the given value object to its id representation in the given layer.
+% Fails if this subject is not known in the given layer.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Object an atom or string containing the object. The object is assumed to refer to a literal value.
+% @arg Id the id of the object in the given layer.
+
+%! id_to_object(Layer:layer, +Id:integer, -Object:string, -Object_Type:atom) is semidet.
+%
+% Convert the given id to a object using the given layer.
+% Fails if the id is out of range for objects.
+%
+% @arg Layer the layer to use for the conversion.
+% @arg Id the id to convert into a object.
+% @arg Object the object which the id refers to.
+% @arg Object_Type the type of the object, either 'node' or 'value'.
+
+%! parent(+Layer:layer, +Parent:layer) is semidet.
+%
+% Unifies Parent with the parent layer of Layer. Fails if that layer
+% has no parent.
+%
+% @arg Layer the layer for which to do the parent lookup.
+% @arg Parent the retrieved parent layer.
+
+%! lookup_subject(+Layer:layer, -Subject:subject_lookup) is nondet.
+%
+% Unify Subject with a subject lookup. On backtracking, this'll unify
+% with all possible subjects.
+%
+% A subject lookup caches a lookup in a layer so that further
+% operations only have to traverse data relevant to one particular
+% subject.
+%
+% @arg Layer the layer to do the lookup in.
+% @arg Subject the returned subject lookup.
+
+%! lookup_subject(+Layer:layer, +Subject_Id:integer, -Subject:subject_lookup) is semidet.
+%
+% Unify Subject with the subject lookup for the given subject
+% id. Fails if the lookup cannot be done for that id.
+%
+% A subject lookup caches a lookup in a layer so that further
+% operations only have to traverse data relevant to one particular
+% subject.
+%
+% @arg Layer the layer to do the lookup in.
+% @arg Subject_Id the subject id to do the lookup with
+% @arg Subject the returned subject lookup.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% End of foreign predicate pldocs   %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%! nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet
+%
+% Add a triple to the builder.
 nb_add_triple(Builder, Subject, Predicate, Object) :-
     integer(Subject),
     integer(Predicate),
