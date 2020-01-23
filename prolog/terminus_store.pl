@@ -40,7 +40,7 @@
 %%% pldocs for the foreign predicates %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%! open_memory_store(-Store:store) is det.
+%! open_memory_store(-Store:store) is det
 %
 % Opens an in-memory store and unifies it with Store.
 %
@@ -308,7 +308,27 @@
 % @arg Layer the layer to do the lookup in.
 % @arg Subject_Id the subject id to do the lookup with
 % @arg Subject the returned subject lookup.
+%
 
+:- meta_predicate install_debug_hook(3).
+
+%!  install_debug_hook(+DebugPred:callable) is det
+%
+%   Install the argument as a hook to be called when
+%   debug is called **in Rust**.
+%
+%   @arg DebugPred  an arity 3 predicate with args like [[debug/3]]
+%
+
+:- meta_predicate install_log_hook(2).
+
+%!  install_log_hook(+LogPred:callable) is det
+%
+%   Install the argument as a hook to be called when
+%   log is called **in Rust**
+%
+%   @arg LogPred an arity 2 predicate with args like [[http_log/2]]
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%
@@ -727,6 +747,25 @@ blob_allocations(allocations{stores:Stores,
     num_predicate_lookup_blobs(Predicate_Lookups),
     num_object_lookup_blobs(Object_Lookups).
 
+		 /*******************************
+		 *  Rust debug / logging support *
+		 *******************************/
+
+
+rust_debug(Topic, Format, Args) :-
+    debug(Topic, Format, Args).
+
+:- use_module(library(http/http_log)).
+
+rust_log(Format, Args) :-
+    http_log(Format, Args).
+
+install_logging_hooks :-
+    install_debug_hook(terminus_store:rust_debug),
+    install_log_hook(terminus_store:rust_log).
+
+% :- initialization install_logging_hooks.
+
 :- begin_tests(terminus_store).
 
 :- use_module(library(filesex)).
@@ -742,7 +781,6 @@ createng :-
 create_memory_ng(DB) :-
     open_memory_store(X),
     create_named_graph(X, "sometestdb", DB).
-
 
 test(open_memory_store) :-
     open_memory_store(_).
