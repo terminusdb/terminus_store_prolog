@@ -1271,32 +1271,27 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     char *pred_name;
     const char *module_name;
     atom_t module_name_as_atom;
-    printf("into pl_install_debug_hook\n");
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(debug_hook_id, &module, plain)) {
-      printf("past PL_strip_module\n");
       if (PL_get_atom_chars(plain, &pred_name)) {
-        printf("past PL_get_atom_chars\n");
         module_name_as_atom = PL_module_name(module);
 
         if(!module_name_as_atom) {
           printf("didnt get the module name\n");
+          throw_err("pl_install_debug_hook", "couldnt get module name");
         }
 
-        printf("past PL_module_name\n");
         module_name = PL_atom_chars(module_name_as_atom);
-        printf("past PL_get_atom_chars\n");
-        debug_hook = PL_predicate(pred_name, 3, module_name);
-        printf("pred_name %s module name %s\n", pred_name, module_name);
-
+        debug_hook = PL_predicate(pred_name, 2, module_name);
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
+        throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
       }
     } else {
       printf("PL_strip_module failed\n");
+      throw_err("pl_install_debug_hook", "cannot strip module");
     }
-    // error.c Matthijs has a throw_err in error.c
     PL_succeed;
 }
 
@@ -1317,22 +1312,23 @@ static foreign_t pl_install_log_hook(term_t log_hook_id) {
 
         if(!module_name_as_atom) {
           printf("didnt get the module name\n");
+          throw_err("pl_install_log_hook", "couldnt get module name");
         }
 
         printf("past PL_module_name\n");
         module_name = PL_atom_chars(module_name_as_atom);
         printf("past PL_get_atom_chars\n");
-        log_hook = PL_predicate(pred_name, 3, module_name);
+        debug_hook = PL_predicate(pred_name, 1, module_name);
         printf("pred_name %s module name %s\n", pred_name, module_name);
 
-        
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
+        throw_err("pl_install_log_hook", "couldnt get PL_get_atom_chars the pred_name\n");
       }
     } else {
       printf("PL_strip_module failed\n");
+      throw_err("pl_install_log_hook", "cannot strip module");
     }
-    
     PL_succeed;
 }
 

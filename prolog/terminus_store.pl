@@ -310,24 +310,29 @@
 % @arg Subject the returned subject lookup.
 %
 
-:- meta_predicate install_debug_hook(3).
+:- meta_predicate install_debug_hook(2).
 
 %!  install_debug_hook(+DebugPred:callable) is det
 %
 %   Install the argument as a hook to be called when
 %   debug is called **in Rust**.
 %
-%   @arg DebugPred  an arity 3 predicate with args like [[debug/3]]
+%   @arg DebugPred  an arity 2 predicate with args
+%   that are (Topic, Contents), where Topic is a text
+%   representation of a prolog term and Contents is text.
+%   Topic is converted to a term and sent to [[debug/3]]
+%   with format `'~w'`
 %
 
-:- meta_predicate install_log_hook(2).
+:- meta_predicate install_log_hook(1).
 
 %!  install_log_hook(+LogPred:callable) is det
 %
 %   Install the argument as a hook to be called when
 %   log is called **in Rust**
 %
-%   @arg LogPred an arity 2 predicate with args like [[http_log/2]]
+%   @arg LogPred an arity 1 predicate which is sent to
+%   [[http_log/2]] with `'~w'` as first arg.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -752,19 +757,21 @@ blob_allocations(allocations{stores:Stores,
 		 *******************************/
 
 
-rust_debug(Topic, Format, Args) :-
-    debug(Topic, Format, Args).
+rust_debug(TopicText, ContentText) :-
+    text_to_string(TopicText, TopicStr),
+    term_string(Topic, TopicStr),
+    debug(Topic, '~w', [ContentText]).
 
 :- use_module(library(http/http_log)).
 
-rust_log(Format, Args) :-
-    http_log(Format, Args).
+rust_log(ContentText) :-
+    http_log('~N~w~n', [ContentText]).
 
 install_logging_hooks :-
     install_debug_hook(terminus_store:rust_debug),
     install_log_hook(terminus_store:rust_log).
 
-% :- initialization install_logging_hooks.
+:- initialization install_logging_hooks.
 
 :- begin_tests(terminus_store).
 
