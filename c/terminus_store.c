@@ -1292,6 +1292,10 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
       printf("PL_strip_module failed\n");
       throw_err("pl_install_debug_hook", "cannot strip module");
     }
+
+    if(aggravation_wrapper(2, 2) != 4)
+      printf("Nuts, aggravation not working\n");
+    
     PL_succeed;
 }
 

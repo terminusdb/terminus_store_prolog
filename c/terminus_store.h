@@ -5,6 +5,8 @@ typedef struct {
   uint64_t predicate;
 } SubjectPredicatePair;
 
+int32_t aggravation_wrapper(int32_t first, int32_t second);
+
 bool builder_add_id_triple(void *builder,
                            uint64_t subject,
                            uint64_t predicate,

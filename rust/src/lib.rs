@@ -3,6 +3,17 @@ use std::os::raw::{c_char, c_void};
 use std::io;
 use std::sync::Mutex;
 
+
+use terminus_store::logging::{
+    aggravation
+};
+
+#[no_mangle]
+pub unsafe extern "C" fn aggravation_wrapper(first: i32, second: i32) -> i32
+{
+	aggravation(first, second)
+}
+
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,
     SubjectPredicateLookup, PredicateLookup, ObjectLookup
