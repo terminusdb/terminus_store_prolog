@@ -4,15 +4,62 @@ use std::io;
 use std::sync::Mutex;
 
 
+extern "C" {
+    // Our C function definitions
+    pub fn prolog_debug_wrapper(
+        hook: *const c_void,
+        topic: *const c_char,
+        comment:  *const c_char) -> ();
+}
+
 use terminus_store::logging::{
-    aggravation
+    aggravation,
+    DebugSink
 };
 
+// TODO this isn't right way to do trait
+// A DebugSink that writes the debug info to SWI-Prolog's debug/3
+struct PrologDebug {
+       debug_predicate: *mut c_void
+}
+
+impl PrologDebug {
+    fn new(hook: *mut c_void) -> Self {
+         PrologDebug{debug_predicate: hook}
+    }
+
+    fn debug(&self, topic: &str, comment:&str) -> () {
+       println!("in PrologDebug in tsp/lib.rs, will debug topic {} comment {}", topic, comment);
+       // TODO convert topic and comment to C strings
+       let c_topic = CString::new(topic).expect("CString::new failed to convert topic");
+       let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
+       unsafe {
+       // TODO implement this function in C
+           prolog_debug_wrapper(self.debug_predicate, c_topic.as_ptr(), c_comment.as_ptr())
+       }
+       ()
+    }
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn aggravation_wrapper(first: i32, second: i32) -> i32
+pub unsafe extern "C" fn aggravation_wrapper(
+    first: i32,
+    second: i32,
+    debug_hook_predicate: *mut c_void) -> i32
 {
+
 	aggravation(first, second)
 }
+
+
+/*
+#[no_mangle]
+pub unsafe extern "C" fn prolog_debug_wrapper(
+    debug_hook_predicate: *mut c_void,
+    topic: &str,
+    comment: &str) -> () {
+
+} */
 
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,

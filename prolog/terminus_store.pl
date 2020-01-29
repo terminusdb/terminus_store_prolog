@@ -777,6 +777,11 @@ install_logging_hooks :-
 
 :- use_module(library(filesex)).
 
+		 /*******************************
+		 *     Developer Utilities      *
+		 *******************************/
+
+
 clean :-
     delete_directory_and_contents("testdir").
 

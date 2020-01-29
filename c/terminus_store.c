@@ -1262,6 +1262,19 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
     return PL_unify_blob(layer_term, layer, 0, &layer_blob_type);
 }
 
+           /***********************************
+            *        logging hooks            *
+            ***********************************/
+
+void prolog_debug_wrapper(void *pred,
+                          char *topic,
+                          char *comment) {
+  predicate_t debug_pred = (predicate_t)pred;
+  // TODO assemble the prolog call and PL_call
+  
+  printf("in prolog_debug_wrapper with  %s %s\n", topic, comment);
+}
+
 predicate_t debug_hook = NULL;
 predicate_t log_hook = NULL;
 
@@ -1284,6 +1297,8 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
 
         module_name = PL_atom_chars(module_name_as_atom);
         debug_hook = PL_predicate(pred_name, 2, module_name);
+	if(aggravation_wrapper(2, 2, debug_hook) != 4)
+	  printf("Nuts, aggravation not working\n");
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
         throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
@@ -1293,9 +1308,6 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
       throw_err("pl_install_debug_hook", "cannot strip module");
     }
 
-    if(aggravation_wrapper(2, 2) != 4)
-      printf("Nuts, aggravation not working\n");
-    
     PL_succeed;
 }
 
