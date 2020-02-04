@@ -6,3 +6,5 @@ rust/target/
 \#*\#
 buildenv.sh
 httpd.log
+.\#*.*
+/**/.\#*.*

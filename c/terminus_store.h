@@ -5,6 +5,8 @@ typedef struct {
   uint64_t predicate;
 } SubjectPredicatePair;
 
+void add_debug_hook_wrapper(void *debug_hook_predicate);
+
 int32_t aggravation_wrapper(int32_t first, int32_t second, void *debug_hook_predicate);
 
 bool builder_add_id_triple(void *builder,
@@ -170,6 +172,8 @@ uint64_t predicate_lookup_predicate(void *predicate_lookup);
 void *predicate_lookup_subject_predicate_pairs_iter(void *predicate_lookup);
 
 void *predicates_iter_next(void *iter);
+
+extern void prolog_debug_wrapper(const void *hook, const char *topic, const char *comment);
 
 void *store_create_base_layer(void *store, char **err);
 

@@ -14,31 +14,53 @@ extern "C" {
 
 use terminus_store::logging::{
     aggravation,
-    DebugSink
+    DebugSink,
+    LoggingSink,
+    add_debug_hook,
+    add_logging_hook
 };
 
-// TODO this isn't right way to do trait
+
 // A DebugSink that writes the debug info to SWI-Prolog's debug/3
 struct PrologDebug {
        debug_predicate: *mut c_void
 }
 
+// TODO this isn't right way to do trait
+// TODO Annie think about lifetimes
+
 impl PrologDebug {
+// TODO is this needed?
     fn new(hook: *mut c_void) -> Self {
          PrologDebug{debug_predicate: hook}
     }
+}
 
-    fn debug(&self, topic: &str, comment:&str) -> () {
+impl DebugSink for PrologDebug {
+
+    fn debug(&self, topic: &str, comment:&str) {
        println!("in PrologDebug in tsp/lib.rs, will debug topic {} comment {}", topic, comment);
-       // TODO convert topic and comment to C strings
+
+       // convert topic and comment to C strings
        let c_topic = CString::new(topic).expect("CString::new failed to convert topic");
        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
+
        unsafe {
        // TODO implement this function in C
            prolog_debug_wrapper(self.debug_predicate, c_topic.as_ptr(), c_comment.as_ptr())
        }
        ()
     }
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn add_debug_hook_wrapper(
+    debug_hook_predicate: *mut c_void) {
+println!("At some point lib.rs add_debug_hook_wrapper needs implemented");
+    let dbh: Box<PrologDebug> = Box::new(PrologDebug{debug_predicate: debug_hook_predicate});
+    add_debug_hook(dbh);
+    ()
 }
 
 #[no_mangle]

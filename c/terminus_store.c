@@ -20,9 +20,11 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     if (!PL_is_variable(store_term)) {
         PL_fail;
     }
+    
     char* dir_name = check_string_or_atom_term(dir_name_term);
     void* store_ptr = open_directory_store(dir_name);
     PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
+
     PL_succeed;
 }
 
@@ -1266,16 +1268,15 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
             *        logging hooks            *
             ***********************************/
 
-void prolog_debug_wrapper(void *pred,
-                          char *topic,
-                          char *comment) {
+void prolog_debug_wrapper(const void *pred,
+                          const char *topic,
+                          const char *comment) {
   predicate_t debug_pred = (predicate_t)pred;
   // TODO assemble the prolog call and PL_call
   
   printf("in prolog_debug_wrapper with  %s %s\n", topic, comment);
 }
 
-predicate_t debug_hook = NULL;
 predicate_t log_hook = NULL;
 
 static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
@@ -1284,6 +1285,7 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     char *pred_name;
     const char *module_name;
     atom_t module_name_as_atom;
+    predicate_t debug_hook = NULL;
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(debug_hook_id, &module, plain)) {
@@ -1297,8 +1299,11 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
 
         module_name = PL_atom_chars(module_name_as_atom);
         debug_hook = PL_predicate(pred_name, 2, module_name);
-	if(aggravation_wrapper(2, 2, debug_hook) != 4)
-	  printf("Nuts, aggravation not working\n");
+        // TODO pass debug_hook
+        // ANNIE CURRENT IMPLEMENTATION POINT
+        add_debug_hook_wrapper(debug_hook);
+        //        if(aggravation_wrapper(2, 2, debug_hook) != 4) ANNIE TODO pull this
+        //          printf("Nuts, aggravation not working\n");
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
         throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
@@ -1317,6 +1322,7 @@ static foreign_t pl_install_log_hook(term_t log_hook_id) {
     char *pred_name;
     const char *module_name;
     atom_t module_name_as_atom;
+    predicate_t debug_hook;
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(log_hook_id, &module, plain)) {
