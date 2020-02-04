@@ -768,6 +768,7 @@ rust_log(ContentText) :-
     http_log('~N~w~n', [ContentText]).
 
 install_logging_hooks :-
+    debug(aggravation(test)),  % TODO remove this!
     install_debug_hook(terminus_store:rust_debug),
     install_log_hook(terminus_store:rust_log).
 

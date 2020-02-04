@@ -1268,16 +1268,28 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
             *        logging hooks            *
             ***********************************/
 
-void prolog_debug_wrapper(const void *pred,
+predicate_t log_hook = NULL;
+predicate_t debug_hook = NULL;
+
+void c_debug_via_prolog(
                           const char *topic,
                           const char *comment) {
-  predicate_t debug_pred = (predicate_t)pred;
-  // TODO assemble the prolog call and PL_call
-  
-  printf("in prolog_debug_wrapper with  %s %s\n", topic, comment);
+  term_t refs = PL_new_term_refs(2);
+    printf("in c_debug_via_prolog with  %s %s\n", topic, comment);
+    
+  PL_put_atom_chars(refs, topic);
+  PL_put_string_chars(refs+1, comment);
+
+  qid_t query = PL_open_query(NULL,
+                PL_Q_NORMAL|PL_Q_CATCH_EXCEPTION,
+                debug_hook,
+		refs);
+  if(!PL_next_solution(query)) {
+    println("*** %s %s", topic, comment);
+  }
+  PL_close_query(query);
 }
 
-predicate_t log_hook = NULL;
 
 static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     module_t module = PL_new_module(PL_new_atom("user"));
@@ -1285,7 +1297,6 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     char *pred_name;
     const char *module_name;
     atom_t module_name_as_atom;
-    predicate_t debug_hook = NULL;
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(debug_hook_id, &module, plain)) {
@@ -1299,11 +1310,10 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
 
         module_name = PL_atom_chars(module_name_as_atom);
         debug_hook = PL_predicate(pred_name, 2, module_name);
-        // TODO pass debug_hook
-        // ANNIE CURRENT IMPLEMENTATION POINT
-        add_debug_hook_wrapper(debug_hook);
-        //        if(aggravation_wrapper(2, 2, debug_hook) != 4) ANNIE TODO pull this
-        //          printf("Nuts, aggravation not working\n");
+        rust_install_prolog_debug_hook();
+        if(aggravation_wrapper(2, 2, debug_hook) != 4) {
+                printf("Nuts, aggravation not working\n");
+        }
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
         throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
@@ -1316,13 +1326,14 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     PL_succeed;
 }
 
+
+// TODO this is old, fix it up later
 static foreign_t pl_install_log_hook(term_t log_hook_id) {
     module_t module = PL_new_module(PL_new_atom("user"));
     term_t plain = PL_new_term_ref();
     char *pred_name;
     const char *module_name;
     atom_t module_name_as_atom;
-    predicate_t debug_hook;
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(log_hook_id, &module, plain)) {

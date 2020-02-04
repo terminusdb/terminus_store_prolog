@@ -6,8 +6,7 @@ use std::sync::Mutex;
 
 extern "C" {
     // Our C function definitions
-    pub fn prolog_debug_wrapper(
-        hook: *const c_void,
+    pub fn c_debug_via_prolog(
         topic: *const c_char,
         comment:  *const c_char) -> ();
 }
@@ -20,46 +19,33 @@ use terminus_store::logging::{
     add_logging_hook
 };
 
-
 // A DebugSink that writes the debug info to SWI-Prolog's debug/3
 struct PrologDebug {
-       debug_predicate: *mut c_void
-}
-
-// TODO this isn't right way to do trait
-// TODO Annie think about lifetimes
-
-impl PrologDebug {
-// TODO is this needed?
-    fn new(hook: *mut c_void) -> Self {
-         PrologDebug{debug_predicate: hook}
-    }
 }
 
 impl DebugSink for PrologDebug {
 
     fn debug(&self, topic: &str, comment:&str) {
-       println!("in PrologDebug in tsp/lib.rs, will debug topic {} comment {}", topic, comment);
+       println!("in PrologDebug::debug in tsp/lib.rs, will debug topic {} comment {}", topic, comment);
 
        // convert topic and comment to C strings
        let c_topic = CString::new(topic).expect("CString::new failed to convert topic");
        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
 
        unsafe {
-       // TODO implement this function in C
-           prolog_debug_wrapper(self.debug_predicate, c_topic.as_ptr(), c_comment.as_ptr())
+           c_debug_via_prolog(c_topic.as_ptr(), c_comment.as_ptr())
        }
        ()
     }
 }
 
 
+static DEBUG_SINK_IMPL: PrologDebug = PrologDebug{};
+
 #[no_mangle]
-pub unsafe extern "C" fn add_debug_hook_wrapper(
-    debug_hook_predicate: *mut c_void) {
-println!("At some point lib.rs add_debug_hook_wrapper needs implemented");
-    let dbh: Box<PrologDebug> = Box::new(PrologDebug{debug_predicate: debug_hook_predicate});
-    add_debug_hook(dbh);
+pub unsafe extern "C" fn rust_install_prolog_debug_hook() {
+println!("In rust_install_prolog_debug_hook");
+    add_debug_hook(&DEBUG_SINK_IMPL);
     ()
 }
 
@@ -69,10 +55,9 @@ pub unsafe extern "C" fn aggravation_wrapper(
     second: i32,
     debug_hook_predicate: *mut c_void) -> i32
 {
-
+println!("aggravation_wrapper will call aggravation");
 	aggravation(first, second)
 }
-
 
 /*
 #[no_mangle]
