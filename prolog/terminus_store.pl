@@ -756,7 +756,12 @@ blob_allocations(allocations{stores:Stores,
 		 *  Rust debug / logging support *
 		 *******************************/
 
-
+%!  rust_debug(+TopicText:text, +Content:text) is det
+%
+%   @arg TopicText string rep. of a debug topic, eg "layers(delete_layer)
+%
+%   Our debug provided to the Rust side
+%
 rust_debug(TopicText, ContentText) :-
     text_to_string(TopicText, TopicStr),
     term_string(Topic, TopicStr),
@@ -764,11 +769,14 @@ rust_debug(TopicText, ContentText) :-
 
 :- use_module(library(http/http_log)).
 
+%!  rust_log(+ContentText:text) is det
+%
+%   @arg ContentText contents to be logged
+%
 rust_log(ContentText) :-
     http_log('~N~w~n', [ContentText]).
 
 install_logging_hooks :-
-    debug(aggravation(test)),  % TODO remove this!
     install_debug_hook(terminus_store:rust_debug),
     install_log_hook(terminus_store:rust_log).
 

@@ -9,10 +9,11 @@ extern "C" {
     pub fn c_debug_via_prolog(
         topic: *const c_char,
         comment:  *const c_char) -> ();
+    pub fn c_log_via_prolog(
+        comment:  *const c_char) -> ();
 }
 
 use terminus_store::logging::{
-    aggravation,
     DebugSink,
     LoggingSink,
     add_debug_hook,
@@ -24,10 +25,7 @@ struct PrologDebug {
 }
 
 impl DebugSink for PrologDebug {
-
-    fn debug(&self, topic: &str, comment:&str) {
-       println!("in PrologDebug::debug in tsp/lib.rs, will debug topic {} comment {}", topic, comment);
-
+    fn debug(&self, topic: &str, comment: &str) {
        // convert topic and comment to C strings
        let c_topic = CString::new(topic).expect("CString::new failed to convert topic");
        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
@@ -39,34 +37,35 @@ impl DebugSink for PrologDebug {
     }
 }
 
+// A LoggingSink that writes the debug info to SWI-Prolog's http_log system
+struct PrologLogger {
+}
+
+impl LoggingSink for PrologLogger {
+    fn log(&self, comment: &str) {
+        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
+
+        unsafe {
+            c_log_via_prolog(c_comment.as_ptr())
+        }
+        ()
+    }
+}
 
 static DEBUG_SINK_IMPL: PrologDebug = PrologDebug{};
+static LOGGING_SINK_IMPL: PrologLogger = PrologLogger{};
 
 #[no_mangle]
 pub unsafe extern "C" fn rust_install_prolog_debug_hook() {
-println!("In rust_install_prolog_debug_hook");
     add_debug_hook(&DEBUG_SINK_IMPL);
     ()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn aggravation_wrapper(
-    first: i32,
-    second: i32,
-    debug_hook_predicate: *mut c_void) -> i32
-{
-println!("aggravation_wrapper will call aggravation");
-	aggravation(first, second)
+pub unsafe extern "C" fn rust_install_prolog_log_hook() {
+    add_logging_hook(&LOGGING_SINK_IMPL);
+    ()
 }
-
-/*
-#[no_mangle]
-pub unsafe extern "C" fn prolog_debug_wrapper(
-    debug_hook_predicate: *mut c_void,
-    topic: &str,
-    comment: &str) -> () {
-
-} */
 
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,

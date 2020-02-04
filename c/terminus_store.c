@@ -1268,28 +1268,74 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
             *        logging hooks            *
             ***********************************/
 
+/*
+     Prolog predicate pointers
+     made by install_debug_hook and
+     install_logging_hook
+*/
 predicate_t log_hook = NULL;
 predicate_t debug_hook = NULL;
 
-void c_debug_via_prolog(
-                          const char *topic,
-                          const char *comment) {
-  term_t refs = PL_new_term_refs(2);
-    printf("in c_debug_via_prolog with  %s %s\n", topic, comment);
-    
-  PL_put_atom_chars(refs, topic);
-  PL_put_string_chars(refs+1, comment);
+/*
+    Print a debug message via the
+    Prolog debug/3 system.
 
-  qid_t query = PL_open_query(NULL,
+    topic - string containing the debug/3 topic term, eg "foo(bar)"
+    comment - the message to print
+*/
+void c_debug_via_prolog(
+                        const char *topic,
+                        const char *comment) {
+    if(!debug_hook) {
+        printf("*** %s %s", topic, comment);
+        return;
+    }
+
+    term_t refs = PL_new_term_refs(2);
+
+    PL_put_atom_chars(refs, topic);
+    if(!PL_put_string_chars(refs+1, comment)){
+      printf("didnt convert comment in c_debug_via_prolog\n");
+    }
+
+    qid_t query = PL_open_query(NULL,
                 PL_Q_NORMAL|PL_Q_CATCH_EXCEPTION,
                 debug_hook,
-		refs);
-  if(!PL_next_solution(query)) {
-    println("*** %s %s", topic, comment);
-  }
-  PL_close_query(query);
+                refs);
+    if(!PL_next_solution(query)) {
+        printf("*** %s %s", topic, comment);
+    }
+    PL_close_query(query);
 }
 
+/*
+    Log a message via the
+    Prolog library(http/http_log) system.
+
+    comment - the message to print
+*/
+void c_log_via_prolog(
+                     const char *comment) {
+    if(!log_hook) {
+        printf("*** %s\n", comment);
+        return;
+    }
+
+    term_t ref = PL_new_term_ref();
+
+    if(!PL_put_string_chars(ref, comment)) {
+      printf("cant convert comment in c_log_via_prolog\n");
+    }
+
+    qid_t query = PL_open_query(NULL,
+                PL_Q_NORMAL|PL_Q_CATCH_EXCEPTION,
+                debug_hook,
+                ref);
+    if(!PL_next_solution(query)) {
+        printf("*** %s\n", comment);
+    }
+    PL_close_query(query);
+}
 
 static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     module_t module = PL_new_module(PL_new_atom("user"));
@@ -1300,20 +1346,17 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(debug_hook_id, &module, plain)) {
-      if (PL_get_atom_chars(plain, &pred_name)) {
-        module_name_as_atom = PL_module_name(module);
+        if (PL_get_atom_chars(plain, &pred_name)) {
+            module_name_as_atom = PL_module_name(module);
 
-        if(!module_name_as_atom) {
-          printf("didnt get the module name\n");
-          throw_err("pl_install_debug_hook", "couldnt get module name");
-        }
+            if(!module_name_as_atom) {
+                printf("didnt get the module name\n");
+                throw_err("pl_install_debug_hook", "couldnt get module name");
+            }
 
         module_name = PL_atom_chars(module_name_as_atom);
         debug_hook = PL_predicate(pred_name, 2, module_name);
         rust_install_prolog_debug_hook();
-        if(aggravation_wrapper(2, 2, debug_hook) != 4) {
-                printf("Nuts, aggravation not working\n");
-        }
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
         throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
@@ -1326,8 +1369,6 @@ static foreign_t pl_install_debug_hook(term_t debug_hook_id) {
     PL_succeed;
 }
 
-
-// TODO this is old, fix it up later
 static foreign_t pl_install_log_hook(term_t log_hook_id) {
     module_t module = PL_new_module(PL_new_atom("user"));
     term_t plain = PL_new_term_ref();
@@ -1337,28 +1378,32 @@ static foreign_t pl_install_log_hook(term_t log_hook_id) {
 
     // convert the raw term coming in to a module and a functor name
     if(PL_strip_module(log_hook_id, &module, plain)) {
-      if (PL_get_atom_chars(plain, &pred_name)) {
-        module_name_as_atom = PL_module_name(module);
+        if (PL_get_atom_chars(plain, &pred_name)) {
+            module_name_as_atom = PL_module_name(module);
 
-        if(!module_name_as_atom) {
-          printf("didnt get the module name\n");
-          throw_err("pl_install_log_hook", "couldnt get module name");
-        }
+            if(!module_name_as_atom) {
+                printf("didnt get the module name\n");
+                throw_err("pl_install_log_hook", "couldnt get module name");
+            }
 
         module_name = PL_atom_chars(module_name_as_atom);
-        debug_hook = PL_predicate(pred_name, 1, module_name);
-
+        log_hook = PL_predicate(pred_name, 2, module_name);
+        rust_install_prolog_log_hook();
       } else {
         printf("couldnt get PL_get_atom_chars the pred_name\n");
-        throw_err("pl_install_log_hook", "couldnt get PL_get_atom_chars the pred_name\n");
+        throw_err("pl_install_debug_hook", "couldnt get PL_get_atom_chars the pred_name\n");
       }
     } else {
       printf("PL_strip_module failed\n");
-      throw_err("pl_install_log_hook", "cannot strip module");
+      throw_err("pl_install_debug_hook", "cannot strip module");
     }
+
     PL_succeed;
 }
 
+                /*****************************************
+                 *     Prolog install function           *
+                 ****************************************/
 install_t
 install()
 {
