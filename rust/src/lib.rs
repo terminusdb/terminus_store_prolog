@@ -48,7 +48,6 @@ impl LoggingSink for PrologLogger {
         unsafe {
             c_log_via_prolog(c_comment.as_ptr())
         }
-        ()
     }
 }
 
@@ -58,13 +57,11 @@ static LOGGING_SINK_IMPL: PrologLogger = PrologLogger{};
 #[no_mangle]
 pub unsafe extern "C" fn rust_install_prolog_debug_hook() {
     add_debug_hook(&DEBUG_SINK_IMPL);
-    ()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn rust_install_prolog_log_hook() {
     add_logging_hook(&LOGGING_SINK_IMPL);
-    ()
 }
 
 use terminus_store::layer::{
