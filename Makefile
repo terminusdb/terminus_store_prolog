@@ -26,6 +26,7 @@ debug: build
 
 release: RUST_TARGET = release
 release: CARGO_FLAGS += --release
+release: CFLAGS += -O3
 release: build
 
 install::
