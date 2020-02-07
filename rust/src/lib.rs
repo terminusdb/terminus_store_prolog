@@ -1,13 +1,16 @@
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_void};
+use std::os::raw::{c_char, c_int, c_void};
 use std::io;
+use std::slice;
 use std::sync::Mutex;
+use std::path::Path;
 
 use terminus_store::layer::{
     Layer, StringTriple, IdTriple, ObjectType, SubjectLookup,
     SubjectPredicateLookup, PredicateLookup, ObjectLookup
 };
 use terminus_store::storage::{name_to_string,string_to_name};
+use terminus_store::store;
 use terminus_store::store::sync::*;
 
 #[no_mangle]
@@ -29,6 +32,24 @@ pub unsafe extern "C" fn open_directory_store(
 
 fn error_to_cstring(error: io::Error) -> CString {
     CString::new(format!("{}", error)).unwrap()
+}
+
+pub unsafe extern "C" fn serialize_directory_store(dir: *mut c_char, label_names: *const *const c_char,
+                                                   label_list_length: c_int, layer_ids: *const *const c_char, layer_id_length: c_int) -> *const u8 {
+    let directory = CStr::from_ptr(dir).to_str().unwrap();
+    let directory_path = Path::new(&directory);
+    let label_names: Vec<&str> = slice::from_raw_parts(label_names, label_list_length as usize).iter().map(|x| CStr::from_ptr(*x).to_str().unwrap()).collect();
+    let layer_ids: Vec<&str> = slice::from_raw_parts(layer_ids, layer_id_length as usize).iter().map(|x| CStr::from_ptr(*x).to_str().unwrap()).collect();
+    store::serialize_directory_store(directory_path, label_names, layer_ids).as_ptr()
+}
+
+
+pub unsafe extern "C" fn deserialize_directory_store(tar_path: *mut c_char, directory_store_path: *mut c_char) {
+    let directory = CStr::from_ptr(directory_store_path).to_str().unwrap();
+    let directory_path = Path::new(&directory);
+    let tar = CStr::from_ptr(tar_path).to_str().unwrap();
+    let tar_path = Path::new(&tar);
+    store::deserialize_directory_store(directory_path, tar_path).unwrap()
 }
 
 #[no_mangle]
