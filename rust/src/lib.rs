@@ -3,6 +3,8 @@ use std::io;
 use std::os::raw::{c_char, c_void};
 use std::sync::Mutex;
 
+mod swipl;
+
 extern "C" {
     // Our C function definitions
     pub fn c_debug_via_prolog(topic: *const c_char, comment: *const c_char) -> ();
@@ -58,6 +60,7 @@ use terminus_store::store::sync::*;
 
 #[no_mangle]
 pub unsafe extern "C" fn open_memory_store() -> *mut SyncStore {
+
     let store = open_sync_memory_store();
     Box::into_raw(Box::new(store))
 }

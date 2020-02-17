@@ -10,3 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 terminus-store = "0.9.3"
+
+[build-dependencies]
+bindgen = "0.53"
