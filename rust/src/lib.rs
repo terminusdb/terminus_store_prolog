@@ -4,6 +4,7 @@ use std::os::raw::{c_char, c_void};
 use std::sync::Mutex;
 
 mod swipl;
+mod blob;
 
 extern "C" {
     // Our C function definitions

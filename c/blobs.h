@@ -6,6 +6,7 @@ extern PL_blob_t subject_lookup_blob_type;
 extern PL_blob_t subject_predicate_lookup_blob_type;
 extern PL_blob_t predicate_lookup_blob_type;
 extern PL_blob_t object_lookup_blob_type;
+extern PL_blob_t foo_blob_type;
 
 extern _Atomic uint64_t n_store_blobs;
 extern _Atomic uint64_t n_named_graph_blobs;

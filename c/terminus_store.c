@@ -20,7 +20,7 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     if (!PL_is_variable(store_term)) {
         PL_fail;
     }
-    
+
     char* dir_name = check_string_or_atom_term(dir_name_term);
     void* store_ptr = open_directory_store(dir_name);
     PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
@@ -1401,6 +1401,12 @@ static foreign_t pl_install_log_hook(term_t log_hook_id) {
     PL_succeed;
 }
 
+static foreign_t pl_unify_foo(term_t foo_term) {
+    PL_unify_blob(foo_term, NULL, 0, &foo_blob_type);
+
+    return TRUE;
+}
+
                 /*****************************************
                  *     Prolog install function           *
                  ****************************************/
@@ -1545,4 +1551,6 @@ install()
                         pl_install_debug_hook, 0);
     PL_register_foreign("install_log_hook", 1,
                         pl_install_log_hook, 0);
+    PL_register_foreign("unify_foo", 1,
+                        pl_unify_foo, 0);
 }
