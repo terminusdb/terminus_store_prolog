@@ -1,11 +1,13 @@
 #include <assert.h>
 #include <SWI-Prolog.h>
 #include <SWI-Stream.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "terminus_store.h"
 #include "error.h"
 #include "blobs.h"
+#include "prolog_list.h"
 
 static foreign_t pl_open_memory_store(term_t store_term) {
     if (!PL_is_variable(store_term)) {
@@ -20,11 +22,52 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     if (!PL_is_variable(store_term)) {
         PL_fail;
     }
-    
     char* dir_name = check_string_or_atom_term(dir_name_term);
     void* store_ptr = open_directory_store(dir_name);
     PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
 
+    PL_succeed;
+}
+
+static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_list, term_t label_list, term_t binary_result) {
+    // Both should be a list
+    if (!PL_is_list(layer_id_list) || !PL_is_list(label_list)) {
+        PL_fail;
+    }
+    // TODO: Check if store_dir_term is an atom etc.
+    int layer_list_len = calculate_pl_list_len(layer_id_list);
+    char* store_dir = check_string_or_atom_term(store_dir_term);
+    char** layer_ids = malloc(sizeof(char*) * layer_list_len);
+    term_t layer_id_term = PL_new_term_ref();
+    term_t layer_id_list_copy = PL_copy_term_ref(layer_id_list);
+    int layer_id_idx = 0;
+    while(PL_get_list(layer_id_list_copy, layer_id_term, layer_id_list_copy)) {
+        char *layer_id;
+        if ( PL_get_atom_chars(layer_id_term, &layer_id) ) {
+            layer_ids[layer_id_idx] = layer_id;
+            layer_id_idx = layer_id_idx + 1;
+        }
+        else {
+            PL_fail;
+        }
+    }
+    term_t label_list_copy = PL_copy_term_ref(label_list);
+    term_t label_term = PL_new_term_ref();
+    int label_list_len = calculate_pl_list_len(label_list);
+    char **label_ids = malloc(sizeof(char*) * label_list_len);
+    int label_list_idx = 0;
+    while(PL_get_list(label_list_copy, label_term, label_list_copy)) {
+        char *label;
+        if ( PL_get_atom_chars(label_term, &label) ) {
+            layer_ids[label_list_idx] = label;
+            label_list_idx = label_list_idx + 1;
+        }
+        else {
+            PL_fail;
+        }
+    }
+    unsigned char* tar_gz = serialize_directory_store(store_dir, label_ids, label_list_len, layer_ids, layer_list_len);
+    // TODO: how should I unify a binary string?
     PL_succeed;
 }
 
@@ -1411,6 +1454,8 @@ install()
                         pl_open_memory_store, 0);
     PL_register_foreign("open_directory_store", 2,
                         pl_open_directory_store, 0);
+    PL_register_foreign("serialize_database", 4,
+                        pl_serialize_database, 0);
     PL_register_foreign("create_named_graph", 3,
                         pl_create_named_graph, 0);
     PL_register_foreign("open_named_graph", 3,
