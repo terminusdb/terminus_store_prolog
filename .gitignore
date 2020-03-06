@@ -5,3 +5,6 @@ Cargo.lock
 rust/target/
 \#*\#
 buildenv.sh
+httpd.log
+.\#*.*
+/**/.\#*.*

@@ -18,7 +18,7 @@ build:
 	mkdir -p $(PACKSODIR)
 	cd rust; cargo build $(CARGO_FLAGS)
 	cp $(RUST_TARGET_DIR)/$(RUST_LIB) $(PACKSODIR)
-	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -Wl,-rpath $(CURDIR)/$(PACKSODIR) -l$(RUST_LIB_NAME)
+	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -Wl,-rpath='$$ORIGIN' -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb
@@ -26,6 +26,7 @@ debug: build
 
 release: RUST_TARGET = release
 release: CARGO_FLAGS += --release
+release: CFLAGS += -O3
 release: build
 
 install::

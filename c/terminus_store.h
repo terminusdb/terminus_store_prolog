@@ -43,6 +43,10 @@ bool builder_remove_string_value_triple(void *builder,
                                         char *object_ptr,
                                         char **err);
 
+extern void c_debug_via_prolog(const char *topic, const char *comment);
+
+extern void c_log_via_prolog(const char *comment);
+
 void cleanup_cstring(char *cstring_ptr);
 
 void cleanup_db(void *db);
@@ -168,6 +172,10 @@ uint64_t predicate_lookup_predicate(void *predicate_lookup);
 void *predicate_lookup_subject_predicate_pairs_iter(void *predicate_lookup);
 
 void *predicates_iter_next(void *iter);
+
+void rust_install_prolog_debug_hook(void);
+
+void rust_install_prolog_log_hook(void);
 
 void *store_create_base_layer(void *store, char **err);
 
