@@ -78,6 +78,7 @@ fn error_to_cstring(error: io::Error) -> CString {
     CString::new(format!("{}", error)).unwrap()
 }
 
+#[no_mangle]
 pub unsafe extern "C" fn serialize_directory_store(dir: *mut c_char, label_names: *const *const c_char,
                                                    label_list_length: c_int, layer_ids: *const *const c_char, layer_id_length: c_int) -> *const u8 {
     let directory = CStr::from_ptr(dir).to_str().unwrap();
@@ -88,6 +89,7 @@ pub unsafe extern "C" fn serialize_directory_store(dir: *mut c_char, label_names
 }
 
 
+#[no_mangle]
 pub unsafe extern "C" fn deserialize_directory_store(tar_path: *mut c_char, directory_store_path: *mut c_char) {
     let directory = CStr::from_ptr(directory_store_path).to_str().unwrap();
     let directory_path = Path::new(&directory);
