@@ -46,17 +46,17 @@ static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_li
     term_t layer_id_list_copy = PL_copy_term_ref(layer_id_list);
     int layer_id_idx = 0;
     while(PL_get_list(layer_id_list_copy, layer_id_term, layer_id_list_copy)) {
-        char *layer_id = check_string_or_atom_term(layer_id_term);
+        char* layer_id = check_string_or_atom_term(layer_id_term);
         layer_ids[layer_id_idx] = layer_id;
         layer_id_idx = layer_id_idx + 1;
     }
     term_t label_list_copy = PL_copy_term_ref(label_list);
     term_t label_term = PL_new_term_ref();
     int label_list_len = calculate_pl_list_len(label_list);
-    char **label_names = malloc(sizeof(char*) * label_list_len);
+    char** label_names = malloc(sizeof(char*) * label_list_len);
     int label_list_idx = 0;
     while(PL_get_list(label_list_copy, label_term, label_list_copy)) {
-        char *label = check_string_or_atom_term(label_term);
+        char* label = check_string_or_atom_term(label_term);
         label_names[label_list_idx] = label;
         label_list_idx = label_list_idx + 1;
     }
