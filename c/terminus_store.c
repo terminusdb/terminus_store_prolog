@@ -54,19 +54,19 @@ static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_li
     term_t label_list_copy = PL_copy_term_ref(label_list);
     term_t label_term = PL_new_term_ref();
     int label_list_len = calculate_pl_list_len(label_list);
-    char **label_ids = malloc(sizeof(char*) * label_list_len);
+    char **label_names = malloc(sizeof(char*) * label_list_len);
     int label_list_idx = 0;
     while(PL_get_list(label_list_copy, label_term, label_list_copy)) {
         char *label;
         if ( PL_get_atom_chars(label_term, &label) ) {
-            layer_ids[label_list_idx] = label;
+            label_names[label_list_idx] = label;
             label_list_idx = label_list_idx + 1;
         }
         else {
             PL_fail;
         }
     }
-    unsigned char* tar_gz = serialize_directory_store(store_dir, label_ids, label_list_len, layer_ids, layer_list_len);
+    unsigned char* tar_gz = serialize_directory_store(store_dir, label_names, label_list_len, layer_ids, layer_list_len);
     // TODO: how should I unify a binary string?
     PL_succeed;
 }
