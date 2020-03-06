@@ -179,11 +179,12 @@ void rust_install_prolog_debug_hook(void);
 
 void rust_install_prolog_log_hook(void);
 
-unsigned char *serialize_directory_store(char *dir,
-                                         char **label_names,
-                                         int label_list_length,
-                                         char **layer_ids,
-                                         int layer_id_length);
+int serialize_directory_store(char *dir,
+                              char **label_names,
+                              int label_list_length,
+                              char **layer_ids,
+                              int layer_id_length,
+                              char *filename);
 
 void *store_create_base_layer(void *store, char **err);
 

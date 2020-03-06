@@ -29,27 +29,26 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     PL_succeed;
 }
 
-static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_list, term_t label_list, term_t binary_result) {
+/**
+ * Serialize a database to a serialized filename
+ */
+static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_list, term_t label_list, term_t serialized_filename) {
     // Both should be a list
     if (!PL_is_list(layer_id_list) || !PL_is_list(label_list)) {
-        PL_fail;
+        PL_fail; // TODO: Should return a proper exception
     }
     // TODO: Check if store_dir_term is an atom etc.
     int layer_list_len = calculate_pl_list_len(layer_id_list);
     char* store_dir = check_string_or_atom_term(store_dir_term);
+    char* filename = check_string_or_atom_term(serialized_filename);
     char** layer_ids = malloc(sizeof(char*) * layer_list_len);
     term_t layer_id_term = PL_new_term_ref();
     term_t layer_id_list_copy = PL_copy_term_ref(layer_id_list);
     int layer_id_idx = 0;
     while(PL_get_list(layer_id_list_copy, layer_id_term, layer_id_list_copy)) {
-        char *layer_id;
-        if ( PL_get_atom_chars(layer_id_term, &layer_id) ) {
-            layer_ids[layer_id_idx] = layer_id;
-            layer_id_idx = layer_id_idx + 1;
-        }
-        else {
-            PL_fail;
-        }
+        char *layer_id = check_string_or_atom_term(layer_id_term);
+        layer_ids[layer_id_idx] = layer_id;
+        layer_id_idx = layer_id_idx + 1;
     }
     term_t label_list_copy = PL_copy_term_ref(label_list);
     term_t label_term = PL_new_term_ref();
@@ -57,17 +56,11 @@ static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_li
     char **label_names = malloc(sizeof(char*) * label_list_len);
     int label_list_idx = 0;
     while(PL_get_list(label_list_copy, label_term, label_list_copy)) {
-        char *label;
-        if ( PL_get_atom_chars(label_term, &label) ) {
-            label_names[label_list_idx] = label;
-            label_list_idx = label_list_idx + 1;
-        }
-        else {
-            PL_fail;
-        }
+        char *label = check_string_or_atom_term(label_term);
+        label_names[label_list_idx] = label;
+        label_list_idx = label_list_idx + 1;
     }
-    unsigned char* tar_gz = serialize_directory_store(store_dir, label_names, label_list_len, layer_ids, layer_list_len);
-    // TODO: how should I unify a binary string?
+    serialize_directory_store(store_dir, label_names, label_list_len, layer_ids, layer_list_len, filename);
     PL_succeed;
 }
 

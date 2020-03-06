@@ -1,7 +1,7 @@
 :- module(terminus_store, [
               open_memory_store/1,
               open_directory_store/2,
-
+              serialize_database/4,
               create_named_graph/3,
               open_named_graph/3,
 
@@ -873,6 +873,21 @@ test(write_value_triple, [cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
+
+test(serialize_db, [cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object1"),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object2"),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object3"),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object4"),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object5"),
+    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object6"),
+    nb_commit(Builder, Layer),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_set_head(DB, Layer),
+    layer_to_id(Layer, Layer_ID),
+    serialize_database("testdir", [Layer_ID], ['sometestdb.label'], "test.tar.gz").
 
 test(write_value_triple_memory) :-
     open_memory_store(Store),

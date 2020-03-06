@@ -1,9 +1,12 @@
 use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_uchar, c_int, c_void};
+use std::os::raw::{c_char, c_int, c_void};
 use std::io;
+use std::io::Write;
 use std::slice;
 use std::sync::Mutex;
 use std::path::Path;
+use std::fs::File;
+
 
 extern "C" {
     // Our C function definitions
@@ -80,12 +83,19 @@ fn error_to_cstring(error: io::Error) -> CString {
 
 #[no_mangle]
 pub unsafe extern "C" fn serialize_directory_store(dir: *mut c_char, label_names: *mut *mut c_char,
-                                                   label_list_length: c_int, layer_ids: *mut *mut c_char, layer_id_length: c_int) -> *mut c_uchar {
+                                                   label_list_length: c_int, layer_ids: *mut *mut c_char,
+                                                   layer_id_length: c_int, filename: *mut c_char) -> c_int {
     let directory = CStr::from_ptr(dir).to_str().unwrap();
     let directory_path = Path::new(&directory);
     let label_names: Vec<&str> = slice::from_raw_parts(label_names, label_list_length as usize).iter().map(|x| CStr::from_ptr(*x).to_str().unwrap()).collect();
     let layer_ids: Vec<&str> = slice::from_raw_parts(layer_ids, layer_id_length as usize).iter().map(|x| CStr::from_ptr(*x).to_str().unwrap()).collect();
-    store::serialize_directory_store(directory_path, label_names.as_slice(), layer_ids.as_slice()).as_mut_ptr()
+    let tar_binary: Vec<u8> = store::serialize_directory_store(directory_path, label_names.as_slice(), layer_ids.as_slice());
+    let mut file = File::create(CStr::from_ptr(filename).to_str().unwrap()).unwrap();
+    // TODO: Should return proper exceptions when this fails instead of True or False
+    match file.write(tar_binary.as_slice()) {
+        Ok(_) => 1,
+        _ => 0
+    }
 }
 
 
