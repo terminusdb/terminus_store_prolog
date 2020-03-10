@@ -1,6 +1,7 @@
 :- module(terminus_store, [
               open_memory_store/1,
               open_directory_store/2,
+              deserialize_database/2,
               serialize_database/4,
               create_named_graph/3,
               open_named_graph/3,
