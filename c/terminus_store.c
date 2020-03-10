@@ -30,6 +30,17 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
 }
 
 /**
+ * Deserialize a database from a serialized filename
+ */
+static foreign_t pl_deserialize_database(term_t serialize_file_term, term_t extract_dir_term) {
+    // Both arguments should be an atom or string
+    char* extract_dir = check_string_or_atom_term(extract_dir_term);
+    char* filename = check_string_or_atom_term(serialize_file_term);
+    deserialize_directory_store(filename, extract_dir);
+    PL_succeed;
+}
+
+/**
  * Serialize a database to a serialized filename
  */
 static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_list, term_t label_list, term_t serialized_filename) {
@@ -37,7 +48,6 @@ static foreign_t pl_serialize_database(term_t store_dir_term, term_t layer_id_li
     if (!PL_is_list(layer_id_list) || !PL_is_list(label_list)) {
         PL_fail; // TODO: Should return a proper exception
     }
-    // TODO: Check if store_dir_term is an atom etc.
     int layer_list_len = calculate_pl_list_len(layer_id_list);
     char* store_dir = check_string_or_atom_term(store_dir_term);
     char* filename = check_string_or_atom_term(serialized_filename);
@@ -1449,6 +1459,8 @@ install()
                         pl_open_directory_store, 0);
     PL_register_foreign("serialize_database", 4,
                         pl_serialize_database, 0);
+    PL_register_foreign("deserialize_database", 2,
+                        pl_deserialize_database, 0);
     PL_register_foreign("create_named_graph", 3,
                         pl_create_named_graph, 0);
     PL_register_foreign("open_named_graph", 3,

@@ -100,8 +100,8 @@ pub unsafe extern "C" fn serialize_directory_store(dir: *mut c_char, label_names
 
 
 #[no_mangle]
-pub unsafe extern "C" fn deserialize_directory_store(tar_path: *mut c_char, directory_store_path: *mut c_char) {
-    let directory = CStr::from_ptr(directory_store_path).to_str().unwrap();
+pub unsafe extern "C" fn deserialize_directory_store(tar_path: *mut c_char, extract_path: *mut c_char) {
+    let directory = CStr::from_ptr(extract_path).to_str().unwrap();
     let directory_path = Path::new(&directory);
     let tar = CStr::from_ptr(tar_path).to_str().unwrap();
     let tar_path = Path::new(&tar);

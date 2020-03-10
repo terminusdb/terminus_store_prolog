@@ -79,7 +79,7 @@ void cleanup_subjects_iter(void *iter);
 
 void *create_named_graph(void *store_ptr, char *name, char **err);
 
-void deserialize_directory_store(char *tar_path, char *directory_store_path);
+void deserialize_directory_store(char *tar_path, char *extract_path);
 
 char *layer_builder_get_id(void *builder);
 
