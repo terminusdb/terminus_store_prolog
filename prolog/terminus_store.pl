@@ -890,6 +890,11 @@ test(serialize_db, [cleanup(clean), setup(createng)]) :-
     layer_to_id(Layer, Layer_ID),
     serialize_database("testdir", [Layer_ID], ['sometestdb.label'], "test.tar.gz").
 
+test(deserialize_db, [cleanup(clean), setup(createng)]) :-
+    make_directory_path("tmp_extract_dir"),
+    deserialize_database("test.tar.gz", "tmp_extract_dir"),
+    delete_directory_and_contents("tmp_extract_dir").
+
 test(write_value_triple_memory) :-
     open_memory_store(Store),
     open_write(Store, Builder),
