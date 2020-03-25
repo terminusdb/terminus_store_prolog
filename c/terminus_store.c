@@ -268,6 +268,23 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
     }
 }
 
+static foreign_t pl_builder_committed(term_t builder_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+
+    char* err;
+    if (builder_committed(builder, &err)) {
+        PL_succeed;
+    }
+    else {
+        if (err) {
+            return throw_rust_err(err);
+        }
+        else {
+            PL_fail;
+        }
+    }
+}
+
 static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
     if (!PL_is_variable(layer_term)) {
         PL_fail;
@@ -1433,6 +1450,8 @@ install()
                         pl_remove_string_node_triple, 0);
     PL_register_foreign("nb_remove_string_value_triple", 4,
                         pl_remove_string_value_triple, 0);
+    PL_register_foreign("builder_committed", 1,
+                        pl_builder_committed, 0);
     PL_register_foreign("nb_commit", 2,
                         pl_builder_commit, 0);
     PL_register_foreign("node_and_value_count", 2,

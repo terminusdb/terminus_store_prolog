@@ -13,6 +13,7 @@
               nb_add_triple/4,
               nb_remove_triple/4,
               nb_commit/2,
+              builder_committed/1,
 
               node_and_value_count/2,
               predicate_count/2,
@@ -983,4 +984,14 @@ test(backtracking_test, [cleanup(clean), setup(createng)]) :-
 
     findall(P, triple(Layer, "A", P, node("O")), Ps),
     Ps = ["D", "E"].
+
+test(query_builder_for_committed, [cleanup(clean),setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+
+    \+ builder_committed(Builder),
+
+    nb_commit(Builder, _Layer),
+
+    builder_committed(Builder).
 :- end_tests(terminus_store).

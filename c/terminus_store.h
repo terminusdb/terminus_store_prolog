@@ -25,6 +25,8 @@ void builder_add_string_value_triple(void *builder,
 
 void *builder_commit(void *builder, char **err);
 
+bool builder_committed(void *builder, char **err);
+
 bool builder_remove_id_triple(void *builder,
                               uint64_t subject,
                               uint64_t predicate,
