@@ -20,7 +20,7 @@ static foreign_t pl_open_directory_store(term_t dir_name_term, term_t store_term
     if (!PL_is_variable(store_term)) {
         PL_fail;
     }
-    
+
     char* dir_name = check_string_or_atom_term(dir_name_term);
     void* store_ptr = open_directory_store(dir_name);
     PL_unify_blob(store_term, store_ptr, 0, &store_blob_type);
@@ -484,6 +484,46 @@ static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
     PL_unify_blob(parent_term, parent, 0, &layer_blob_type);
 
     PL_succeed;
+}
+
+static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_triple_addition_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_layer_removal_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_triple_removal_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_layer_total_addition_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_total_triple_addition_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_layer_total_removal_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_total_triple_removal_count(layer);
+
+    return PL_unify_uint64(count_term, count);
+}
+
+static foreign_t pl_layer_total_triple_count(term_t layer_term, term_t count_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    uint64_t count = (uint64_t) layer_total_triple_count(layer);
+
+    return PL_unify_uint64(count_term, count);
 }
 
 static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term, control_t handle) {
@@ -1474,6 +1514,16 @@ install()
                         pl_id_to_object, 0);
     PL_register_foreign("parent", 2,
                         pl_layer_parent, 0);
+    PL_register_foreign("layer_addition_count", 2,
+                        pl_layer_addition_count, 0);
+    PL_register_foreign("layer_removal_count", 2,
+                        pl_layer_removal_count, 0);
+    PL_register_foreign("layer_total_addition_count", 2,
+                        pl_layer_total_addition_count, 0);
+    PL_register_foreign("layer_total_removal_count", 2,
+                        pl_layer_total_removal_count, 0);
+    PL_register_foreign("layer_total_triple_count", 2,
+                        pl_layer_total_triple_count, 0);
     PL_register_foreign("lookup_subject", 2,
                         pl_layer_subjects, PL_FA_NONDETERMINISTIC);
     PL_register_foreign("lookup_predicate", 2,

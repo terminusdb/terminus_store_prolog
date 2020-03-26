@@ -501,6 +501,31 @@ pub unsafe extern "C" fn layer_id_object(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_triple_addition_count(layer: *mut SyncStoreLayer) -> usize {
+    (*layer).triple_layer_addition_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_triple_removal_count(layer: *mut SyncStoreLayer) -> usize {
+    (*layer).triple_layer_removal_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_total_triple_addition_count(layer: *mut SyncStoreLayer) -> usize {
+    (*layer).triple_addition_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_total_triple_removal_count(layer: *mut SyncStoreLayer) -> usize {
+    (*layer).triple_removal_count()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_total_triple_count(layer: *mut SyncStoreLayer) -> usize {
+    (*layer).triple_count()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_lookup_subject(
     layer: *mut SyncStoreLayer,
     subject: u64,

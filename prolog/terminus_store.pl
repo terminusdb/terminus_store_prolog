@@ -32,6 +32,12 @@
 
               parent/2,
 
+              layer_addition_count/2,
+              layer_removal_count/2,
+              layer_total_addition_count/2,
+              layer_total_removal_count/2,
+              layer_total_triple_count/2,
+
               layer_to_id/2,
               store_id_layer/3]).
 

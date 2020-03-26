@@ -143,6 +143,16 @@ void *layer_subject_removals_iter(void *layer);
 
 void *layer_subjects_iter(void *layer);
 
+uintptr_t layer_total_triple_addition_count(void *layer);
+
+uintptr_t layer_total_triple_count(void *layer);
+
+uintptr_t layer_total_triple_removal_count(void *layer);
+
+uintptr_t layer_triple_addition_count(void *layer);
+
+uintptr_t layer_triple_removal_count(void *layer);
+
 void *named_graph_get_head(void *named_graph, char **err);
 
 char *named_graph_get_name(void *named_graph);
