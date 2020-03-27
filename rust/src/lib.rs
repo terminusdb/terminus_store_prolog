@@ -3,52 +3,6 @@ use std::io;
 use std::os::raw::{c_char, c_void};
 use std::sync::Mutex;
 
-extern "C" {
-    // Our C function definitions
-    pub fn c_debug_via_prolog(topic: *const c_char, comment: *const c_char) -> ();
-    pub fn c_log_via_prolog(comment: *const c_char) -> ();
-}
-
-use terminus_store::logging::{add_debug_hook, add_logging_hook, DebugSink, LoggingSink};
-
-// A DebugSink that writes the debug info to SWI-Prolog's debug/3
-struct PrologDebug {}
-
-impl DebugSink for PrologDebug {
-    fn debug(&self, topic: &str, comment: &str) {
-        // convert topic and comment to C strings
-        let c_topic = CString::new(topic).expect("CString::new failed to convert topic");
-        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
-
-        unsafe { c_debug_via_prolog(c_topic.as_ptr(), c_comment.as_ptr()) }
-        ()
-    }
-}
-
-// A LoggingSink that writes the debug info to SWI-Prolog's http_log system
-struct PrologLogger {}
-
-impl LoggingSink for PrologLogger {
-    fn log(&self, comment: &str) {
-        let c_comment = CString::new(comment).expect("CString::new failed to convert comment");
-
-        unsafe { c_log_via_prolog(c_comment.as_ptr()) }
-    }
-}
-
-static DEBUG_SINK_IMPL: PrologDebug = PrologDebug {};
-static LOGGING_SINK_IMPL: PrologLogger = PrologLogger {};
-
-#[no_mangle]
-pub unsafe extern "C" fn rust_install_prolog_debug_hook() {
-    add_debug_hook(&DEBUG_SINK_IMPL);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn rust_install_prolog_log_hook() {
-    add_logging_hook(&LOGGING_SINK_IMPL);
-}
-
 use terminus_store::layer::{
     IdTriple, Layer, ObjectLookup, ObjectType, PredicateLookup, StringTriple, SubjectLookup,
     SubjectPredicateLookup,

@@ -45,10 +45,6 @@ bool builder_remove_string_value_triple(void *builder,
                                         char *object_ptr,
                                         char **err);
 
-extern void c_debug_via_prolog(const char *topic, const char *comment);
-
-extern void c_log_via_prolog(const char *comment);
-
 void cleanup_cstring(char *cstring_ptr);
 
 void cleanup_db(void *db);
