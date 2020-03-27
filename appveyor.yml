@@ -38,9 +38,9 @@ environment:
 
 ### MSVC Toolchains ###
 
-  # Stable 64-bit MSVC
+  # Stable 64-bit mingw
     - channel: stable
-      target: x86_64-pc-windows-msvc
+      target: x86_64-pc-windows-gnu
 
 ### Allowed failures ###
 
@@ -68,13 +68,33 @@ install:
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
   - rustc -vV
   - cargo -vV
+  - choco install swi-prolog
 
 ## Build Script ##
 
 build_script:
-  - cd rust
-  - cargo build --release
+   - cd rust
+   - cargo build --release
+   - cd ..
+   - set PATH=%PATH%;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
+   - set PATH=%PATH%;C:\Program Files\swipl\bin
+   - set LIBRARY_PATH=%LIBRARY_PATH;C:\projects\terminus-store-prolog\rust\target\release;C:\Program Files\swipl\bin
+   - mingw32-make.exe windows
 
 artifacts:
   # pushing a single file
-  - path: rust\target\release\libterminus_store_prolog.dll
+  - path: libterminus_store.dll
+  - path: rust\target\release\terminus_store_prolog.dll
+
+deploy:
+  release: v$(appveyor_build_version)
+  description: ''
+  provider: GitHub
+  auth_token:
+    secure: HAxdjJ98lVQMTkYGxg/lvymptye0JBI3yBtGOVPZ197z+eZZWtJoWaJviGoGf2QD
+  artifact: libterminus_store.dll,rust\target\release\terminus_store_prolog.dll
+  draft: true
+  prerelease: false
+  on:
+    branch: windows_test                 # release from master branch only
+    APPVEYOR_REPO_TAG: false        # deploy on tag push only
