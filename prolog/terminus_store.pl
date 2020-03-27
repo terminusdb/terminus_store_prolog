@@ -317,30 +317,6 @@
 % @arg Subject the returned subject lookup.
 %
 
-:- meta_predicate install_debug_hook(2).
-
-%!  install_debug_hook(+DebugPred:callable) is det
-%
-%   Install the argument as a hook to be called when
-%   debug is called **in Rust**.
-%
-%   @arg DebugPred  an arity 2 predicate with args
-%   that are (Topic, Contents), where Topic is a text
-%   representation of a prolog term and Contents is text.
-%   Topic is converted to a term and sent to [[debug/3]]
-%   with format `'~w'`
-%
-
-:- meta_predicate install_log_hook(1).
-
-%!  install_log_hook(+LogPred:callable) is det
-%
-%   Install the argument as a hook to be called when
-%   log is called **in Rust**
-%
-%   @arg LogPred an arity 1 predicate which is sent to
-%   [[http_log/2]] with `'~w'` as first arg.
-%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%
@@ -758,36 +734,6 @@ blob_allocations(allocations{stores:Stores,
     num_subject_predicate_lookup_blobs(Subject_Predicate_Lookups),
     num_predicate_lookup_blobs(Predicate_Lookups),
     num_object_lookup_blobs(Object_Lookups).
-
-		 /*******************************
-		 *  Rust debug / logging support *
-		 *******************************/
-
-%!  rust_debug(+TopicText:text, +Content:text) is det
-%
-%   @arg TopicText string rep. of a debug topic, eg "layers(delete_layer)
-%
-%   Our debug provided to the Rust side
-%
-rust_debug(TopicText, ContentText) :-
-    text_to_string(TopicText, TopicStr),
-    term_string(Topic, TopicStr),
-    debug(Topic, '~w', [ContentText]).
-
-:- use_module(library(http/http_log)).
-
-%!  rust_log(+ContentText:text) is det
-%
-%   @arg ContentText contents to be logged
-%
-rust_log(ContentText) :-
-    http_log('~N~w~n', [ContentText]).
-
-install_logging_hooks :-
-    install_debug_hook(terminus_store:rust_debug),
-    install_log_hook(terminus_store:rust_log).
-
-:- initialization install_logging_hooks.
 
 :- begin_tests(terminus_store).
 
