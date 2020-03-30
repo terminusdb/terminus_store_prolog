@@ -20,7 +20,7 @@ windows: $(TARGET)
 
 $(OBJS): $(SRCS)
 	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) $(CFLAGS) -c $^ -o $@ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog
+	$(CC) $(CFLAGS) -c $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog -Wl,--out-implib,libterminus_store.a
