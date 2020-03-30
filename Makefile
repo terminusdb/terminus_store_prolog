@@ -43,7 +43,6 @@ release: CFLAGS += -O3
 release: build
 
 windows_release: CARGO_FLAGS += --release
-windows_release: TARGET = libterminus_store.dll
 windows_release: CFLAGS += -O3 -Wall
 windows_release: windows
 
