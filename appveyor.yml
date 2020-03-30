@@ -76,7 +76,7 @@ build_script:
    - set PATH=%PATH%;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
    - set PATH=%PATH%;C:\Program Files\swipl\bin
    - set LIBRARY_PATH=%LIBRARY_PATH;C:\projects\terminus-store-prolog\rust\target\release;C:\Program Files\swipl\bin
-   - mingw32-make.exe windows
+   - mingw32-make.exe windows_release
 
 artifacts:
   # pushing a single file
