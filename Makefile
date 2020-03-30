@@ -17,7 +17,9 @@ all: release
 rust_bindings:
 	cbindgen --config rust/cbindgen.toml rust/src/lib.rs --output c/terminus_store.h
 
-windows: $(WINDOWS_TARGET)
+windows:
+	cd rust; cargo build --release
+	$(WINDOWS_TARGET)
 
 $(WIN_OBJS): $(WIN_SRCS)
 	$(CC) -O3 -Wall -c $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog
