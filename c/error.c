@@ -67,6 +67,40 @@ char* check_atom_term(term_t term) {
     return result;
 }
 
+unsigned char* check_binary_string_term(term_t term, size_t *len) {
+    if (PL_term_type(term) == PL_VARIABLE) {
+        throw_instantiation_err(term);
+    }
+
+    int term_type = PL_term_type(term);
+
+    if (term_type != PL_STRING) {
+        throw_type_error(term, "string");
+    }
+
+    char* result;
+    assert(PL_get_nchars(term, len, &result, CVT_STRING | CVT_EXCEPTION));
+
+    return (unsigned char*) result;
+}
+
+char* check_string_term(term_t term) {
+    if (PL_term_type(term) == PL_VARIABLE) {
+        throw_instantiation_err(term);
+    }
+
+    int term_type = PL_term_type(term);
+
+    if (term_type != PL_STRING) {
+        throw_type_error(term, "string");
+    }
+
+    char* result;
+    assert(PL_get_chars(term, &result, CVT_STRING | CVT_EXCEPTION | REP_UTF8));
+
+    return result;
+}
+
 char* check_string_or_atom_term(term_t term) {
     if (PL_term_type(term) == PL_VARIABLE) {
         throw_instantiation_err(term);

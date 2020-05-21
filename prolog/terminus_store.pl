@@ -39,7 +39,10 @@
               layer_total_triple_count/2,
 
               layer_to_id/2,
-              store_id_layer/3]).
+              store_id_layer/3,
+
+              pack_export/3,
+              pack_layerids_and_parents/2]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 

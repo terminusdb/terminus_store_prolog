@@ -3,6 +3,9 @@ language = "C"
 sys_includes = ["stdbool.h"]
 no_includes = true
 
+[export]
+include = ["LayerAndParent"]
+
 [export.rename]
 "SyncStoreLayerBuilder" = "void"
 "SyncStoreLayer" = "void"

@@ -1321,6 +1321,172 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
     return PL_unify_blob(layer_term, layer, 0, &layer_blob_type);
 }
 
+static foreign_t build_layer_id_array(term_t layer_ids_term, uint32_t (**layer_id_array)[5], size_t *len) {
+    if (PL_skip_list(layer_ids_term, 0, len) != PL_LIST) {
+        return throw_err("error", "layer ids are not a proper list");
+    }
+
+    *layer_id_array = malloc(*len * sizeof(uint32_t[5]));
+
+    term_t head_term = PL_new_term_ref();
+    term_t list_term = PL_copy_term_ref(layer_ids_term);
+    for (int i=0;PL_get_list(list_term, head_term, list_term);i++) {
+        if (PL_term_type(head_term) == PL_VARIABLE) {
+            throw_instantiation_err(head_term);
+        }
+
+        int term_type = PL_term_type(head_term);
+
+        if (term_type != PL_STRING) {
+            free(*layer_id_array);
+            return throw_type_error(head_term, "string");
+        }
+
+        char* id_string;
+        size_t id_len;
+        foreign_t result = PL_get_string_chars(head_term, &id_string, &id_len);
+        if (!result) {
+            free(*layer_id_array);
+            return result;
+        }
+
+        if (id_len != 40) {
+            free(*layer_id_array);
+            return throw_err("error", "layer id string is not 40 characters long");
+        }
+
+        char* err;
+        layer_string_to_id(id_string, &(*layer_id_array)[i], &err);
+        if (err != NULL) {
+            free(*layer_id_array);
+            return throw_rust_err(err);
+        }
+    }
+
+    return 1;
+}
+
+static foreign_t pl_pack_export(term_t store_term, term_t layer_ids_term, term_t pack_term) {
+    void* store = check_blob_type(store_term, &store_blob_type);
+
+    if (PL_is_variable(layer_ids_term)) {
+        return throw_instantiation_err(layer_ids_term);
+    }
+
+    size_t len;
+    uint32_t (*layer_ids)[5] = NULL;
+
+    foreign_t result = build_layer_id_array(layer_ids_term, &layer_ids, &len);
+    if (!result) {
+        return result;
+    }
+
+    VecHandle pack = pack_export(store, layer_ids, len);
+    free(layer_ids);
+
+    result = PL_unify_string_nchars(pack_term, pack.len, pack.ptr);
+    cleanup_u8_vec(pack);
+
+    return result;
+}
+
+static foreign_t pl_pack_layerids_and_parents(term_t pack_term, term_t layer_parents_term) {
+    size_t pack_len;
+    unsigned char* pack = check_binary_string_term(pack_term, &pack_len);
+
+    char* err = NULL;
+
+    VecHandle handle = pack_layerids_and_parents(pack, pack_len, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+
+    LayerAndParent *layer_parent_ids = handle.ptr;
+
+    term_t head = PL_new_term_refs(handle.len);
+    term_t tail = PL_new_term_refs(handle.len);
+    term_t list = layer_parents_term;
+    foreign_t result;
+
+    atom_t none_atom = PL_new_atom("none");
+    atom_t some_atom = PL_new_atom("some");
+    atom_t pair_atom = PL_new_atom("-");
+    functor_t some_functor = PL_new_functor(some_atom, 1);
+    functor_t pair_functor = PL_new_functor(pair_atom, 2);
+
+    for (int i=0;i<handle.len;i++) {
+        result = PL_unify_list(list, head, tail);
+
+        if (!result) {
+            cleanup_layer_and_parent_vec(handle);
+
+            return result;
+        }
+
+        // unify head
+        result = PL_unify_functor(head, pair_functor);
+        if (!result) {
+            cleanup_layer_and_parent_vec(handle);
+
+            return result;
+        }
+        term_t layer_id_term = PL_new_term_ref();
+        term_t layer_parent_id_term = PL_new_term_ref();
+        assert(PL_unify_arg(1, head, layer_id_term));
+        assert(PL_unify_arg(2, head, layer_parent_id_term));
+
+        char* layer_id = layer_id_to_string(layer_parent_ids[i].layer_id);
+        result = PL_unify_string_chars(layer_id_term, layer_id);
+        cleanup_cstring(layer_id);
+
+        if (!result) {
+            cleanup_layer_and_parent_vec(handle);
+
+            return result;
+        }
+
+        if (layer_parent_ids[i].has_parent) {
+            result = PL_unify_functor(layer_parent_id_term, some_functor);
+            if (!result) {
+                cleanup_layer_and_parent_vec(handle);
+
+                return result;
+            }
+
+            term_t layer_parent_id_string_term = PL_new_term_ref();
+            assert(PL_unify_arg(1, layer_parent_id_term, layer_parent_id_string_term));
+            
+            char* layer_parent_id = layer_id_to_string(layer_parent_ids[i].layer_parent_id);
+            result = PL_unify_string_chars(layer_parent_id_string_term, layer_parent_id);
+            cleanup_cstring(layer_parent_id);
+
+            if (!result) {
+                cleanup_layer_and_parent_vec(handle);
+
+                return result;
+            }
+        }
+        else {
+            result = PL_unify_atom(layer_parent_id_term, none_atom);
+            if (!result) {
+                cleanup_layer_and_parent_vec(handle);
+
+                return result;
+            }
+        }
+        
+        list = tail;
+        head++;
+        tail++;
+    }
+
+    result = PL_unify_nil(list);
+
+    cleanup_layer_and_parent_vec(handle);
+
+    return result;
+}
+
                 /*****************************************
                  *     Prolog install function           *
                  ****************************************/
@@ -1473,4 +1639,8 @@ install()
                         pl_layer_to_id, 0);
     PL_register_foreign("store_id_layer", 3,
                         pl_store_id_layer, 0);
+    PL_register_foreign("pack_export", 3,
+                        pl_pack_export, 0);
+    PL_register_foreign("pack_layerids_and_parents", 2,
+                        pl_pack_layerids_and_parents, 0);
 }

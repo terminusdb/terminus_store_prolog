@@ -1,9 +1,21 @@
 #include <stdbool.h>
 
 typedef struct {
+  void *ptr;
+  uintptr_t len;
+  uintptr_t capacity;
+} VecHandle;
+
+typedef struct {
   uint64_t subject;
   uint64_t predicate;
 } SubjectPredicatePair;
+
+typedef struct {
+  uint32_t layer_id[5];
+  uint32_t layer_parent_id[5];
+  bool has_parent;
+} LayerAndParent;
 
 bool builder_add_id_triple(void *builder,
                            uint64_t subject,
@@ -51,6 +63,8 @@ void cleanup_db(void *db);
 
 void cleanup_layer(void *layer);
 
+void cleanup_layer_and_parent_vec(VecHandle vec_handle);
+
 void cleanup_layer_builder(void *layer_builder);
 
 void cleanup_object_lookup(void *object_lookup);
@@ -75,6 +89,8 @@ void cleanup_subject_predicates_iter(void *iter);
 
 void cleanup_subjects_iter(void *iter);
 
+void cleanup_u8_vec(VecHandle vec_handle);
+
 void *create_named_graph(void *store_ptr, char *name, char **err);
 
 char *layer_builder_get_id(void *builder);
@@ -86,6 +102,8 @@ char *layer_id_object(void *layer, uint64_t id, uint8_t *object_type);
 char *layer_id_predicate(void *layer, uint64_t id);
 
 char *layer_id_subject(void *layer, uint64_t id);
+
+char *layer_id_to_string(uint32_t id[5]);
 
 void *layer_lookup_object(void *layer, uint64_t object);
 
@@ -131,6 +149,8 @@ void *layer_predicate_removals_iter(void *layer);
 
 void *layer_predicates_iter(void *layer);
 
+bool layer_string_to_id(const char *name_ptr, uint32_t (*result)[5], char **err);
+
 void *layer_subject_additions_iter(void *layer);
 
 uint64_t layer_subject_id(void *layer, char *subject);
@@ -175,15 +195,22 @@ void *open_memory_store(void);
 
 void *open_named_graph(void *store, char *name, char **err);
 
+VecHandle pack_export(void *store, const uint32_t (*layer_ids_ptr)[5], uintptr_t layer_ids_len);
+
+void pack_import(void *store,
+                 const uint8_t *pack_ptr,
+                 uintptr_t pack_len,
+                 const uint32_t (*layer_ids_ptr)[5],
+                 uintptr_t layer_ids_len,
+                 char **err);
+
+VecHandle pack_layerids_and_parents(const uint8_t *pack_ptr, uintptr_t pack_len, char **err);
+
 uint64_t predicate_lookup_predicate(void *predicate_lookup);
 
 void *predicate_lookup_subject_predicate_pairs_iter(void *predicate_lookup);
 
 void *predicates_iter_next(void *iter);
-
-void rust_install_prolog_debug_hook(void);
-
-void rust_install_prolog_log_hook(void);
 
 void *store_create_base_layer(void *store, char **err);
 
