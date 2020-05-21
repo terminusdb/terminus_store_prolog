@@ -1487,6 +1487,35 @@ static foreign_t pl_pack_layerids_and_parents(term_t pack_term, term_t layer_par
     return result;
 }
 
+static foreign_t pl_pack_import(term_t store_term, term_t layer_ids_term, term_t pack_term) {
+    void* store = check_blob_type(store_term, &store_blob_type);
+
+    if (PL_is_variable(layer_ids_term)) {
+        return throw_instantiation_err(layer_ids_term);
+    }
+
+    size_t layer_ids_len;
+    uint32_t (*layer_ids)[5] = NULL;
+
+    foreign_t result = build_layer_id_array(layer_ids_term, &layer_ids, &layer_ids_len);
+    if (!result) {
+        return result;
+    }
+
+    size_t pack_len;
+    unsigned char* pack = check_binary_string_term(pack_term, &pack_len);
+
+    char *err = NULL;
+    pack_import(store, pack, pack_len, layer_ids, layer_ids_len, &err);
+    free(layer_ids);
+
+    if (err != NULL) {
+        throw_rust_err(err);
+    }
+
+    PL_succeed;
+}
+
                 /*****************************************
                  *     Prolog install function           *
                  ****************************************/
@@ -1643,4 +1672,6 @@ install()
                         pl_pack_export, 0);
     PL_register_foreign("pack_layerids_and_parents", 2,
                         pl_pack_layerids_and_parents, 0);
+    PL_register_foreign("pack_import", 3,
+                        pl_pack_import, 0);
 }
