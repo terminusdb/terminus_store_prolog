@@ -1474,7 +1474,7 @@ static foreign_t pl_pack_layerids_and_parents(term_t pack_term, term_t layer_par
                 return result;
             }
         }
-        
+
         list = tail;
         head++;
         tail++;

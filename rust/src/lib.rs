@@ -1,7 +1,7 @@
 use std::ffi::{CStr, CString};
+use std::fmt::Display;
 use std::os::raw::{c_char, c_void};
 use std::sync::Mutex;
-use std::fmt::Display;
 
 use terminus_store::layer::{
     IdTriple, Layer, ObjectLookup, ObjectType, PredicateLookup, StringTriple, SubjectLookup,
@@ -25,7 +25,7 @@ pub unsafe extern "C" fn open_directory_store(dir: *mut c_char) -> *mut SyncStor
     Box::into_raw(Box::new(store))
 }
 
-fn error_to_cstring<E:Display>(error: E) -> CString {
+fn error_to_cstring<E: Display>(error: E) -> CString {
     CString::new(format!("{}", error)).unwrap()
 }
 
@@ -816,42 +816,42 @@ pub unsafe extern "C" fn store_get_layer_from_id(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_to_string(
-    id: *const [u32;5]
-) -> *mut c_char {
+pub unsafe extern "C" fn layer_id_to_string(id: *const [u32; 5]) -> *mut c_char {
     let name_string = name_to_string(*id);
 
-    CString::new(name_string).expect("layer name to string conversion should always result in a valid unicode string").into_raw()
+    CString::new(name_string)
+        .expect("layer name to string conversion should always result in a valid unicode string")
+        .into_raw()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn layer_string_to_id(
     name_ptr: *const c_char,
-    result: *mut [u32;5],
-    err: *mut *mut c_char
+    result: *mut [u32; 5],
+    err: *mut *mut c_char,
 ) -> bool {
     let name_slice = std::slice::from_raw_parts(name_ptr as *const u8, 40); // ids are 5 * 4 bytes, in hexadecimal, which works out to 40.
     let name_str = match std::str::from_utf8(name_slice) {
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-            *result = [0,0,0,0,0];
+            *result = [0, 0, 0, 0, 0];
 
             return false;
         }
-        Ok(ns) => ns
+        Ok(ns) => ns,
     };
-        
+
     match string_to_name(name_str) {
         Ok(name) => {
             *err = std::ptr::null_mut();
             *result = name;
 
             true
-        },
+        }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
 
-            *result = [0,0,0,0,0];
+            *result = [0, 0, 0, 0, 0];
 
             false
         }
@@ -862,7 +862,7 @@ pub unsafe extern "C" fn layer_string_to_id(
 pub struct VecHandle {
     ptr: *mut c_void,
     len: usize,
-    capacity: usize
+    capacity: usize,
 }
 
 impl VecHandle {
@@ -870,7 +870,7 @@ impl VecHandle {
         Self {
             ptr: std::ptr::null_mut(),
             len: 0,
-            capacity: 0
+            capacity: 0,
         }
     }
 }
@@ -878,7 +878,7 @@ impl VecHandle {
 #[no_mangle]
 pub unsafe extern "C" fn pack_export(
     store: *mut SyncStore,
-    layer_ids_ptr: *const [u32;5],
+    layer_ids_ptr: *const [u32; 5],
     layer_ids_len: usize,
 ) -> VecHandle {
     let layer_ids = std::slice::from_raw_parts(layer_ids_ptr, layer_ids_len);
@@ -890,9 +890,7 @@ pub unsafe extern "C" fn pack_export(
 
     std::mem::forget(result);
 
-    VecHandle {
-        ptr, len, capacity
-    }
+    VecHandle { ptr, len, capacity }
 }
 
 #[no_mangle]
@@ -900,7 +898,7 @@ pub unsafe extern "C" fn pack_import(
     store: *mut SyncStore,
     pack_ptr: *const u8,
     pack_len: usize,
-    layer_ids_ptr: *const [u32;5],
+    layer_ids_ptr: *const [u32; 5],
     layer_ids_len: usize,
     err: *mut *mut c_char,
 ) {
@@ -908,9 +906,7 @@ pub unsafe extern "C" fn pack_import(
     let layer_ids = std::slice::from_raw_parts(layer_ids_ptr, layer_ids_len);
     let vec: Vec<_> = layer_ids.to_vec();
     match (*store).import_layers(pack, Box::new(vec.into_iter())) {
-        Ok(()) => {
-            *err = std::ptr::null_mut()
-        },
+        Ok(()) => *err = std::ptr::null_mut(),
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
         }
@@ -919,8 +915,8 @@ pub unsafe extern "C" fn pack_import(
 
 #[repr(C)]
 pub struct LayerAndParent {
-    layer_id: [u32;5],
-    layer_parent_id: [u32;5],
+    layer_id: [u32; 5],
+    layer_parent_id: [u32; 5],
     has_parent: bool,
 }
 
@@ -933,13 +929,12 @@ pub unsafe extern "C" fn pack_layerids_and_parents(
     let pack = std::slice::from_raw_parts(pack_ptr, pack_len);
     match terminus_store::storage::directory::pack_layer_parents(pack) {
         Ok(id_parent_map) => {
-            let mut result_vec: Vec<LayerAndParent> = id_parent_map.into_iter()
-                .map(|(id,parent)| {
-                    LayerAndParent {
-                        layer_id: id,
-                        has_parent: parent.is_some(),
-                        layer_parent_id: parent.unwrap_or([0,0,0,0,0])
-                    }
+            let mut result_vec: Vec<LayerAndParent> = id_parent_map
+                .into_iter()
+                .map(|(id, parent)| LayerAndParent {
+                    layer_id: id,
+                    has_parent: parent.is_some(),
+                    layer_parent_id: parent.unwrap_or([0, 0, 0, 0, 0]),
                 })
                 .collect();
 
@@ -947,17 +942,13 @@ pub unsafe extern "C" fn pack_layerids_and_parents(
             let capacity = result_vec.capacity();
             let ptr = &mut result_vec[0] as *mut LayerAndParent as *mut c_void;
 
-            let result = VecHandle {
-                ptr,
-                len,
-                capacity
-            };
+            let result = VecHandle { ptr, len, capacity };
 
             *err = std::ptr::null_mut();
 
             std::mem::forget(result_vec);
             result
-        },
+        }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
 
@@ -1050,10 +1041,18 @@ pub unsafe extern "C" fn cleanup_cstring(cstring_ptr: *mut c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_u8_vec(vec_handle: VecHandle) {
-    let _vec: Vec<u8> = Vec::from_raw_parts(vec_handle.ptr as *mut u8, vec_handle.len, vec_handle.capacity);
+    let _vec: Vec<u8> = Vec::from_raw_parts(
+        vec_handle.ptr as *mut u8,
+        vec_handle.len,
+        vec_handle.capacity,
+    );
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_layer_and_parent_vec(vec_handle: VecHandle) {
-    let _vec: Vec<LayerAndParent> = Vec::from_raw_parts(vec_handle.ptr as *mut LayerAndParent, vec_handle.len, vec_handle.capacity);
+    let _vec: Vec<LayerAndParent> = Vec::from_raw_parts(
+        vec_handle.ptr as *mut LayerAndParent,
+        vec_handle.len,
+        vec_handle.capacity,
+    );
 }
