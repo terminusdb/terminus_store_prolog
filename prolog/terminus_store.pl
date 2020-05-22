@@ -42,7 +42,8 @@
               store_id_layer/3,
 
               pack_export/3,
-              pack_layerids_and_parents/2]).
+              pack_layerids_and_parents/2,
+              pack_import/3]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 
