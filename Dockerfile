@@ -8,7 +8,8 @@ RUN BUILD_DEPS="git build-essential curl" && apt-get update \
     make
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-RUN ./make && apt-get purge -y --auto-remove $BUILD_DEPS
+RUN ./make && apt-get purge -y --auto-remove $BUILD_DEPS \
+       && rm -rf rust/target/release/build && rm -rf rust/target/release/deps
 
 FROM terminusdb/swipl:v8.2.0
 WORKDIR /usr/share/swi-prolog/pack/terminus_store_prolog
