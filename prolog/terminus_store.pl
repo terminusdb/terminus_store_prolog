@@ -803,7 +803,7 @@ test(open_write_from_db_without_head, [
     cleanup(clean),
     setup(createng),
     throws(
-        terminus_store_rust_error('Create a base layer first before opening the named graph for write')
+        error(terminus_store_rust_error('Create a base layer first before opening the named graph for write'), _)
     )]) :-
     open_directory_store("testdir", X),
     open_named_graph(X, "sometestdb", DB),
@@ -813,7 +813,7 @@ test(open_write_from_db_without_head, [
 test(open_write_from_memory_ng_without_head, [
     setup(create_memory_ng(DB)),
     throws(
-        terminus_store_rust_error('Create a base layer first before opening the named graph for write')
+        error(terminus_store_rust_error('Create a base layer first before opening the named graph for write'),_)
     )]) :-
     open_write(DB, _).
 
