@@ -1323,7 +1323,7 @@ static foreign_t pl_store_id_layer(term_t store_term, term_t id_term, term_t lay
 
 static foreign_t build_layer_id_array(term_t layer_ids_term, uint32_t (**layer_id_array)[5], size_t *len) {
     if (PL_skip_list(layer_ids_term, 0, len) != PL_LIST) {
-        return throw_err("error", "layer ids are not a proper list");
+        return throw_c_err("layer ids are not a proper list");
     }
 
     *layer_id_array = malloc(*len * sizeof(uint32_t[5]));
@@ -1352,7 +1352,7 @@ static foreign_t build_layer_id_array(term_t layer_ids_term, uint32_t (**layer_i
 
         if (id_len != 40) {
             free(*layer_id_array);
-            return throw_err("error", "layer id string is not 40 characters long");
+            return throw_c_err("layer id string is not 40 characters long");
         }
 
         char* err;

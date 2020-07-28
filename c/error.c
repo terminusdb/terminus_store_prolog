@@ -8,9 +8,31 @@
 int throw_err(char* functor, char* err) {
     term_t except = PL_new_term_ref();
     assert(PL_unify_term(except,
+                         PL_FUNCTOR_CHARS, "error", 2,
                          PL_FUNCTOR_CHARS, functor, 1,
-                         PL_UTF8_CHARS, err));
+                         PL_UTF8_CHARS, err,
+                         PL_VARIABLE));
 
+    return PL_throw(except);
+}
+
+int throw_c_err(char* c_err) {
+    return throw_err("terminus_store_c_error", c_err);
+}
+
+int throw_rust_err(char* rust_err) {
+    term_t except = PL_new_term_ref();
+    int unify_res = PL_unify_term(except,
+                                  PL_FUNCTOR_CHARS, "error", 2,
+                                  PL_FUNCTOR_CHARS, "terminus_store_rust_error", 1,
+                                  PL_UTF8_CHARS, rust_err,
+                                  PL_VARIABLE);
+
+    // we get this string from rust and it needs to be cleaned up in rust.
+    // This is why throw_rust_err is its own thing, rather than calling throw_err.
+    cleanup_cstring(rust_err);
+
+    assert(unify_res);
     return PL_throw(except);
 }
 
@@ -116,16 +138,4 @@ char* check_string_or_atom_term(term_t term) {
     assert(PL_get_chars(term, &result, CVT_ATOM | CVT_STRING | CVT_EXCEPTION | REP_UTF8));
 
     return result;
-}
-
-int throw_rust_err(char* rust_err) {
-    term_t except = PL_new_term_ref();
-    int unify_res = PL_unify_term(except,
-                                  PL_FUNCTOR_CHARS, "terminus_store_rust_error", 1,
-                                  PL_UTF8_CHARS, rust_err);
-
-    cleanup_cstring(rust_err);
-
-    assert(unify_res);
-    return PL_throw(except);
 }
