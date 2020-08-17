@@ -1516,6 +1516,406 @@ static foreign_t pl_pack_import(term_t store_term, term_t layer_ids_term, term_t
     PL_succeed;
 }
 
+typedef enum {
+    SPO,
+    SO,
+    SP,
+    PO,
+    P,
+    O
+} TripleIterType;
+
+typedef struct {
+    TripleIterType type;
+    void* iter;
+} TripleIterControl;
+
+static TripleIterControl* init_triple_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    TripleIterControl* control = malloc(sizeof(TripleIterControl));
+
+    if (PL_is_ground(subject_term)) {
+        uint64_t subject;
+        assert(PL_cvt_i_uint64(subject_term, &subject));
+
+        if (PL_is_ground(predicate_term)) {
+            uint64_t predicate;
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+            if (PL_is_ground(object_term)) {
+                // we should not be getting here, cause in that case this function ought to not be called.
+                abort();
+            }
+            else {
+                control->type = O;
+                control->iter = id_triple_sp_iter(layer, subject, predicate);
+            }
+        }
+        else {
+            if (PL_is_ground(object_term)) {
+                uint64_t object;
+                assert(PL_cvt_i_uint64(object_term, &object));
+
+                control->type = P;
+                control->iter = id_triple_so_iter(layer, subject, object);
+            }
+            else {
+                control->type = PO;
+                control->iter = id_triple_s_iter(layer, subject);
+            }
+        }
+    }
+    else if (PL_is_ground(predicate_term)) {
+        uint64_t predicate;
+        assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+        control->type = SO;
+        control->iter = id_triple_p_iter(layer, predicate);
+    }
+    else if (PL_is_ground(object_term)) {
+        uint64_t object;
+        assert(PL_cvt_i_uint64(object_term, &object));
+
+        control->type = SP;
+        control->iter = id_triple_o_iter(layer, object);
+    }
+    else {
+        control->type = SPO;
+        control->iter = id_triple_iter(layer);
+    }
+
+    return control;
+}
+
+static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    TripleIterControl* control = malloc(sizeof(TripleIterControl));
+
+    if (PL_is_ground(subject_term)) {
+        uint64_t subject;
+        assert(PL_cvt_i_uint64(subject_term, &subject));
+
+        if (PL_is_ground(predicate_term)) {
+            uint64_t predicate;
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+            if (PL_is_ground(object_term)) {
+                // we should not be getting here, cause in that case this function ought to not be called.
+                abort();
+            }
+            else {
+                control->type = O;
+                control->iter = id_triple_addition_sp_iter(layer, subject, predicate);
+            }
+        }
+        else {
+            if (PL_is_ground(object_term)) {
+                uint64_t object;
+                assert(PL_cvt_i_uint64(object_term, &object));
+
+                control->type = P;
+                control->iter = id_triple_addition_so_iter(layer, subject, object);
+            }
+            else {
+                control->type = PO;
+                control->iter = id_triple_addition_s_iter(layer, subject);
+            }
+        }
+    }
+    else if (PL_is_ground(predicate_term)) {
+        uint64_t predicate;
+        assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+        control->type = SO;
+        control->iter = id_triple_addition_p_iter(layer, predicate);
+    }
+    else if (PL_is_ground(object_term)) {
+        uint64_t object;
+        assert(PL_cvt_i_uint64(object_term, &object));
+
+        control->type = SP;
+        control->iter = id_triple_addition_o_iter(layer, object);
+    }
+    else {
+        control->type = SPO;
+        control->iter = id_triple_addition_iter(layer);
+    }
+
+    return control;
+}
+
+static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    TripleIterControl* control = malloc(sizeof(TripleIterControl));
+
+    if (PL_is_ground(subject_term)) {
+        uint64_t subject;
+        assert(PL_cvt_i_uint64(subject_term, &subject));
+
+        if (PL_is_ground(predicate_term)) {
+            uint64_t predicate;
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+            if (PL_is_ground(object_term)) {
+                // we should not be getting here, cause in that case this function ought to not be called.
+                abort();
+            }
+            else {
+                control->type = O;
+                control->iter = id_triple_removal_sp_iter(layer, subject, predicate);
+            }
+        }
+        else {
+            if (PL_is_ground(object_term)) {
+                uint64_t object;
+                assert(PL_cvt_i_uint64(object_term, &object));
+
+                control->type = P;
+                control->iter = id_triple_removal_so_iter(layer, subject, object);
+            }
+            else {
+                control->type = PO;
+                control->iter = id_triple_removal_s_iter(layer, subject);
+            }
+        }
+    }
+    else if (PL_is_ground(predicate_term)) {
+        uint64_t predicate;
+        assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+        control->type = SO;
+        control->iter = id_triple_removal_p_iter(layer, predicate);
+    }
+    else if (PL_is_ground(object_term)) {
+        uint64_t object;
+        assert(PL_cvt_i_uint64(object_term, &object));
+
+        control->type = SP;
+        control->iter = id_triple_removal_o_iter(layer, object);
+    }
+    else {
+        control->type = SPO;
+        control->iter = id_triple_removal_iter(layer);
+    }
+
+    return control;
+}
+
+static void cleanup_triple_iterator(TripleIterControl* control) {
+    switch(control->type) {
+    case SPO:
+        cleanup_u64_triple_iter(control->iter);
+        break;
+    case SP:
+    case SO:
+    case PO:
+        cleanup_u64_pair_iter(control->iter);
+        break;
+    case P:
+    case O:
+        cleanup_u64_iter(control->iter);
+        break;
+    default:
+        abort();
+    }
+
+    free(control);
+}
+
+typedef union {
+    U64Triple triple;
+    U64Pair pair;
+    uint64_t single;
+} TripleIterElement;
+
+static foreign_t triple_iterator_next(TripleIterControl* control, term_t subject_term, term_t predicate_term, term_t object_term) {
+    // loop here cause we'll be unifying, which may fail due to inputs.
+    // when failing, we want to try the next result, until a unification does succeed.
+    for(;;) {
+        TripleIterElement element = {0};
+        switch(control->type) {
+        case SPO:
+            element.triple = u64_triple_iter_next(control->iter);
+            break;
+        case SP:
+        case SO:
+        case PO:
+            element.pair = u64_pair_iter_next(control->iter);
+            break;
+        case P:
+        case O:
+            element.single = u64_iter_next(control->iter);
+            break;
+        default:
+            abort();
+        }
+
+        if (element.single == 0) {
+            // done iterating, nothing more will follow.
+            cleanup_triple_iterator(control);
+            PL_fail;
+        }
+        else {
+            int success;
+            switch(control->type) {
+            case SPO:
+                success = PL_unify_uint64(subject_term, element.triple.first)
+                    && PL_unify_uint64(predicate_term, element.triple.second)
+                    && PL_unify_uint64(object_term, element.triple.third);
+                break;
+            case SP:
+                success = PL_unify_uint64(subject_term, element.pair.first)
+                    && PL_unify_uint64(predicate_term, element.pair.second);
+                break;
+            case SO:
+                success = PL_unify_uint64(subject_term, element.pair.first)
+                    && PL_unify_uint64(object_term, element.pair.second);
+                break;
+            case PO:
+                success = PL_unify_uint64(predicate_term, element.pair.first)
+                    && PL_unify_uint64(object_term, element.pair.second);
+                break;
+            case P:
+                success = PL_unify_uint64(predicate_term, element.single);
+                break;
+            case O:
+                success = PL_unify_uint64(object_term, element.single);
+                break;
+            default:
+                abort();
+            }
+
+            if (success) {
+                PL_retry_address(control);
+            }
+            else {
+                continue;
+            }
+        }
+    }
+}
+
+static foreign_t pl_id_triple(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term, control_t handle) {
+    TripleIterControl* control;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        if (PL_is_ground(subject_term) && PL_is_ground(predicate_term) && PL_is_ground(object_term)) {
+            // this is where we do a simple lookup and no type of iteration
+            void* layer = check_blob_type(layer_term, &layer_blob_type);
+            uint64_t subject, predicate, object;
+            assert(PL_cvt_i_uint64(subject_term, &subject));
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+            assert(PL_cvt_i_uint64(object_term, &object));
+            if (id_triple_spo_exists(layer, subject, predicate, object)) {
+                PL_succeed;
+            }
+            else {
+                PL_fail;
+            }
+        }
+        else {
+            // this is where we initialize the iterator
+            control = init_triple_iterator(layer_term, subject_term, predicate_term, object_term);
+        }
+        break;
+    case PL_REDO:
+        control = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        control = PL_foreign_context_address(handle);
+        cleanup_triple_iterator(control);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    // if we got to this point, we're either in a first time call or a redo.
+    // get the next element of the iterator.
+    return triple_iterator_next(control, subject_term, predicate_term, object_term);
+}
+
+static foreign_t pl_id_triple_addition(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term, control_t handle) {
+    TripleIterControl* control;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        if (PL_is_ground(subject_term) && PL_is_ground(predicate_term) && PL_is_ground(object_term)) {
+            // this is where we do a simple lookup and no type of iteration
+            void* layer = check_blob_type(layer_term, &layer_blob_type);
+            uint64_t subject, predicate, object;
+            assert(PL_cvt_i_uint64(subject_term, &subject));
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+            assert(PL_cvt_i_uint64(object_term, &object));
+            if (id_triple_addition_spo_exists(layer, subject, predicate, object)) {
+                PL_succeed;
+            }
+            else {
+                PL_fail;
+            }
+        }
+        else {
+            // this is where we initialize the iterator
+            control = init_triple_addition_iterator(layer_term, subject_term, predicate_term, object_term);
+        }
+        break;
+    case PL_REDO:
+        control = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        control = PL_foreign_context_address(handle);
+        cleanup_triple_iterator(control);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    // if we got to this point, we're either in a first time call or a redo.
+    // get the next element of the iterator.
+    return triple_iterator_next(control, subject_term, predicate_term, object_term);
+}
+
+static foreign_t pl_id_triple_removal(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term, control_t handle) {
+    TripleIterControl* control;
+    switch (PL_foreign_control(handle)) {
+    case PL_FIRST_CALL:
+        if (PL_is_ground(subject_term) && PL_is_ground(predicate_term) && PL_is_ground(object_term)) {
+            // this is where we do a simple lookup and no type of iteration
+            void* layer = check_blob_type(layer_term, &layer_blob_type);
+            uint64_t subject, predicate, object;
+            assert(PL_cvt_i_uint64(subject_term, &subject));
+            assert(PL_cvt_i_uint64(predicate_term, &predicate));
+            assert(PL_cvt_i_uint64(object_term, &object));
+            if (id_triple_removal_spo_exists(layer, subject, predicate, object)) {
+                PL_succeed;
+            }
+            else {
+                PL_fail;
+            }
+        }
+        else {
+            // this is where we initialize the iterator
+            control = init_triple_removal_iterator(layer_term, subject_term, predicate_term, object_term);
+        }
+        break;
+    case PL_REDO:
+        control = PL_foreign_context_address(handle);
+        break;
+    case PL_PRUNED:
+        control = PL_foreign_context_address(handle);
+        cleanup_triple_iterator(control);
+        PL_succeed;
+    default:
+        abort();
+    }
+
+    // if we got to this point, we're either in a first time call or a redo.
+    // get the next element of the iterator.
+    return triple_iterator_next(control, subject_term, predicate_term, object_term);
+}
+
+
                 /*****************************************
                  *     Prolog install function           *
                  ****************************************/
@@ -1674,4 +2074,10 @@ install()
                         pl_pack_layerids_and_parents, 0);
     PL_register_foreign("pack_import", 3,
                         pl_pack_import, 0);
+    PL_register_foreign("id_triple", 4,
+                        pl_id_triple, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("id_triple_addition", 4,
+                        pl_id_triple_addition, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("id_triple_removal", 4,
+                        pl_id_triple_removal, PL_FA_NONDETERMINISTIC);
 }

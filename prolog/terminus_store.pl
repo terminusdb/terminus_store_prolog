@@ -22,13 +22,19 @@
               object_id/3,
 
               id_triple/4,
+              old_id_triple/4,
               triple/4,
+              old_triple/4,
 
               id_triple_addition/4,
+              old_id_triple_addition/4,
               triple_addition/4,
+              old_triple_addition/4,
 
               id_triple_removal/4,
+              old_id_triple_removal/4,
               triple_removal/4,
+              old_triple_removal/4,
 
               parent/2,
 
@@ -452,7 +458,7 @@ object_id(Layer, Object, Id) :-
     id_to_object(Layer, Id, Object_String, Type),
     Object =.. [Type, Object_String].
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     ground(Object),
@@ -462,7 +468,7 @@ id_triple(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     !,
@@ -471,7 +477,7 @@ id_triple(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
     subject_predicate_lookup_object(Predicate_Lookup, Object).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Object),
     !,
@@ -481,7 +487,7 @@ id_triple(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     !,
 
@@ -490,14 +496,14 @@ id_triple(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Object),
     !,
 
     lookup_object(Layer, Object, Object_Lookup),
     object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     ground(Predicate),
     !,
 
@@ -506,12 +512,41 @@ id_triple(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple(Layer, Subject, Predicate, Object) :-
+old_id_triple(Layer, Subject, Predicate, Object) :-
     lookup_subject(Layer, Subject_Lookup),
     subject_lookup_subject(Subject_Lookup, Subject),
     subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
     subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
     subject_predicate_lookup_object(Predicate_Lookup, Object).
+
+old_triple(Layer, Subject, Predicate, Object) :-
+    (   ground(Subject)
+    ->  subject_id(Layer, Subject, S_Id)
+    ;   true),
+
+    (   ground(Predicate)
+    ->  predicate_id(Layer, Predicate, P_Id)
+    ;   true),
+
+    (   ground(Object)
+    ->  object_id(Layer, Object, O_Id)
+    ;   true),
+
+    old_id_triple(Layer, S_Id, P_Id, O_Id),
+
+    (   ground(Subject)
+    ->  true
+    ;   subject_id(Layer, Subject, S_Id)),
+
+
+    (   ground(Predicate)
+    ->  true
+    ;   predicate_id(Layer, Predicate, P_Id)),
+
+
+    (   ground(Object)
+    ->  true
+    ;   object_id(Layer,Object, O_Id)).
 
 triple(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
@@ -542,7 +577,7 @@ triple(Layer, Subject, Predicate, Object) :-
     ->  true
     ;   object_id(Layer,Object, O_Id)).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     ground(Object),
@@ -552,7 +587,7 @@ id_triple_addition(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     !,
@@ -561,7 +596,7 @@ id_triple_addition(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
     subject_predicate_lookup_object(Predicate_Lookup, Object).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Object),
     !,
@@ -571,7 +606,7 @@ id_triple_addition(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     !,
 
@@ -580,14 +615,14 @@ id_triple_addition(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Object),
     !,
 
     lookup_object_addition(Layer, Object, Object_Lookup),
     object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Predicate),
     !,
 
@@ -596,7 +631,7 @@ id_triple_addition(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple_addition(Layer, Subject, Predicate, Object) :-
+old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     lookup_subject_addition(Layer, Subject_Lookup),
     subject_lookup_subject(Subject_Lookup, Subject),
     subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
@@ -632,7 +667,36 @@ triple_addition(Layer, Subject, Predicate, Object) :-
     ->  true
     ;   object_id(Layer,Object, O_Id)).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_triple_addition(Layer, Subject, Predicate, Object) :-
+    (   ground(Subject)
+    ->  subject_id(Layer, Subject, S_Id)
+    ;   true),
+
+    (   ground(Predicate)
+    ->  predicate_id(Layer, Predicate, P_Id)
+    ;   true),
+
+    (   ground(Object)
+    ->  object_id(Layer, Object, O_Id)
+    ;   true),
+
+    old_id_triple_addition(Layer, S_Id, P_Id, O_Id),
+
+    (   ground(Subject)
+    ->  true
+    ;   subject_id(Layer, Subject, S_Id)),
+
+
+    (   ground(Predicate)
+    ->  true
+    ;   predicate_id(Layer, Predicate, P_Id)),
+
+
+    (   ground(Object)
+    ->  true
+    ;   object_id(Layer,Object, O_Id)).
+
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     ground(Object),
@@ -642,7 +706,7 @@ id_triple_removal(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Predicate),
     !,
@@ -651,7 +715,7 @@ id_triple_removal(Layer, Subject, Predicate, Object) :-
     subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
     subject_predicate_lookup_object(Predicate_Lookup, Object).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     ground(Object),
     !,
@@ -661,7 +725,7 @@ id_triple_removal(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Subject),
     !,
 
@@ -670,14 +734,14 @@ id_triple_removal(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Object),
     !,
 
     lookup_object_removal(Layer, Object, Object_Lookup),
     object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     ground(Predicate),
     !,
 
@@ -686,7 +750,7 @@ id_triple_removal(Layer, Subject, Predicate, Object) :-
     subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
     subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
 
-id_triple_removal(Layer, Subject, Predicate, Object) :-
+old_id_triple_removal(Layer, Subject, Predicate, Object) :-
     lookup_subject_removal(Layer, Subject_Lookup),
     subject_lookup_subject(Subject_Lookup, Subject),
     subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
@@ -707,6 +771,35 @@ triple_removal(Layer, Subject, Predicate, Object) :-
     ;   true),
 
     id_triple_removal(Layer, S_Id, P_Id, O_Id),
+
+    (   ground(Subject)
+    ->  true
+    ;   subject_id(Layer, Subject, S_Id)),
+
+
+    (   ground(Predicate)
+    ->  true
+    ;   predicate_id(Layer, Predicate, P_Id)),
+
+
+    (   ground(Object)
+    ->  true
+    ;   object_id(Layer,Object, O_Id)).
+
+old_triple_removal(Layer, Subject, Predicate, Object) :-
+    (   ground(Subject)
+    ->  subject_id(Layer, Subject, S_Id)
+    ;   true),
+
+    (   ground(Predicate)
+    ->  predicate_id(Layer, Predicate, P_Id)
+    ;   true),
+
+    (   ground(Object)
+    ->  object_id(Layer, Object, O_Id)
+    ;   true),
+
+    old_id_triple_removal(Layer, S_Id, P_Id, O_Id),
 
     (   ground(Subject)
     ->  true
