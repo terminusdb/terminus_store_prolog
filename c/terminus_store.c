@@ -1819,6 +1819,9 @@ static foreign_t pl_id_triple(term_t layer_term, term_t subject_term, term_t pre
         else {
             // this is where we initialize the iterator
             control = init_triple_iterator(layer_term, subject_term, predicate_term, object_term);
+            if (control->iter == NULL) {
+                PL_fail;
+            }
         }
         break;
     case PL_REDO:
@@ -1858,6 +1861,9 @@ static foreign_t pl_id_triple_addition(term_t layer_term, term_t subject_term, t
         else {
             // this is where we initialize the iterator
             control = init_triple_addition_iterator(layer_term, subject_term, predicate_term, object_term);
+            if (control->iter == NULL) {
+                PL_fail;
+            }
         }
         break;
     case PL_REDO:
@@ -1897,6 +1903,9 @@ static foreign_t pl_id_triple_removal(term_t layer_term, term_t subject_term, te
         else {
             // this is where we initialize the iterator
             control = init_triple_removal_iterator(layer_term, subject_term, predicate_term, object_term);
+            if (control->iter == NULL) {
+                PL_fail;
+            }
         }
         break;
     case PL_REDO:
