@@ -12,6 +12,17 @@ typedef struct {
 } SubjectPredicatePair;
 
 typedef struct {
+  uint64_t first;
+  uint64_t second;
+} U64Pair;
+
+typedef struct {
+  uint64_t first;
+  uint64_t second;
+  uint64_t third;
+} U64Triple;
+
+typedef struct {
   uint32_t layer_id[5];
   uint32_t layer_parent_id[5];
   bool has_parent;
@@ -89,9 +100,63 @@ void cleanup_subject_predicates_iter(void *iter);
 
 void cleanup_subjects_iter(void *iter);
 
+void cleanup_u64_iter(void *iter);
+
+void cleanup_u64_pair_iter(void *iter);
+
+void cleanup_u64_triple_iter(void *iter);
+
 void cleanup_u8_vec(VecHandle vec_handle);
 
 void *create_named_graph(void *store_ptr, char *name, char **err);
+
+void *id_triple_addition_iter(void *layer);
+
+void *id_triple_addition_o_iter(void *layer, uint64_t object);
+
+void *id_triple_addition_p_iter(void *layer, uint64_t predicate);
+
+void *id_triple_addition_s_iter(void *layer, uint64_t subject);
+
+void *id_triple_addition_so_iter(void *layer, uint64_t subject, uint64_t object);
+
+void *id_triple_addition_sp_iter(void *layer, uint64_t subject, uint64_t predicate);
+
+bool id_triple_addition_spo_exists(void *layer,
+                                   uint64_t subject,
+                                   uint64_t predicate,
+                                   uint64_t object);
+
+void *id_triple_iter(void *layer);
+
+void *id_triple_o_iter(void *layer, uint64_t object);
+
+void *id_triple_p_iter(void *layer, uint64_t predicate);
+
+void *id_triple_removal_iter(void *layer);
+
+void *id_triple_removal_o_iter(void *layer, uint64_t object);
+
+void *id_triple_removal_p_iter(void *layer, uint64_t predicate);
+
+void *id_triple_removal_s_iter(void *layer, uint64_t subject);
+
+void *id_triple_removal_so_iter(void *layer, uint64_t subject, uint64_t object);
+
+void *id_triple_removal_sp_iter(void *layer, uint64_t subject, uint64_t predicate);
+
+bool id_triple_removal_spo_exists(void *layer,
+                                  uint64_t subject,
+                                  uint64_t predicate,
+                                  uint64_t object);
+
+void *id_triple_s_iter(void *layer, uint64_t subject);
+
+void *id_triple_so_iter(void *layer, uint64_t subject, uint64_t object);
+
+void *id_triple_sp_iter(void *layer, uint64_t subject, uint64_t predicate);
+
+bool id_triple_spo_exists(void *layer, uint64_t subject, uint64_t predicate, uint64_t object);
 
 char *layer_builder_get_id(void *builder);
 
@@ -103,7 +168,7 @@ char *layer_id_predicate(void *layer, uint64_t id);
 
 char *layer_id_subject(void *layer, uint64_t id);
 
-char *layer_id_to_string(uint32_t id[5]);
+char *layer_id_to_string(const uint32_t *id);
 
 void *layer_lookup_object(void *layer, uint64_t object);
 
@@ -235,3 +300,9 @@ uint64_t subject_predicate_objects_iter_next(void *iter);
 void *subject_predicates_iter_next(void *iter);
 
 void *subjects_iter_next(void *iter);
+
+uint64_t u64_iter_next(void *iter);
+
+U64Pair u64_pair_iter_next(void *iter);
+
+U64Triple u64_triple_iter_next(void *iter);

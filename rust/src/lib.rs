@@ -774,6 +774,388 @@ pub unsafe extern "C" fn object_lookup_subject_predicate_pairs_iter(
 }
 
 #[repr(C)]
+pub struct U64Pair {
+    pub first: u64,
+    pub second: u64,
+}
+
+impl U64Pair {
+    fn new(first: u64, second: u64) -> Self {
+        Self { first, second }
+    }
+}
+
+#[repr(C)]
+pub struct U64Triple {
+    pub first: u64,
+    pub second: u64,
+    pub third: u64,
+}
+impl U64Triple {
+    fn new(first: u64, second: u64, third: u64) -> Self {
+        Self { first, second, third }
+    }
+}
+
+// normal triple lookup
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_spo_exists(layer: *mut SyncStoreLayer, subject: u64, predicate: u64, object: u64) -> bool {
+    match (*layer).lookup_subject(subject)
+        .and_then(|s|s.lookup_predicate(predicate))
+        .map(|p|p.has_object(object)) {
+            Some(b) => b,
+            None => false
+        }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_sp_iter(layer: *mut SyncStoreLayer, subject: u64, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject(subject)
+        .and_then(|s| s.lookup_predicate(predicate))
+        .map(|p|p.objects());
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_so_iter(layer: *mut SyncStoreLayer, subject: u64, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject(subject)
+        .map(|s| Box::new(s.predicates()
+                          .filter(|p| p.has_object(object))
+                          .map(|p| p.predicate()))
+             as Box<dyn Iterator<Item = u64>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_s_iter(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void { 
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_subject(subject)
+        .map(|s| Box::new(s.predicates()
+                          .map(|p| {
+                              let predicate = p.predicate();
+                              p.objects().map(move |o|U64Pair::new(predicate,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_p_iter(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_predicate(predicate)
+        .map(|p| Box::new(p.subject_predicate_pairs()
+                          .map(|sp| {
+                              let subject = sp.subject();
+                              sp.objects().map(move |o|U64Pair::new(subject,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_o_iter(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_object(object)
+        .map(|o| Box::new(o.subject_predicate_pairs().map(|(s,p)|U64Pair::new(s,p))) as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    let iter:Box<dyn Iterator<Item=U64Triple>> =
+        Box::new((*layer).triples().map(|t|U64Triple::new(t.subject, t.predicate, t.object)));
+
+        Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+}
+
+// triple addition lookup
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_spo_exists(layer: *mut SyncStoreLayer, subject: u64, predicate: u64, object: u64) -> bool {
+    match (*layer).lookup_subject_addition(subject)
+        .and_then(|s|s.lookup_predicate(predicate))
+        .map(|p|p.has_object(object)) {
+            Some(b) => b,
+            None => false
+        }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_sp_iter(layer: *mut SyncStoreLayer, subject: u64, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject_addition(subject)
+        .and_then(|s| s.lookup_predicate(predicate))
+        .map(|p|p.objects());
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_so_iter(layer: *mut SyncStoreLayer, subject: u64, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject_addition(subject)
+        .map(|s| Box::new(s.predicates()
+                          .filter(|p| p.has_object(object))
+                          .map(|p| p.predicate()))
+             as Box<dyn Iterator<Item = u64>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_s_iter(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void { 
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_subject_addition(subject)
+        .map(|s| Box::new(s.predicates()
+                          .map(|p| {
+                              let predicate = p.predicate();
+                              p.objects().map(move |o|U64Pair::new(predicate,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_p_iter(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_predicate_addition(predicate)
+        .map(|p| Box::new(p.subject_predicate_pairs()
+                          .map(|sp| {
+                              let subject = sp.subject();
+                              sp.objects().map(move |o|U64Pair::new(subject,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_o_iter(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_object_addition(object)
+        .map(|o| Box::new(o.subject_predicate_pairs().map(|(s,p)|U64Pair::new(s,p))) as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_addition_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    let iter:Box<dyn Iterator<Item=U64Triple>> =
+        Box::new((*layer)
+                 .subject_additions()
+                 .map(|s|s.predicates()
+                      .map(|sp| {
+                          let subject = sp.subject();
+                          let predicate = sp.predicate();
+
+                          sp.objects().map(move |object|U64Triple::new(subject,predicate,object))
+                      })
+                      .flatten())
+                 .flatten());
+
+    Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+}
+
+// triple removal lookup
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_spo_exists(layer: *mut SyncStoreLayer, subject: u64, predicate: u64, object: u64) -> bool {
+    match (*layer).lookup_subject_removal(subject)
+        .and_then(|s|s.lookup_predicate(predicate))
+        .map(|p|p.has_object(object)) {
+            Some(b) => b,
+            None => false
+        }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_sp_iter(layer: *mut SyncStoreLayer, subject: u64, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject_removal(subject)
+        .and_then(|s| s.lookup_predicate(predicate))
+        .map(|p|p.objects());
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_so_iter(layer: *mut SyncStoreLayer, subject: u64, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=u64>>> =
+        (*layer)
+        .lookup_subject_removal(subject)
+        .map(|s| Box::new(s.predicates()
+                          .filter(|p| p.has_object(object))
+                          .map(|p| p.predicate()))
+             as Box<dyn Iterator<Item = u64>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_s_iter(layer: *mut SyncStoreLayer, subject: u64) -> *mut c_void { 
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_subject_removal(subject)
+        .map(|s| Box::new(s.predicates()
+                          .map(|p| {
+                              let predicate = p.predicate();
+                              p.objects().map(move |o|U64Pair::new(predicate,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_p_iter(layer: *mut SyncStoreLayer, predicate: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_predicate_removal(predicate)
+        .map(|p| Box::new(p.subject_predicate_pairs()
+                          .map(|sp| {
+                              let subject = sp.subject();
+                              sp.objects().map(move |o|U64Pair::new(subject,o))
+                          })
+                          .flatten())
+             as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_o_iter(layer: *mut SyncStoreLayer, object: u64) -> *mut c_void {
+    let iter:Option<Box<dyn Iterator<Item=U64Pair>>> =
+        (*layer)
+        .lookup_object_removal(object)
+        .map(|o| Box::new(o.subject_predicate_pairs().map(|(s,p)|U64Pair::new(s,p))) as Box<dyn Iterator<Item=U64Pair>>);
+
+    match iter {
+        None => std::ptr::null_mut(),
+        Some(iter) => Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn id_triple_removal_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
+    let iter:Box<dyn Iterator<Item=U64Triple>> =
+        Box::new((*layer)
+                 .subject_removals()
+                 .map(|s|s.predicates()
+                      .map(|sp| {
+                          let subject = sp.subject();
+                          let predicate = sp.predicate();
+
+                          sp.objects().map(move |object|U64Triple::new(subject,predicate,object))
+                      })
+                      .flatten())
+                 .flatten());
+
+    Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
+}
+
+
+// iterators
+#[no_mangle]
+pub unsafe extern "C" fn u64_iter_next(
+    iter: *mut c_void,
+) -> u64 {
+    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = u64>>>;
+    (*iter)
+        .lock()
+        .expect("lock should succeed")
+        .next()
+        .unwrap_or(0)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn u64_pair_iter_next(
+    iter: *mut c_void,
+) -> U64Pair {
+    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = U64Pair>>>;
+    (*iter)
+        .lock()
+        .expect("lock should succeed")
+        .next()
+        .unwrap_or(U64Pair::new(0,0))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn u64_triple_iter_next(
+    iter: *mut c_void,
+) -> U64Triple {
+    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = U64Triple>>>;
+    (*iter)
+        .lock()
+        .expect("lock should succeed")
+        .next()
+        .unwrap_or(U64Triple::new(0,0,0))
+}
+
+#[repr(C)]
 pub struct SubjectPredicatePair {
     pub subject: u64,
     pub predicate: u64,
@@ -816,8 +1198,9 @@ pub unsafe extern "C" fn store_get_layer_from_id(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_id_to_string(id: *const [u32; 5]) -> *mut c_char {
-    let name_string = name_to_string(*id);
+pub unsafe extern "C" fn layer_id_to_string(id: *const u32) -> *mut c_char {
+    let id_array = [*id, *id.offset(1), *id.offset(2), *id.offset(3), *id.offset(4)];
+    let name_string = name_to_string(id_array);
 
     CString::new(name_string)
         .expect("layer name to string conversion should always result in a valid unicode string")
@@ -1033,6 +1416,22 @@ pub unsafe extern "C" fn cleanup_subject_predicate_objects_iter(iter: *mut c_voi
 pub unsafe extern "C" fn cleanup_object_subject_predicates_iter(iter: *mut c_void) {
     let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = (u64, u64)>>>);
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_u64_triple_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = U64Triple>>>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_u64_pair_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = U64Pair>>>);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cleanup_u64_iter(iter: *mut c_void) {
+    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = u64>>>);
+}
+
 
 #[no_mangle]
 pub unsafe extern "C" fn cleanup_cstring(cstring_ptr: *mut c_char) {
