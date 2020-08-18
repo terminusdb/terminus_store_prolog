@@ -1734,6 +1734,7 @@ typedef union {
 static foreign_t triple_iterator_next(TripleIterControl* control, term_t subject_term, term_t predicate_term, term_t object_term) {
     // loop here cause we'll be unifying, which may fail due to inputs.
     // when failing, we want to try the next result, until a unification does succeed.
+    fid_t f = PL_open_foreign_frame();
     for(;;) {
         TripleIterElement element = {0};
         switch(control->type) {
@@ -1755,6 +1756,7 @@ static foreign_t triple_iterator_next(TripleIterControl* control, term_t subject
 
         if (element.single == 0) {
             // done iterating, nothing more will follow.
+            PL_close_foreign_frame(f);
             cleanup_triple_iterator(control);
             PL_fail;
         }
@@ -1789,9 +1791,11 @@ static foreign_t triple_iterator_next(TripleIterControl* control, term_t subject
             }
 
             if (success) {
+                PL_close_foreign_frame(f);
                 PL_retry_address(control);
             }
             else {
+                PL_rewind_foreign_frame(f);
                 continue;
             }
         }
