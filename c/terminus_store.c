@@ -271,17 +271,11 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
 static foreign_t pl_builder_committed(term_t builder_term) {
     void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
 
-    char* err;
-    if (builder_committed(builder, &err)) {
+    if (builder_committed(builder)) {
         PL_succeed;
     }
     else {
-        if (err) {
-            return throw_rust_err(err);
-        }
-        else {
-            PL_fail;
-        }
+        PL_fail;
     }
 }
 

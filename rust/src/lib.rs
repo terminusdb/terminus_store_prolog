@@ -334,18 +334,8 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(
 #[no_mangle]
 pub unsafe extern "C" fn builder_committed(
     builder: *mut SyncStoreLayerBuilder,
-    err: *mut *mut c_char,
 ) -> bool {
-    match (*builder).committed() {
-        Ok(result) => {
-            *err = std::ptr::null_mut();
-            result
-        }
-        Err(e) => {
-            *err = error_to_cstring(e).into_raw();
-            false
-        }
-    }
+    (*builder).committed()
 }
 
 #[no_mangle]
