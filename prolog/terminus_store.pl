@@ -37,6 +37,7 @@
               old_triple_removal/4,
 
               parent/2,
+              squash/2,
 
               layer_addition_count/2,
               layer_removal_count/2,
@@ -297,6 +298,13 @@
 %
 % Unifies Parent with the parent layer of Layer. Fails if that layer
 % has no parent.
+%
+% @arg Layer the layer for which to do the parent lookup.
+% @arg Parent the retrieved parent layer.
+
+%! squash(+Layer:layer, +Squash:layer) is semidet.
+%
+% Squashes a layer-stack to create a new fresh layer
 %
 % @arg Layer the layer for which to do the parent lookup.
 % @arg Parent the retrieved parent layer.
@@ -1043,4 +1051,30 @@ test(query_builder_for_committed, [cleanup(clean),setup(createng)]) :-
     nb_commit(Builder, _Layer),
 
     builder_committed(Builder).
+
+test(squash_a_tower) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    create_named_graph(Store, "testdb", DB),
+    nb_add_triple(Builder, "joe", "eats", node("urchin")),
+    nb_commit(Builder, Layer),
+
+    open_write(Layer,Builder2),
+    nb_add_triple(Builder2, "jill", "eats", node("caviar")),
+    nb_commit(Builder2, Layer2),
+
+    squash(Layer2,Squashed_Layer),
+
+    nb_set_head(DB, Squashed_Layer),
+
+    open_named_graph(Store, "testdb", DB2),
+    head(DB2,Squash),
+
+    findall(X-P-Y, triple(Squash, X, P, Y), Triples),
+
+    Triples = ["jill"-"eats"-node("caviar"),
+               "joe"-"eats"-node("urchin")
+              ],
+    \+ parent(Squash,_).
+
 :- end_tests(terminus_store).

@@ -480,6 +480,28 @@ static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
     PL_succeed;
 }
 
+static foreign_t pl_layer_squash(term_t layer_term, term_t squash_layer_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    if (PL_is_variable(layer_term)) {
+        return throw_instantiation_err(layer_term);
+    }
+
+    if (!PL_is_variable(squash_layer_term)) {
+        PL_fail;
+    }
+
+    char* err;
+    void* squash_ptr = layer_squash(layer, &err);
+    if (squash_ptr == NULL) {
+        return throw_rust_err(err);
+    }
+
+    PL_unify_blob(squash_layer_term, squash_ptr, 0, &layer_blob_type);
+
+    PL_succeed;
+}
+
 static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
@@ -1979,6 +2001,8 @@ install()
                         pl_id_to_object, 0);
     PL_register_foreign("parent", 2,
                         pl_layer_parent, 0);
+    PL_register_foreign("squash", 2,
+                        pl_layer_squash, 0);
     PL_register_foreign("layer_addition_count", 2,
                         pl_layer_addition_count, 0);
     PL_register_foreign("layer_removal_count", 2,

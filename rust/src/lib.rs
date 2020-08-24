@@ -362,6 +362,23 @@ pub unsafe extern "C" fn layer_parent(layer: *mut SyncStoreLayer) -> *mut SyncSt
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn layer_squash(
+    layer: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) -> *mut SyncStoreLayer {
+    match (*layer).squash() {
+        Ok(new_layer) => {
+            *err = std::ptr::null_mut();
+            Box::into_raw(Box::new(new_layer))
+        },
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null_mut()
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_node_and_value_count(layer: *mut SyncStoreLayer) -> usize {
     (*layer).node_and_value_count()
 }
