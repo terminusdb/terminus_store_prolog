@@ -9,6 +9,5 @@ name = "terminus_store_prolog"
 crate-type = ["cdylib"]
 
 [dependencies]
-#terminus-store = "0.11.0"
-terminus-store = { path = "/home/gavin/dev/terminus-store"}
+terminus-store = "0.11.1"
 
