@@ -7,6 +7,7 @@
 
               head/2,
               nb_set_head/2,
+              nb_force_set_head/2,
 
               open_write/2,
 
@@ -1076,5 +1077,26 @@ test(squash_a_tower) :-
                "joe"-"eats"-node("urchin")
               ],
     \+ parent(Squash,_).
+
+
+test(force_set_head) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder1),
+    create_named_graph(Store, "testdb", DB1),
+    nb_add_triple(Builder1, "joe", "eats", node("urchin")),
+    nb_commit(Builder1, _Layer1),
+
+    open_write(Store, Builder2),
+    nb_add_triple(Builder2, "jill", "eats", value("caviar")),
+    nb_commit(Builder2, Layer2),
+
+    nb_force_set_head(DB1,Layer2),
+
+    head(DB1,Layer3),
+    findall(X-P-Y, triple(Layer3, X, P, Y), Triples),
+
+    Triples = ["jill"-"eats"-node("caviar")],
+
+    \+ parent(Layer3,_).
 
 :- end_tests(terminus_store).

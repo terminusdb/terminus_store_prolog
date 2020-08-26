@@ -104,6 +104,19 @@ static foreign_t pl_set_head(term_t named_graph_blob_term, term_t layer_blob_ter
     }
 }
 
+static foreign_t pl_force_set_head(term_t named_graph_blob_term, term_t layer_blob_term) {
+    void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
+    void* layer = check_blob_type(layer_blob_term, &layer_blob_type);
+
+    char* err;
+    if (named_graph_force_set_head(named_graph, layer, &err)) {
+        PL_succeed;
+    }
+    else {
+        PL_fail;
+    }
+}
+
 static foreign_t pl_open_write(term_t layer_or_named_graph_or_store_term, term_t builder_term) {
     if (PL_is_variable(layer_or_named_graph_or_store_term)) {
         return throw_instantiation_err(layer_or_named_graph_or_store_term);
@@ -1963,6 +1976,8 @@ install()
                         pl_head, 0);
     PL_register_foreign("nb_set_head", 2,
                         pl_set_head, 0);
+    PL_register_foreign("nb_force_set_head", 2,
+                        pl_force_set_head, 0);
     PL_register_foreign("open_write", 2,
                         pl_open_write, 0);
     PL_register_foreign("nb_add_id_triple", 4,

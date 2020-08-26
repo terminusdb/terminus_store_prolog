@@ -122,6 +122,24 @@ pub unsafe extern "C" fn named_graph_set_head(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn named_graph_force_set_head(
+    named_graph: *mut SyncNamedGraph,
+    layer_ptr: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) -> bool {
+    match (*named_graph).force_set_head(&*layer_ptr) {
+        Ok(b) => {
+            *err = std::ptr::null_mut();
+            b
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            false
+        }
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn store_create_base_layer(
     store: *mut SyncStore,
     err: *mut *mut c_char,

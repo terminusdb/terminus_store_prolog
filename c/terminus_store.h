@@ -244,6 +244,8 @@ void *named_graph_open_write(void *named_graph, char **err);
 
 bool named_graph_set_head(void *named_graph, void *layer_ptr, char **err);
 
+bool named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
+
 bool object_lookup_lookup_subject_predicate_pair(void *object_lookup,
                                                  uint64_t subject,
                                                  uint64_t predicate);
