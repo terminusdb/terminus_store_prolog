@@ -1087,7 +1087,7 @@ test(force_set_head,[cleanup(clean), setup(createng)]) :-
     nb_commit(Builder1, _Layer1),
 
     open_write(Store, Builder2),
-    nb_add_triple(Builder2, "jill", "eats", value("caviar")),
+    nb_add_triple(Builder2, "jill", "eats", node("caviar")),
     nb_commit(Builder2, Layer2),
 
     nb_force_set_head(DB1,Layer2),
