@@ -1,6 +1,6 @@
 [package]
 name = "terminus-store-prolog"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>", "Robin de Rooij <robin@terminusdb.com>", "Gavin Mendel-Gleason <gavin@terminusdb.com>"]
 edition = "2018"
 
@@ -9,5 +9,5 @@ name = "terminus_store_prolog"
 crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store = "0.11.1"
+terminus-store = "0.11.2"
 
