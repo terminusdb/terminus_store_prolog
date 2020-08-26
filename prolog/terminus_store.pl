@@ -1053,7 +1053,7 @@ test(query_builder_for_committed, [cleanup(clean),setup(createng)]) :-
 
     builder_committed(Builder).
 
-test(squash_a_tower) :-
+test(squash_a_tower,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     create_named_graph(Store, "testdb", DB),
@@ -1079,7 +1079,7 @@ test(squash_a_tower) :-
     \+ parent(Squash,_).
 
 
-test(force_set_head) :-
+test(force_set_head,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder1),
     create_named_graph(Store, "testdb", DB1),
