@@ -1595,19 +1595,19 @@ static TripleIterControl* init_triple_iterator(term_t layer_term, term_t subject
             }
         }
     }
-    else if (PL_is_ground(predicate_term)) {
-        uint64_t predicate;
-        assert(PL_cvt_i_uint64(predicate_term, &predicate));
-
-        control->type = SO;
-        control->iter = id_triple_p_iter(layer, predicate);
-    }
     else if (PL_is_ground(object_term)) {
         uint64_t object;
         assert(PL_cvt_i_uint64(object_term, &object));
 
         control->type = SP;
         control->iter = id_triple_o_iter(layer, object);
+    }
+    else if (PL_is_ground(predicate_term)) {
+        uint64_t predicate;
+        assert(PL_cvt_i_uint64(predicate_term, &predicate));
+
+        control->type = SO;
+        control->iter = id_triple_p_iter(layer, predicate);
     }
     else {
         control->type = SPO;
