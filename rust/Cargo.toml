@@ -9,5 +9,5 @@ name = "terminus_store_prolog"
 crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store = "0.11.2"
-
+terminus-store = "0.11.3
+"
