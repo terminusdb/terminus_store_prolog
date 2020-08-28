@@ -309,6 +309,19 @@ static foreign_t pl_builder_commit(term_t builder_term, term_t layer_term) {
     PL_succeed;
 }
 
+static foreign_t pl_apply_delta(term_t builder_term, term_t layer_term) {
+    void* builder = check_blob_type(builder_term, &layer_builder_blob_type);
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    char* err;
+    builder_apply_delta(builder, layer, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+
+    PL_succeed;
+}
+
 static foreign_t pl_node_and_value_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
@@ -1996,6 +2009,8 @@ install()
                         pl_builder_committed, 0);
     PL_register_foreign("nb_commit", 2,
                         pl_builder_commit, 0);
+    PL_register_foreign("nb_apply_delta", 2,
+                        pl_apply_delta, 0);
     PL_register_foreign("node_and_value_count", 2,
                         pl_node_and_value_count, 0);
     PL_register_foreign("predicate_count", 2,

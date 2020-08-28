@@ -15,6 +15,7 @@
               nb_remove_triple/4,
               nb_commit/2,
               builder_committed/1,
+              nb_apply_delta/2,
 
               node_and_value_count/2,
               predicate_count/2,
@@ -1098,5 +1099,29 @@ test(force_set_head,[cleanup(clean), setup(createng)]) :-
     Triples = ["jill"-"eats"-node("caviar")],
 
     \+ parent(Layer3,_).
+
+test(apply_a_delta,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "joe", "eats", node("urchin")),
+    nb_commit(Builder, Layer),
+
+    open_write(Layer,Builder2),
+    nb_add_triple(Builder2, "jill", "eats", node("caviar")),
+    nb_commit(Builder2, Delta),
+
+    open_write(Store, Builder_Base),
+    nb_add_triple(Builder_Base, "cathie", "eats", node("seaweed")),
+    nb_commit(Builder_Base, Base),
+
+    open_write(Base, Builder_New),
+    nb_apply_delta(Builder_New,Delta),
+    nb_commit(Builder_New,Final_Layer),
+
+    findall(X-P-Y, triple(Final_Layer, X, P, Y), Triples),
+
+    Triples = ["cathie"-"eats"-node("seaweed"),
+               "jill"-"eats"-node("caviar")
+              ].
 
 :- end_tests(terminus_store).
