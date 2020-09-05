@@ -9,7 +9,13 @@ WIN_SWIPL_INCLUDE = "C:\Program Files\swipl\include"
 WIN_TERMINUS_STORE_PROLOG_PATH = "C:\projects\terminus-store-prolog\rust\target\release"
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = error.o blobs.o terminus_store.o
-CARGO_FLAGS=
+CARGO_FLAGS =
+BUILD_LD_OPTIONS = -Wl,-rpath='$$ORIGIN'
+
+ifeq ($(SWIARCH),x86_64-darwin)
+SOEXT = dylib
+BUILD_LD_OPTIONS = -L$(SWIHOME)/$(PACKSODIR) $(SWILIB)
+endif
 
 all: release
 
@@ -31,7 +37,7 @@ build:
 	mkdir -p $(PACKSODIR)
 	cd rust; cargo build $(CARGO_FLAGS)
 	cp $(RUST_TARGET_DIR)/$(RUST_LIB) $(PACKSODIR)
-	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -Wl,-rpath='$$ORIGIN' -l$(RUST_LIB_NAME)
+	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb
