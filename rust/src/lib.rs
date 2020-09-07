@@ -388,10 +388,15 @@ pub unsafe extern "C" fn builder_apply_delta(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_parent(layer: *mut SyncStoreLayer) -> *mut SyncStoreLayer {
+pub unsafe extern "C" fn layer_parent(layer: *mut SyncStoreLayer, err: *mut *mut c_char) -> *mut SyncStoreLayer {
+    *err = std::ptr::null_mut();
     match (*layer).parent() {
-        Some(parent) => Box::into_raw(Box::new(parent)),
-        None => std::ptr::null_mut(),
+        Ok(Some(parent)) => Box::into_raw(Box::new(parent)),
+        Ok(None) => std::ptr::null_mut(),
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null_mut()
+        }
     }
 }
 

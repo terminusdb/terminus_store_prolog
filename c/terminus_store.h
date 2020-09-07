@@ -46,9 +46,9 @@ void builder_add_string_value_triple(void *builder,
                                      char *object_ptr,
                                      char **err);
 
-void *builder_commit(void *builder, char **err);
-
 void builder_apply_delta(void *builder, void *layer, char **err);
+
+void *builder_commit(void *builder, char **err);
 
 bool builder_committed(void *builder);
 
@@ -204,9 +204,7 @@ void *layer_objects_iter(void *layer);
 
 void *layer_open_write(void *layer, char **err);
 
-void *layer_parent(void *layer);
-
-void *layer_squash(void *layer, char **err);
+void *layer_parent(void *layer, char **err);
 
 void *layer_predicate_additions_iter(void *layer);
 
@@ -217,6 +215,8 @@ uint64_t layer_predicate_id(void *layer, char *predicate);
 void *layer_predicate_removals_iter(void *layer);
 
 void *layer_predicates_iter(void *layer);
+
+void *layer_squash(void *layer, char **err);
 
 bool layer_string_to_id(const char *name_ptr, uint32_t (*result)[5], char **err);
 
@@ -238,6 +238,8 @@ uintptr_t layer_triple_addition_count(void *layer);
 
 uintptr_t layer_triple_removal_count(void *layer);
 
+bool named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
+
 void *named_graph_get_head(void *named_graph, char **err);
 
 char *named_graph_get_name(void *named_graph);
@@ -245,8 +247,6 @@ char *named_graph_get_name(void *named_graph);
 void *named_graph_open_write(void *named_graph, char **err);
 
 bool named_graph_set_head(void *named_graph, void *layer_ptr, char **err);
-
-bool named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
 
 bool object_lookup_lookup_subject_predicate_pair(void *object_lookup,
                                                  uint64_t subject,

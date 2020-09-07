@@ -496,9 +496,15 @@ static foreign_t pl_layer_parent(term_t layer_term, term_t parent_term) {
         PL_fail;
     }
 
-    void* parent = layer_parent(layer);
+    char* err;
+    void* parent = layer_parent(layer, &err);
     if (parent == NULL) {
-        PL_fail;
+        if (err) {
+            return throw_rust_err(err);
+        }
+        else {
+            PL_fail;
+        }
     }
 
     PL_unify_blob(parent_term, parent, 0, &layer_blob_type);
