@@ -9,4 +9,4 @@ name = "terminus_store_prolog"
 crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store = "0.11.6"
+terminus-store = {git="https://github.com/terminusdb/terminusdb-store.git", rev="73b7e12451408f56efce98fd69ed1a962d3a0536"}
