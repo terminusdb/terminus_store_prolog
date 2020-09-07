@@ -28,7 +28,7 @@ typedef struct {
   bool has_parent;
 } LayerAndParent;
 
-bool builder_add_id_triple(void *builder,
+void builder_add_id_triple(void *builder,
                            uint64_t subject,
                            uint64_t predicate,
                            uint64_t object,
@@ -52,19 +52,19 @@ void *builder_commit(void *builder, char **err);
 
 bool builder_committed(void *builder);
 
-bool builder_remove_id_triple(void *builder,
+void builder_remove_id_triple(void *builder,
                               uint64_t subject,
                               uint64_t predicate,
                               uint64_t object,
                               char **err);
 
-bool builder_remove_string_node_triple(void *builder,
+void builder_remove_string_node_triple(void *builder,
                                        char *subject_ptr,
                                        char *predicate_ptr,
                                        char *object_ptr,
                                        char **err);
 
-bool builder_remove_string_value_triple(void *builder,
+void builder_remove_string_value_triple(void *builder,
                                         char *subject_ptr,
                                         char *predicate_ptr,
                                         char *object_ptr,

@@ -225,17 +225,13 @@ pub unsafe extern "C" fn builder_add_id_triple(
     predicate: u64,
     object: u64,
     err: *mut *mut c_char,
-) -> bool {
+) {
     match (*builder).add_id_triple(IdTriple::new(subject, predicate, object)) {
-        Ok(r) => {
+        Ok(()) => {
             *err = std::ptr::null_mut();
-
-            r
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-
-            false
         }
     }
 }
@@ -283,17 +279,13 @@ pub unsafe extern "C" fn builder_remove_id_triple(
     predicate: u64,
     object: u64,
     err: *mut *mut c_char,
-) -> bool {
+) {
     match (*builder).remove_id_triple(IdTriple::new(subject, predicate, object)) {
-        Ok(r) => {
+        Ok(()) => {
             *err = std::ptr::null_mut();
-
-            r
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-
-            false
         }
     }
 }
@@ -305,7 +297,7 @@ pub unsafe extern "C" fn builder_remove_string_node_triple(
     predicate_ptr: *mut c_char,
     object_ptr: *mut c_char,
     err: *mut *mut c_char,
-) -> bool {
+) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
@@ -318,8 +310,6 @@ pub unsafe extern "C" fn builder_remove_string_node_triple(
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-
-            false
         }
     }
 }
@@ -331,20 +321,17 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(
     predicate_ptr: *mut c_char,
     object_ptr: *mut c_char,
     err: *mut *mut c_char,
-) -> bool {
+) {
     let subject = CStr::from_ptr(subject_ptr).to_string_lossy();
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
 
     match (*builder).remove_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
-        Ok(r) => {
+        Ok(()) => {
             *err = std::ptr::null_mut();
-            r
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-
-            false
         }
     }
 }
