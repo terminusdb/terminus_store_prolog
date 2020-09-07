@@ -172,17 +172,12 @@ static foreign_t pl_add_id_triple(term_t builder_term, term_t subject_term, term
     }
 
     char *err;
-    int result = builder_add_id_triple(builder, subject, predicate, object, &err);
+    builder_add_id_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
         return throw_rust_err(err);
     }
 
-    if (result) {
-        PL_succeed;
-    }
-    else {
-        PL_fail;
-    }
+    PL_succeed;
 }
 
 static foreign_t pl_add_string_node_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
@@ -229,17 +224,12 @@ static foreign_t pl_remove_id_triple(term_t builder_term, term_t subject_term, t
     }
 
     char *err;
-    int result = builder_remove_id_triple(builder, subject, predicate, object, &err);
+    builder_remove_id_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
         return throw_rust_err(err);
     }
 
-    if (result) {
-        PL_succeed;
-    }
-    else {
-        PL_fail;
-    }
+    PL_succeed;
 }
 
 static foreign_t pl_remove_string_node_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
@@ -249,17 +239,12 @@ static foreign_t pl_remove_string_node_triple(term_t builder_term, term_t subjec
     char* object = check_string_or_atom_term(object_term);
 
     char *err;
-    int result = builder_remove_string_node_triple(builder, subject, predicate, object, &err);
+    builder_remove_string_node_triple(builder, subject, predicate, object, &err);
     if (err != NULL) {
         return throw_rust_err(err);
     }
 
-    if (result) {
-        PL_succeed;
-    }
-    else {
-        PL_fail;
-    }
+    PL_succeed;
 }
 
 static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subject_term, term_t predicate_term, term_t object_term) {
@@ -268,18 +253,13 @@ static foreign_t pl_remove_string_value_triple(term_t builder_term, term_t subje
     char* predicate = check_string_or_atom_term(predicate_term);
     char* object = check_string_or_atom_term(object_term);
     char *err;
-    int result = builder_remove_string_value_triple(builder, subject, predicate, object, &err);
+    builder_remove_string_value_triple(builder, subject, predicate, object, &err);
 
     if (err != NULL) {
         return throw_rust_err(err);
     }
 
-    if (result) {
-        PL_succeed;
-    }
-    else {
-        PL_fail;
-    }
+    PL_succeed;
 }
 
 static foreign_t pl_builder_committed(term_t builder_term) {
