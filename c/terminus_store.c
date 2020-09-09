@@ -3,6 +3,7 @@
 #include <SWI-Stream.h>
 #include <stdio.h>
 #include <string.h>
+#include <locale.h>
 #include "terminus_store.h"
 #include "error.h"
 #include "blobs.h"
@@ -1970,6 +1971,16 @@ static foreign_t pl_id_triple_removal(term_t layer_term, term_t subject_term, te
     return triple_iterator_next(control, subject_term, predicate_term, object_term);
 }
 
+                /*****************************************
+                 *     Dumb Windows Hack                 *
+                 ****************************************/
+static foreign_t pl_windows_hack_setlocale() {
+    setlocale(LC_ALL, ".UTF8");
+
+    PL_succeed;
+}
+
+
 
                 /*****************************************
                  *     Prolog install function           *
@@ -2141,4 +2152,6 @@ install()
                         pl_id_triple_addition, PL_FA_NONDETERMINISTIC);
     PL_register_foreign("id_triple_removal", 4,
                         pl_id_triple_removal, PL_FA_NONDETERMINISTIC);
+    PL_register_foreign("windows_hack_setlocale", 0,
+                        pl_windows_hack_setlocale, 0);
 }
