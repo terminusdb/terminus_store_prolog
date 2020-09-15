@@ -80,6 +80,9 @@ build_script:
    - set SOEXT=dll
    - mingw32-make.exe windows_release
 
+test_script:
+  - swipl -g run_tests -g halt prolog\terminus_store.pl
+
 artifacts:
   # pushing a single file
   - path: libterminus_store.dll
