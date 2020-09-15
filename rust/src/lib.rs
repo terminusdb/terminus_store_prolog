@@ -870,7 +870,7 @@ pub extern "C" fn id_triple_so_iter(
     let iter: Box<dyn Iterator<Item = u64>> = Box::new(
         unsafe { &(*layer) }
             .triples_s(subject)
-            .filter(|triple| triple.object == object)
+            .filter(move |triple| triple.object == object)
             .map(|triple| triple.predicate),
     );
 
@@ -953,7 +953,7 @@ pub extern "C" fn id_triple_addition_so_iter(
     let iter: Box<dyn Iterator<Item = u64>> = Box::new(
         unsafe { &(*layer) }
             .triple_additions_s(subject)
-            .filter(|triple| triple.object == object)
+            .filter(move |triple| triple.object == object)
             .map(|triple| triple.predicate),
     );
     Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
@@ -1045,7 +1045,7 @@ pub extern "C" fn id_triple_removal_so_iter(
     let iter: Box<dyn Iterator<Item = u64>> = Box::new(
         unsafe { &(*layer) }
             .triple_removals_s(subject)
-            .filter(|triple| triple.object == object)
+            .filter(move |triple| triple.object == object)
             .map(|triple| triple.predicate),
     );
 
