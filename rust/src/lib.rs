@@ -248,7 +248,7 @@ pub unsafe extern "C" fn builder_add_string_node_triple(
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
 
-    match (*builder).add_string_triple(&StringTriple::new_node(&subject, &predicate, &object)) {
+    match (*builder).add_string_triple(StringTriple::new_node(&subject, &predicate, &object)) {
         Ok(_) => *err = std::ptr::null_mut(),
         Err(e) => *err = error_to_cstring(e).into_raw(),
     };
@@ -266,7 +266,7 @@ pub unsafe extern "C" fn builder_add_string_value_triple(
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
 
-    match (*builder).add_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
+    match (*builder).add_string_triple(StringTriple::new_value(&subject, &predicate, &object)) {
         Ok(_) => *err = std::ptr::null_mut(),
         Err(e) => *err = error_to_cstring(e).into_raw(),
     };
@@ -302,7 +302,7 @@ pub unsafe extern "C" fn builder_remove_string_node_triple(
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
 
-    match (*builder).remove_string_triple(&StringTriple::new_node(&subject, &predicate, &object)) {
+    match (*builder).remove_string_triple(StringTriple::new_node(&subject, &predicate, &object)) {
         Ok(r) => {
             *err = std::ptr::null_mut();
 
@@ -326,7 +326,7 @@ pub unsafe extern "C" fn builder_remove_string_value_triple(
     let predicate = CStr::from_ptr(predicate_ptr).to_string_lossy();
     let object = CStr::from_ptr(object_ptr).to_string_lossy();
 
-    match (*builder).remove_string_triple(&StringTriple::new_value(&subject, &predicate, &object)) {
+    match (*builder).remove_string_triple(StringTriple::new_value(&subject, &predicate, &object)) {
         Ok(()) => {
             *err = std::ptr::null_mut();
         }
