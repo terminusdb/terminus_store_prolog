@@ -82,8 +82,8 @@ build_script:
 
 test_script:
   - set PACKSODIR="."
-  - copy rust\target\release\*.dll C:\Program Files\swipl\bin\
-  - copy libterminus_store.dll C:\Program Files\swipl\bin\
+  - copy rust\target\release\terminus_store_prolog.dll C:\Program Files\swipl\bin\terminus_store_prolog.dll
+  - copy libterminus_store.dll C:\Program Files\swipl\bin\libterminus_store.dll
   - swipl -g "attach_packs('c/projects')." -g run_tests -g halt prolog\terminus_store.pl
 
 artifacts:
