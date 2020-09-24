@@ -52,7 +52,11 @@
 
               pack_export/3,
               pack_layerids_and_parents/2,
-              pack_import/3]).
+              pack_import/3,
+
+              csv_builder_to_layer/3,
+              csv_builder_to_layer/4
+            ]).
 
 :- use_foreign_library(foreign(libterminus_store)).
 
@@ -337,6 +341,19 @@
 % @arg Subject the returned subject lookup.
 %
 
+%! csv_builder_to_layer(+Csv:path, +Builder:builder, -Layer:layer, +Options:options) is det
+%
+% Creates a layer with the contents of a csv as triples
+%
+% @arg Csv The path to the csv to be loaded
+% @arg Builder The builder into which to place the CSV
+% @arg Layer The returned Layer
+% @arg Options A list containing any of the following:
+%     * data_prefix(Prefix) (default is "csv:///data#")
+%     * predicate_prefix(Prefix) (default is "csv:///schema#")
+%     * header(Bool) (Boolean to read a header, default true)
+%     * skip_header(Bool) (Skip the header regardless of presence,
+%                          default false)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%
@@ -586,6 +603,17 @@ triple(Layer, Subject, Predicate, Object) :-
     (   ground(Object)
     ->  true
     ;   object_id(Layer,Object, O_Id)).
+
+csv_builder_to_layer(Csv, Builder, Layer) :-
+    csv_builder_to_layer(Csv,Builder,Layer,[]).
+
+csv_builder_to_layer(Csv, Builder, Layer, Options) :-
+    option(data_prefix(Data), Options, 'csv:///data/'),
+    option(predicate_prefix(Predicate), Options, 'csv:///schema#'),
+    option(header(Header), Options, true),
+    option(skip_header(Skip), Options, false),
+    writeq(Header),nl,
+    csv_builder_to_layer(Csv, Builder, Layer, Data, Predicate, Header, Skip).
 
 old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
@@ -1123,5 +1151,41 @@ test(apply_a_delta,[cleanup(clean), setup(createng)]) :-
     Triples = ["cathie"-"eats"-node("seaweed"),
                "jill"-"eats"-node("caviar")
               ].
+
+test(add_csv,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    tmp_file_stream(Filename, Stream, [encoding(utf8)]),
+    format(Stream, "some,header~n", []),
+    format(Stream, "1,2~n", []),
+    format(Stream, "3,4~n", []),
+    close(Stream),
+    csv_builder_to_layer(Filename, Builder, Layer, []),
+    findall(X-P-Y, triple(Layer, X, P, Y), Triples),
+    Triples = [
+        "csv:///data/row0"-"csv:///schema#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row0"-"csv:///schema#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row1"-"csv:///schema#header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row1"-"csv:///schema#some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'")
+    ].
+
+test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    tmp_file_stream(Filename, Stream, [encoding(utf8)]),
+    format(Stream, "some,header~n", []),
+    format(Stream, "1,2~n", []),
+    format(Stream, "3,4~n", []),
+    close(Stream),
+    csv_builder_to_layer(Filename, Builder, Layer, [skip_header(true)]),
+    findall(X-P-Y, triple(Layer, X, P, Y), Triples),
+    Triples = [
+        "csv:///data/row0"-"csv:///schema#col0"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row0"-"csv:///schema#col1"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row1"-"csv:///schema#col0"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row1"-"csv:///schema#col1"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row2"-"csv:///schema#col0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row2"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'")
+    ].
 
 :- end_tests(terminus_store).

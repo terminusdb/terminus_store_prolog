@@ -1,6 +1,6 @@
 use std::ffi::{CStr, CString};
 use std::fmt::Display;
-use std::os::raw::{c_char, c_void};
+use std::os::raw::{c_char, c_int, c_void};
 use std::sync::Mutex;
 
 use terminus_store::layer::{
@@ -9,6 +9,9 @@ use terminus_store::layer::{
 };
 use terminus_store::storage::{name_to_string, string_to_name};
 use terminus_store::store::sync::*;
+
+mod csv;
+use crate::csv::import_csv;
 
 #[no_mangle]
 pub unsafe extern "C" fn open_memory_store() -> *mut SyncStore {
@@ -1437,4 +1440,46 @@ pub unsafe extern "C" fn cleanup_layer_and_parent_vec(vec_handle: VecHandle) {
         vec_handle.len,
         vec_handle.capacity,
     );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn add_csv_to_builder(
+    csv: *mut c_char,
+    builder: *mut SyncStoreLayerBuilder,
+    data_prefix: *mut c_char,
+    predicate_prefix: *mut c_char,
+    header: c_int,
+    skip_header: c_int,
+    err: *mut *mut c_char,
+) -> *mut SyncStoreLayer {
+
+    let csv_path = CStr::from_ptr(csv).to_str().unwrap().to_string();
+    let data_prefix = CStr::from_ptr(data_prefix).to_str().unwrap().to_string();
+    let predicate_prefix = CStr::from_ptr(predicate_prefix)
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let header = header != 0;
+    let skip_header = skip_header != 0;
+
+    let layer_result = import_csv(
+        csv_path,
+        &*builder,
+        data_prefix,
+        predicate_prefix,
+        header,
+        skip_header,
+    );
+
+    match layer_result {
+        Ok(layer) => {
+            *err = std::ptr::null_mut();
+            Box::into_raw(Box::new(layer))
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            std::ptr::null_mut()
+        }
+    }
 }

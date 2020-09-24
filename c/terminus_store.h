@@ -1,5 +1,12 @@
 #include <stdbool.h>
 
+typedef struct{
+  int   flags;				/* PL_WRT_* flags */
+  int   max_depth;			/* depth limit */
+  int   depth;				/* current depth */
+  atom_t data_prefix;			/* Where to insert spaces */
+} CsvOptions;
+
 typedef struct {
   void *ptr;
   uintptr_t len;
@@ -27,6 +34,14 @@ typedef struct {
   uint32_t layer_parent_id[5];
   bool has_parent;
 } LayerAndParent;
+
+void* add_csv_to_builder(char *csv,
+                         void *builder,
+                         char *data_prefix,
+                         char *predicate_prefix,
+                         int header,
+                         int skip_header,
+                         char **err);
 
 void builder_add_id_triple(void *builder,
                            uint64_t subject,
