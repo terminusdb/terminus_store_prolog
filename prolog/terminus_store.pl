@@ -612,7 +612,6 @@ csv_builder_to_layer(Csv, Builder, Layer, Options) :-
     option(predicate_prefix(Predicate), Options, 'csv:///schema#'),
     option(header(Header), Options, true),
     option(skip_header(Skip), Options, false),
-    writeq(Header),nl,
     csv_builder_to_layer(Csv, Builder, Layer, Data, Predicate, Header, Skip).
 
 old_id_triple_addition(Layer, Subject, Predicate, Object) :-
