@@ -1187,4 +1187,14 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
         "csv:///data/row2"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'")
     ].
 
+test(predicate_only_query,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("C")),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_commit(Builder, Layer),
+    findall(X-C, triple(Layer, X, "B", C), Ps),
+    Ps = ["A"-node("C"),
+          "B"-node("D")].
+
 :- end_tests(terminus_store).
