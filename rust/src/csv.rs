@@ -11,10 +11,6 @@ use hex;
 use sha1::{Sha1, Digest};
 use urlencoding;
 
-fn normalize_header(header: &str) -> String {
-    header.to_owned()
-}
-
 fn check_utf8(csv_path: PathBuf) -> bool {
     let csv_path_clone = csv_path.clone();
     let mut f = File::open(csv_path_clone).unwrap();
@@ -61,22 +57,14 @@ pub fn import_csv(
     if !has_header || skip_header {
         let len = reader.headers().unwrap().len();
         for i in 0..len {
-            let i_field = format!("{}", i);
-            header.push((i_field,format!("{}col{}", schema_prefix, i)));
+            header.push(format!("{}col{}", schema_prefix, i));
         }
     } else {
         for field in reader.headers().unwrap().iter() {
-            let field_name = normalize_header(field);
-            header.push((field_name.clone(),format!("{}{}", schema_prefix, field_name)));
+            let escaped_field = urlencoding::encode(field);
+            header.push(format!("{}{}", schema_prefix, escaped_field));
         }
     }
-
-    for (column_name,column) in header.clone() {
-        let label_predicate = "http://www.w3.org/2000/01/rdf-schema#label";
-        let label = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", column_name);
-        builder
-            .add_string_triple(StringTriple::new_value(&column, &label_predicate, &label)).unwrap()
-    };
 
     let rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
     let row_type = format!("{}{}", schema_prefix, "Row");
@@ -98,11 +86,11 @@ pub fn import_csv(
             let node = format!("{}row{}", data_prefix, hash_string);
             // add row type
             builder
-                .add_string_triple(StringTriple::new_value(&node, &rdf_type, &row_type))
+                .add_string_triple(StringTriple::new_node(&node, &rdf_type, &row_type))
                 .unwrap();
             for (col, field) in record.iter().enumerate() {
                 let value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", field);
-                let (_column_name,column) = &header[col];
+                let column = &header[col];
                 builder
                     .add_string_triple(StringTriple::new_value(&node, &column, &value))
                     .unwrap();

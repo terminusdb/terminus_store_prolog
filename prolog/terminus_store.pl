@@ -1164,12 +1164,11 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     Triples = [
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
-        "csv:///schema#header"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///schema#some"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'")]
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row")
+        ].
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
@@ -1183,13 +1182,12 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     Triples = [
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col0"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col1"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
-        "csv:///data/rowe673f1078b615c5695ed98920fa82137ee861caa"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
-        "csv:///schema#col0"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"0\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///schema#col1"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'")]
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row")
+    ].
+
 
 test(so_mode,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
