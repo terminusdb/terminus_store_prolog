@@ -8,22 +8,17 @@
 #include "error.h"
 #include "blobs.h"
 
-static foreign_t pl_csv_builder_to_layer(term_t csv_term,
-                                         term_t builder_blob,
-                                         term_t layer_term,
-                                         term_t data_prefix_term,
-                                         term_t predicate_prefix_term,
-                                         term_t header_term,
-                                         term_t skip_header_term) {
+static foreign_t pl_csv_builder(term_t csv_term,
+                                term_t builder_blob,
+                                term_t data_prefix_term,
+                                term_t schema_prefix_term,
+                                term_t header_term,
+                                term_t skip_header_term) {
 
     char* csv = check_string_or_atom_term(csv_term);
     void* builder = check_blob_type(builder_blob, &layer_builder_blob_type);
-    if (!PL_is_variable(layer_term)) {
-        PL_fail;
-    }
-
     char* data_prefix = check_string_or_atom_term(data_prefix_term);
-    char* predicate_prefix = check_string_or_atom_term(predicate_prefix_term);
+    char* schema_prefix = check_string_or_atom_term(schema_prefix_term);
 
     int header;
     PL_get_bool_ex(header_term,&header);
@@ -32,22 +27,16 @@ static foreign_t pl_csv_builder_to_layer(term_t csv_term,
     PL_get_bool_ex(skip_header_term,&skip_header);
 
     char* err;
-    void* layer_ptr = add_csv_to_builder(csv,
-                                         builder,
-                                         data_prefix,
-                                         predicate_prefix,
-                                         header,
-                                         skip_header,
-                                         &err);
+    add_csv_to_builder(csv,
+                       builder,
+                       data_prefix,
+                       schema_prefix,
+                       header,
+                       skip_header,
+                       &err);
 
-    if (layer_ptr == NULL) {
-        if (err != NULL) {
-            return throw_rust_err(err);
-        }
-        PL_fail;
-    }
-    else {
-        PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
+    if (err != NULL) {
+        return throw_rust_err(err);
     }
     PL_succeed;
 }
@@ -2018,8 +2007,8 @@ static foreign_t pl_windows_hack_setlocale() {
 install_t
 install()
 {
-    PL_register_foreign("csv_builder_to_layer", 7,
-                        pl_csv_builder_to_layer, 0);
+    PL_register_foreign("csv_builder", 6,
+                        pl_csv_builder, 0);
     PL_register_foreign("open_memory_store", 1,
                         pl_open_memory_store, 0);
     PL_register_foreign("open_directory_store", 2,

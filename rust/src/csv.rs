@@ -38,7 +38,7 @@ pub fn import_csv(
     schema_prefix: String,
     has_header: bool,
     skip_header: bool,
-) -> std::result::Result<SyncStoreLayer, io::Error> {
+) -> std::result::Result<(), io::Error> {
     let pathbuf: PathBuf = csv_path.into();
 
     if !check_utf8(pathbuf.clone()) {
@@ -97,6 +97,5 @@ pub fn import_csv(
             }
         });
 
-    let layer = builder.commit()?;
-    return Ok(layer);
+    return Ok(());
 }

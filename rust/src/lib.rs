@@ -1451,7 +1451,7 @@ pub unsafe extern "C" fn add_csv_to_builder(
     header: c_int,
     skip_header: c_int,
     err: *mut *mut c_char,
-) -> *mut SyncStoreLayer {
+) {
 
     let csv_path = CStr::from_ptr(csv).to_str().unwrap().to_string();
     let data_prefix = CStr::from_ptr(data_prefix).to_str().unwrap().to_string();
@@ -1463,7 +1463,7 @@ pub unsafe extern "C" fn add_csv_to_builder(
     let header = header != 0;
     let skip_header = skip_header != 0;
 
-    let layer_result = import_csv(
+    let result = import_csv(
         csv_path,
         &*builder,
         data_prefix,
@@ -1472,14 +1472,12 @@ pub unsafe extern "C" fn add_csv_to_builder(
         skip_header,
     );
 
-    match layer_result {
-        Ok(layer) => {
+    match result {
+        Ok(()) => {
             *err = std::ptr::null_mut();
-            Box::into_raw(Box::new(layer))
         }
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
-            std::ptr::null_mut()
         }
     }
 }

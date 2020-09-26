@@ -35,13 +35,13 @@ typedef struct {
   bool has_parent;
 } LayerAndParent;
 
-void* add_csv_to_builder(char *csv,
-                         void *builder,
-                         char *data_prefix,
-                         char *predicate_prefix,
-                         int header,
-                         int skip_header,
-                         char **err);
+void add_csv_to_builder(char *csv,
+                        void *builder,
+                        char *data_prefix,
+                        char *schema_prefix,
+                        int header,
+                        int skip_header,
+                        char **err);
 
 void builder_add_id_triple(void *builder,
                            uint64_t subject,
