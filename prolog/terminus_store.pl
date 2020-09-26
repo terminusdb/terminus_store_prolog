@@ -1162,32 +1162,36 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     csv_builder_to_layer(Filename, Builder, Layer, []),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
-        "csv:///data/row0"-"csv:///schema#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row0"-"csv:///schema#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row1"-"csv:///schema#header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row1"-"csv:///schema#some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'")
-    ].
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///schema#header"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///schema#some"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'")]
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
-    format(Stream, "some,header~n", []),
     format(Stream, "1,2~n", []),
     format(Stream, "3,4~n", []),
     close(Stream),
     csv_builder_to_layer(Filename, Builder, Layer, [skip_header(true)]),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
-        "csv:///data/row0"-"csv:///schema#col0"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row0"-"csv:///schema#col1"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row1"-"csv:///schema#col0"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row1"-"csv:///schema#col1"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row2"-"csv:///schema#col0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row2"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'")
-    ].
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col0"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col1"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///data/rowe673f1078b615c5695ed98920fa82137ee861caa"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-value("csv:///schema#Row"),
+        "csv:///schema#col0"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"0\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "csv:///schema#col1"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'")]
 
-test(predicate_only_query,[cleanup(clean), setup(createng)]) :-
+test(so_mode,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("C")),
@@ -1196,5 +1200,33 @@ test(predicate_only_query,[cleanup(clean), setup(createng)]) :-
     findall(X-C, triple(Layer, X, "B", C), Ps),
     Ps = ["A"-node("C"),
           "B"-node("D")].
+
+test(sp_mode,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
+    findall(X-C, triple(Layer, X, C, node("D")), Ps),
+    Ps = ["A"-"B",
+          "C"-"B"].
+
+test(op_mode,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
+    findall(X, triple(Layer, X, "B", node("D")), Ps),
+    Ps = ["A","C"].
+
+test(p_mode,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
+    findall(X, triple(Layer, "A", X, node("D")), Ps),
+    Ps = ["B"].
 
 :- end_tests(terminus_store).
