@@ -8,6 +8,20 @@
 #include "error.h"
 #include "blobs.h"
 
+static foreign_t pl_apply_diff(term_t builder_blob,
+                               term_t layer_blob) {
+    void* builder = check_blob_type(builder_blob, &layer_builder_blob_type);
+    void* layer = check_blob_type(layer_blob, &layer_blob_type);
+
+    char* err;
+    builder_apply_diff(builder,layer,&err);
+
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
 static foreign_t pl_csv_builder(term_t csv_term,
                                 term_t builder_blob,
                                 term_t data_prefix_term,
@@ -2043,6 +2057,8 @@ install()
                         pl_builder_commit, 0);
     PL_register_foreign("nb_apply_delta", 2,
                         pl_apply_delta, 0);
+    PL_register_foreign("nb_apply_diff", 2,
+                        pl_apply_diff, 0);
     PL_register_foreign("node_and_value_count", 2,
                         pl_node_and_value_count, 0);
     PL_register_foreign("predicate_count", 2,

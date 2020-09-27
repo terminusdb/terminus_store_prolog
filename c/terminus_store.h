@@ -63,6 +63,8 @@ void builder_add_string_value_triple(void *builder,
 
 void builder_apply_delta(void *builder, void *layer, char **err);
 
+void builder_apply_diff(void *builder, void *layer, char **err);
+
 void *builder_commit(void *builder, char **err);
 
 bool builder_committed(void *builder);

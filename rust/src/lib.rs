@@ -378,6 +378,23 @@ pub unsafe extern "C" fn builder_apply_delta(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn builder_apply_diff(
+    builder: *mut SyncStoreLayerBuilder,
+    layer: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) {
+    match (*builder).apply_diff(&*layer) {
+        Ok(_) => {
+            *err = std::ptr::null_mut();
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+        }
+    }
+}
+
+
+#[no_mangle]
 pub unsafe extern "C" fn layer_parent(
     layer: *mut SyncStoreLayer,
     err: *mut *mut c_char,

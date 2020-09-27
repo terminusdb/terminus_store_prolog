@@ -16,6 +16,7 @@
               nb_commit/2,
               builder_committed/1,
               nb_apply_delta/2,
+              nb_apply_diff/2,
 
               node_and_value_count/2,
               predicate_count/2,
@@ -211,6 +212,24 @@
 % @arg Subject the triple subject.
 % @arg Predicate the triple predicate.
 % @arg Object the triple object, which is interpreted as a node.
+
+%! nb_apply_delta(+Builder:layer_builder, +Layer:layer) is det.
+%
+% Add and remove all additions and removals from Layer into Builder
+%
+% @arg Builder the layer builder to make changes to.
+% @arg Layer the layer that will apply changes from.
+% @throws if the builder has already been committed.
+
+%! nb_apply_diff(+Builder:layer_builder, +Layer:layer) is det.
+%
+% Make whatever changes are necessary to Builder, to bring it in line
+% with Layer. Our final visabile state should be as layer, so we are
+% calculating the diff which should go into builder to do so.
+%
+% @arg Builder the layer builder to make changes to.
+% @arg Layer the layer that we will view as a prototype.
+% @throws if the builder has already been committed.
 
 %! nb_commit(+Builder:layer_builder, -Layer:layer) is det.
 %
@@ -1150,6 +1169,65 @@ test(apply_a_delta,[cleanup(clean), setup(createng)]) :-
     Triples = ["cathie"-"eats"-node("seaweed"),
                "jill"-"eats"-node("caviar")
               ].
+
+test(apply_a_diff,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "joe", "eats", node("urchin")),
+    nb_add_triple(Builder, "jill", "eats", node("caviar")),
+    nb_add_triple(Builder, "cathie", "eats", node("seaweed")),
+    nb_commit(Builder, Layer),
+
+    open_write(Store, Builder2),
+    nb_add_triple(Builder2, "joe", "eats", node("seals")),
+    nb_add_triple(Builder2, "jill", "eats", node("caviar")),
+    nb_commit(Builder2, Prototype),
+
+    open_write(Layer, Diff_Builder),
+    nb_apply_diff(Diff_Builder,Prototype),
+    nb_commit(Diff_Builder,Final_Layer),
+
+    findall(X-P-Y, triple(Final_Layer, X, P, Y), Triples),
+    Triples = [
+        "jill"-"eats"-node("caviar"),
+        "joe"-"eats"-node("seals")
+    ],
+
+    findall(X-P-Y, triple_addition(Final_Layer, X, P, Y), Triple_Additions),
+    Triple_Additions = [
+        "joe"-"eats"-node("seals")
+    ],
+
+    findall(X-P-Y, triple_removal(Final_Layer, X, P, Y), Triple_Removals),
+    Triple_Removals = [
+        "cathie"-"eats"-node("seaweed"),
+        "joe"-"eats"-node("urchin")
+    ].
+
+test(apply_empty_diff,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "joe", "eats", node("urchin")),
+    nb_add_triple(Builder, "jill", "eats", node("caviar")),
+    nb_add_triple(Builder, "cathie", "eats", node("seaweed")),
+    nb_commit(Builder, Prototype),
+
+    open_write(Store, Diff_Builder),
+    nb_apply_diff(Diff_Builder,Prototype),
+    nb_commit(Diff_Builder,Final_Layer),
+
+    findall(X-P-Y, triple(Final_Layer, X, P, Y), Triples),
+
+    Triples = [
+        "cathie"-"eats"-node("seaweed"),
+        "jill"-"eats"-node("caviar"),
+        "joe"-"eats"-node("urchin")
+    ],
+
+    findall(X-P-Y, triple_addition(Final_Layer, X, P, Y), Triple_Additions),
+    Triple_Additions = Triples,
+    findall(X-P-Y, triple_removal(Final_Layer, X, P, Y), Triple_Removals),
+    Triple_Removals = [].
 
 test(add_csv,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
