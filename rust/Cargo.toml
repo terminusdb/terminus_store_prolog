@@ -9,7 +9,7 @@ name = "terminus_store_prolog"
 crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store = "=0.12.2"
+terminus-store = "=0.12.3"
 csv = "1.1"
 rayon = "1.4"
 clap = "2.33.3"
