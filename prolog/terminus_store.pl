@@ -1294,8 +1294,9 @@ test(so_mode,[cleanup(clean), setup(createng)]) :-
     nb_add_triple(Builder, "A", "B", node("D")),
     nb_commit(Builder, Layer),
     findall(X-C, triple(Layer, X, "B", C), Ps),
+    writeq(Ps),
     Ps = ["A"-node("C"),
-          "B"-node("D")].
+          "A"-node("D")].
 
 test(sp_mode,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
