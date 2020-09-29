@@ -1,5 +1,4 @@
 RUST_LIB_NAME = terminus_store_prolog
-RUST_LIB = lib$(RUST_LIB_NAME).$(SOEXT)
 RUST_TARGET=release
 RUST_TARGET_DIR = rust/target/$(RUST_TARGET)/
 CC = gcc
@@ -10,7 +9,7 @@ WIN_TERMINUS_STORE_PROLOG_PATH = "C:\projects\terminus-store-prolog\rust\target\
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = error.o blobs.o terminus_store.o
 CARGO_FLAGS =
-BUILD_LD_OPTIONS = -Wl,-rpath='$$ORIGIN'
+# BUILD_LD_OPTIONS = -Wl,-rpath='$$ORIGIN'
 
 ifeq ($(SWIARCH),x86_64-darwin)
 SOEXT = dylib
@@ -26,18 +25,17 @@ windows: $(TARGET)
 
 $(OBJS): $(SRCS)
 	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) $(CFLAGS) -c $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog
+	$(CC) $(CFLAGS) -c $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -l$(RUST_LIB_NAME)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -lterminus_store_prolog -Wl,--out-implib,libterminus_store.a
+	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -l$(RUST_LIB_NAME)
 
 check::
 
 build:
 	mkdir -p $(PACKSODIR)
 	cd rust; cargo build $(CARGO_FLAGS)
-	cp $(RUST_TARGET_DIR)/$(RUST_LIB) $(PACKSODIR)
-	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
+	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -L./$(RUST_TARGET_DIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb
