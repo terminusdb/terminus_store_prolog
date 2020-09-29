@@ -9,7 +9,7 @@ WIN_TERMINUS_STORE_PROLOG_PATH = "C:\projects\terminus-store-prolog\rust\target\
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = error.o blobs.o terminus_store.o
 CARGO_FLAGS =
-# BUILD_LD_OPTIONS = -Wl,-rpath='$$ORIGIN'
+BUILD_LD_OPTIONS = 
 
 ifeq ($(SWIARCH),x86_64-darwin)
 SOEXT = dylib
@@ -35,7 +35,7 @@ check::
 build:
 	mkdir -p $(PACKSODIR)
 	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(PACKSODIR) -L./$(RUST_TARGET_DIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
+	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(RUST_TARGET_DIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb

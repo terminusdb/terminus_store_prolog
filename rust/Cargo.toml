@@ -6,7 +6,7 @@ edition = "2018"
 
 [lib]
 name = "terminus_store_prolog"
-crate-type = ["cdylib"]
+crate-type = ["staticlib"]
 
 [dependencies]
 terminus-store = "=0.12.3"
