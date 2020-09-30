@@ -9,11 +9,16 @@ WIN_TERMINUS_STORE_PROLOG_PATH = "C:\projects\terminus-store-prolog\rust\target\
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = error.o blobs.o terminus_store.o
 CARGO_FLAGS =
-BUILD_LD_OPTIONS = 
+BUILD_LD_OPTIONS =-Wl,-Bstatic -L./$(RUST_TARGET_DIR) -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lc
 
 ifeq ($(SWIARCH),x86_64-darwin)
 SOEXT = dylib
 BUILD_LD_OPTIONS = -L$(SWIHOME)/$(PACKSODIR) $(SWILIB)
+endif
+
+
+ifeq ($(OS), Windows_NT)
+BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I$(WIN_SWIPL_INCLUDE) -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
 endif
 
 all: release
@@ -22,20 +27,17 @@ rust_bindings:
 	cbindgen --config rust/cbindgen.toml rust/src/lib.rs --output c/terminus_store.h
 
 windows: $(TARGET)
+build: $(TARGET)
 
 $(OBJS): $(SRCS)
-	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) $(CFLAGS) -c $^ -llibswipl -I$(WIN_SWIPL_INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -llibswipl -I$(WIN_SWIPL_INCLUDE) $(BUILD_LD_OPTIONS)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I$(WIN_SWIPL_INCLUDE) -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
+	mkdir -p lib/$(SWIARCH)
+	cd rust; cargo build $(CARGO_FLAGS)
+	$(CC) -shared -o $@ $^ $(CFLAGS) $(BUILD_LD_OPTIONS)
 
 check::
-
-build:
-	mkdir -p $(PACKSODIR)
-	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) -shared $(CFLAGS) -Wall -o $(TARGET) ./c/*.c -Isrc -L./$(RUST_TARGET_DIR) $(BUILD_LD_OPTIONS) -l$(RUST_LIB_NAME)
 
 debug: RUST_TARGET = debug
 debug: CFLAGS += -ggdb
@@ -53,5 +55,5 @@ windows_release: windows
 install::
 
 clean:
-	rm -rf *.$(SOEXT) lib buildenv.sh
+	rm -rf *.$(SOEXT) lib buildenv.sh  *.o
 	cd rust; cargo clean
