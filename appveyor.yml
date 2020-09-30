@@ -41,7 +41,7 @@ environment:
   # Stable 64-bit mingw
     - channel: stable
       target: x86_64-pc-windows-gnu
-
+      RUSTFLAGS: -C target-feature=+crt-static
 ### Allowed failures ###
 
 # See Appveyor documentation for specific details. In short, place any channel or targets you wish
@@ -82,14 +82,12 @@ build_script:
 
 test_script:
   - set PACKSODIR="."
-  - copy rust\target\release\terminus_store_prolog.dll "C:\Program Files\swipl\bin\terminus_store_prolog.dll"
   - copy libterminus_store.dll "C:\Program Files\swipl\bin\libterminus_store.dll"
   - swipl -g "attach_packs('c/projects')." -g run_tests -g halt prolog\terminus_store.pl
 
 artifacts:
   # pushing a single file
   - path: libterminus_store.dll
-  - path: rust\target\release\terminus_store_prolog.dll
 
 deploy:
   release: $(APPVEYOR_REPO_TAG_NAME)
@@ -97,7 +95,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: HAxdjJ98lVQMTkYGxg/lvymptye0JBI3yBtGOVPZ197z+eZZWtJoWaJviGoGf2QD
-  artifact: libterminus_store.dll,rust\target\release\terminus_store_prolog.dll
+  artifact: libterminus_store.dll
   draft: false
   prerelease: false
   on:

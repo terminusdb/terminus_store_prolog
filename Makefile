@@ -25,10 +25,10 @@ windows: $(TARGET)
 
 $(OBJS): $(SRCS)
 	cd rust; cargo build $(CARGO_FLAGS)
-	$(CC) $(CFLAGS) -c $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -l$(RUST_LIB_NAME)
+	$(CC) $(CFLAGS) -c $^ -llibswipl -I$(WIN_SWIPL_INCLUDE)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -llibswipl -I $(WIN_SWIPL_INCLUDE) -L:$(WIN_TERMINUS_STORE_PROLOG_PATH) -l$(RUST_LIB_NAME)
+	$(CC) $(CFLAGS) -DLIBTERMINUS_STORE -shared -o $@ $^ -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I$(WIN_SWIPL_INCLUDE) -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
 
 check::
 
