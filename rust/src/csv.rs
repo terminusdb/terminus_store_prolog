@@ -32,6 +32,7 @@ fn check_utf8(csv_path: PathBuf) -> bool {
 }
 
 pub fn import_csv(
+    csv_name: String,
     csv_path: String,
     builder: &SyncStoreLayerBuilder,
     data_prefix: String,
@@ -54,26 +55,54 @@ pub fn import_csv(
         .from_reader(file);
 
     let mut header = Vec::new();
+    let mut column_names = Vec::new();
     if !has_header || skip_header {
         let len = reader.headers().unwrap().len();
         for i in 0..len {
             header.push(format!("{}col{}", schema_prefix, i));
+            column_names.push(format!("{}", i));
         }
     } else {
         for field in reader.headers().unwrap().iter() {
             let escaped_field = urlencoding::encode(field);
+            column_names.push(String::from(field));
             header.push(format!("{}{}", schema_prefix, escaped_field));
         }
     }
 
     let rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-    let row_type = format!("{}{}", schema_prefix, "Row");
+    let label = "http://www.w3.org/2000/01/rdf-schema#label";
+    // Create the csv type
+    let csv_type = format!("{}{}", schema_prefix, "Csv");
+    let csv_name_escaped = urlencoding::encode(&csv_name);
+    let csv_node = format!("{}{}", data_prefix, csv_name_escaped);
+    builder.add_string_triple(StringTriple::new_node(&csv_node,
+                                                     &rdf_type,
+                                                     &csv_type))
+        .unwrap();
+    builder.add_string_triple(StringTriple::new_value(&csv_node,
+                                                      &label,
+                                                      &csv_name))
+        .unwrap();
 
+    // Create a unique Row type based on ordered column names
+    let mut column_hasher = Sha1::new();
+    let mut sorted_column_names = column_names.clone();
+    sorted_column_names.sort();
+    for field in sorted_column_names.iter() {
+        // create a Sha1 object
+        column_hasher.update(field);
+    }
+    let column_hash = column_hasher.finalize();
+    let column_hash_string = hex::encode(column_hash);
+
+    let row_type = format!("{}{}_{}", schema_prefix, "Row", column_hash_string);
     reader
         .into_records()
         .enumerate()
         .for_each(|(_line, record)| {
             let record = record.unwrap();
+
             // create a Sha1 object
             let mut hasher = Sha1::new();
 
@@ -84,9 +113,15 @@ pub fn import_csv(
             let hash = hasher.finalize();
             let hash_string = hex::encode(hash);
             let node = format!("{}row{}", data_prefix, hash_string);
+            let row_predicate = format!("{}{}", schema_prefix, "row");
+
             // add row type
             builder
                 .add_string_triple(StringTriple::new_node(&node, &rdf_type, &row_type))
+                .unwrap();
+            // add row predicate
+            builder
+                .add_string_triple(StringTriple::new_node(&csv_node, &row_predicate, &node))
                 .unwrap();
             for (col, field) in record.iter().enumerate() {
                 let value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", field);

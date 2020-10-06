@@ -1461,6 +1461,7 @@ pub unsafe extern "C" fn cleanup_layer_and_parent_vec(vec_handle: VecHandle) {
 
 #[no_mangle]
 pub unsafe extern "C" fn add_csv_to_builder(
+    name: *mut c_char,
     csv: *mut c_char,
     builder: *mut SyncStoreLayerBuilder,
     data_prefix: *mut c_char,
@@ -1470,6 +1471,7 @@ pub unsafe extern "C" fn add_csv_to_builder(
     err: *mut *mut c_char,
 ) {
 
+    let csv_name = CStr::from_ptr(name).to_str().unwrap().to_string();
     let csv_path = CStr::from_ptr(csv).to_str().unwrap().to_string();
     let data_prefix = CStr::from_ptr(data_prefix).to_str().unwrap().to_string();
     let predicate_prefix = CStr::from_ptr(predicate_prefix)
@@ -1481,6 +1483,7 @@ pub unsafe extern "C" fn add_csv_to_builder(
     let skip_header = skip_header != 0;
 
     let result = import_csv(
+        csv_name,
         csv_path,
         &*builder,
         data_prefix,

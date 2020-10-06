@@ -55,8 +55,8 @@
               pack_layerids_and_parents/2,
               pack_import/3,
 
-              csv_builder/2,
-              csv_builder/3
+              csv_builder/3,
+              csv_builder/4
             ]).
 
 :- use_foreign_library(foreign(libterminus_store)).
@@ -360,10 +360,11 @@
 % @arg Subject the returned subject lookup.
 %
 
-%! csv_builder(+Csv:path, +Builder:builder, +Options:options) is det
+%! csv_builder(+Name:string, +Csv:path, +Builder:builder, +Options:options) is det
 %
 % Creates a layer with the contents of a csv as triples
 %
+% @arg Name Name of the CSV object
 % @arg Csv The path to the csv to be loaded
 % @arg Builder The builder into which to place the CSV
 % @arg Layer The returned Layer
@@ -373,6 +374,15 @@
 %     * header(Bool) (Boolean to read a header, default true)
 %     * skip_header(Bool) (Skip the header regardless of presence,
 %                          default false)
+
+%! csv_builder(+Name:string, +Csv:path, +Builder:builder) is det
+%
+% Creates a layer with the contents of a csv as triples. Options are defaults.
+%
+% @arg Name Name of the CSV object
+% @arg Csv The path to the csv to be loaded
+% @arg Builder The builder into which to place the CSV
+% @arg Layer The returned Layer
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%
@@ -623,15 +633,15 @@ triple(Layer, Subject, Predicate, Object) :-
     ->  true
     ;   object_id(Layer,Object, O_Id)).
 
-csv_builder(Csv, Builder) :-
-    csv_builder(Csv,Builder,[]).
+csv_builder(Name, Csv, Builder) :-
+    csv_builder(Name, Csv,Builder,[]).
 
-csv_builder(Csv, Builder, Options) :-
+csv_builder(Name, Csv, Builder, Options) :-
     option(data_prefix(Data), Options, 'csv:///data/'),
     option(schema_prefix(Schema), Options, 'csv:///schema#'),
     option(header(Header), Options, true),
     option(skip_header(Skip), Options, false),
-    csv_builder(Csv, Builder, Data, Schema, Header, Skip).
+    csv_builder(Name, Csv, Builder, Data, Schema, Header, Skip).
 
 old_id_triple_addition(Layer, Subject, Predicate, Object) :-
     ground(Subject),
@@ -1237,17 +1247,21 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     format(Stream, "1,2~n", []),
     format(Stream, "3,4~n", []),
     close(Stream),
-    csv_builder(Filename, Builder, []),
+    csv_builder("csv",Filename, Builder, []),
     nb_commit(Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
+        "csv:///data/csv"-"csv:///schema#row"-node("csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"),
+        "csv:///data/csv"-"csv:///schema#row"-node("csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
+        "csv:///data/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Csv"),
+        "csv:///data/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("csv"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row_c40ce0246f480cd2baca44a7477fee98662917b7"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row")
-        ].
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row_c40ce0246f480cd2baca44a7477fee98662917b7")
+    ].
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
@@ -1256,16 +1270,20 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     format(Stream, "1,2~n", []),
     format(Stream, "3,4~n", []),
     close(Stream),
-    csv_builder(Filename, Builder, [skip_header(true)]),
+    csv_builder("csv",Filename, Builder, [skip_header(true)]),
     nb_commit(Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
+        "csv:///data/csv"-"csv:///schema#row"-node("csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"),
+        "csv:///data/csv"-"csv:///schema#row"-node("csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
+        "csv:///data/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Csv"),
+        "csv:///data/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("csv"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col0"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#col1"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row"),
+        "csv:///data/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row_ddfe163345d338193ac2bdc183f8e9dcff904b43"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#col1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row")
+        "csv:///data/rowf1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Row_ddfe163345d338193ac2bdc183f8e9dcff904b43")
     ].
 
 test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
@@ -1277,15 +1295,17 @@ test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
     format(Stream, "1,2~n", []),
     close(Stream),
 
-    csv_builder(Filename, Builder, [data_prefix('that/'),
+    csv_builder("csv",Filename, Builder, [data_prefix('that/'),
                                     schema_prefix('this#')]),
     nb_commit(Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
-        "that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Row"),
-        "that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'")
-    ].
+        "that/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Csv"),
+        "that/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("csv"),
+        "that/csv"-"this#row"-node("that/row7b52009b64fd0a2a49e6d8a939753077792b0554"),
+        "that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Row_c40ce0246f480cd2baca44a7477fee98662917b7"),
+        "that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),"that/row7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'")
+        ].
 
 test(so_mode,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),

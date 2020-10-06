@@ -35,7 +35,8 @@ typedef struct {
   bool has_parent;
 } LayerAndParent;
 
-void add_csv_to_builder(char *csv,
+void add_csv_to_builder(char *name,
+                        char *csv,
                         void *builder,
                         char *data_prefix,
                         char *schema_prefix,

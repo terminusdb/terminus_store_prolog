@@ -22,13 +22,15 @@ static foreign_t pl_apply_diff(term_t builder_blob,
     PL_succeed;
 }
 
-static foreign_t pl_csv_builder(term_t csv_term,
+static foreign_t pl_csv_builder(term_t name_term,
+                                term_t csv_term,
                                 term_t builder_blob,
                                 term_t data_prefix_term,
                                 term_t schema_prefix_term,
                                 term_t header_term,
                                 term_t skip_header_term) {
 
+    char* name = check_string_or_atom_term(name_term);
     char* csv = check_string_or_atom_term(csv_term);
     void* builder = check_blob_type(builder_blob, &layer_builder_blob_type);
     char* data_prefix = check_string_or_atom_term(data_prefix_term);
@@ -41,7 +43,8 @@ static foreign_t pl_csv_builder(term_t csv_term,
     PL_get_bool_ex(skip_header_term,&skip_header);
 
     char* err;
-    add_csv_to_builder(csv,
+    add_csv_to_builder(name,
+                       csv,
                        builder,
                        data_prefix,
                        schema_prefix,
@@ -2021,7 +2024,7 @@ static foreign_t pl_windows_hack_setlocale() {
 install_t
 install()
 {
-    PL_register_foreign("csv_builder", 6,
+    PL_register_foreign("csv_builder", 7,
                         pl_csv_builder, 0);
     PL_register_foreign("open_memory_store", 1,
                         pl_open_memory_store, 0);
