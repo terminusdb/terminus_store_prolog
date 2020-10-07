@@ -73,7 +73,7 @@ pub fn import_csv(
     let rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
     let label = "http://www.w3.org/2000/01/rdf-schema#label";
     // Create the csv type
-    let csv_type = format!("{}{}", schema_prefix, "Csv");
+    let csv_type = "csv:///schema#Csv";
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_name_value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", csv_name);
     let csv_node = format!("{}{}", data_prefix, csv_name_escaped);
