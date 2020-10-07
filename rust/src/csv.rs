@@ -75,6 +75,7 @@ pub fn import_csv(
     // Create the csv type
     let csv_type = format!("{}{}", schema_prefix, "Csv");
     let csv_name_escaped = urlencoding::encode(&csv_name);
+    let csv_name_value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", csv_name);
     let csv_node = format!("{}{}", data_prefix, csv_name_escaped);
     builder.add_string_triple(StringTriple::new_node(&csv_node,
                                                      &rdf_type,
@@ -82,8 +83,37 @@ pub fn import_csv(
         .unwrap();
     builder.add_string_triple(StringTriple::new_value(&csv_node,
                                                       &label,
-                                                      &csv_name))
+                                                      &csv_name_value))
         .unwrap();
+    // Create the ordered column names metadata for the csv
+    let mut column_index = 0;
+    for field in column_names.iter() {
+        let escaped_field = urlencoding::encode(field);
+        let column_predicate = "csv:///schema#column";
+        let column_node = format!("csv:///data/ColumnObject_{}_{}", csv_name_escaped, escaped_field);
+        let column_type = "csv:///schema#Column";
+        let column_index_predicate = "csv:///schema#index";
+        let column_index_value = format!("{}^^'http://www.w3.org/2001/XMLSchema#integer'", column_index);
+        let column_name_predicate = "csv:///schema#column_name";
+        let column_name_value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", field);
+        builder.add_string_triple(StringTriple::new_node(&csv_node,
+                                                         &column_predicate,
+                                                         &column_node))
+            .unwrap();
+        builder.add_string_triple(StringTriple::new_node(&column_node,
+                                                         &rdf_type,
+                                                         &column_type))
+            .unwrap();
+        builder.add_string_triple(StringTriple::new_value(&column_node,
+                                                          &column_index_predicate,
+                                                          &column_index_value))
+            .unwrap();
+        builder.add_string_triple(StringTriple::new_value(&column_node,
+                                                          &column_name_predicate,
+                                                          &column_name_value))
+            .unwrap();
+        column_index += 1;
+    }
 
     // Create a unique Row type based on ordered column names
     let mut column_hasher = Sha1::new();
