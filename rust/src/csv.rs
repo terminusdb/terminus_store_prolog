@@ -59,21 +59,21 @@ pub fn import_csv(
     if !has_header || skip_header {
         let len = reader.headers().unwrap().len();
         for i in 0..len {
-            header.push(format!("{}col{}", schema_prefix, i));
+            header.push(format!("{}column_{}", schema_prefix, i));
             column_names.push(format!("{}", i));
         }
     } else {
         for field in reader.headers().unwrap().iter() {
             let escaped_field = urlencoding::encode(field);
             column_names.push(String::from(field));
-            header.push(format!("{}{}", schema_prefix, escaped_field));
+            header.push(format!("{}column_{}", schema_prefix, escaped_field));
         }
     }
 
     let rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
     let label = "http://www.w3.org/2000/01/rdf-schema#label";
     // Create the csv type
-    let csv_type = "csv:///schema#Csv";
+    let csv_type = format!("{}Csv", schema_prefix);
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_name_value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", csv_name);
     let csv_node = format!("{}{}", data_prefix, csv_name_escaped);
@@ -89,12 +89,12 @@ pub fn import_csv(
     let mut column_index = 0;
     for field in column_names.iter() {
         let escaped_field = urlencoding::encode(field);
-        let column_predicate = "csv:///schema#column";
-        let column_node = format!("csv:///data/ColumnObject_{}_{}", csv_name_escaped, escaped_field);
-        let column_type = "csv:///schema#Column";
-        let column_index_predicate = "csv:///schema#index";
+        let column_predicate = format!("{}column", schema_prefix);
+        let column_node = format!("{}ColumnObject_{}_{}", data_prefix, csv_name_escaped, escaped_field);
+        let column_type = format!("{}Column", schema_prefix);
+        let column_index_predicate = format!("{}index", schema_prefix);
         let column_index_value = format!("{}^^'http://www.w3.org/2001/XMLSchema#integer'", column_index);
-        let column_name_predicate = "csv:///schema#column_name";
+        let column_name_predicate = format!("{}column_name", schema_prefix);
         let column_name_value = format!("{:?}^^'http://www.w3.org/2001/XMLSchema#string'", field);
         builder.add_string_triple(StringTriple::new_node(&csv_node,
                                                          &column_predicate,
@@ -126,7 +126,7 @@ pub fn import_csv(
     let column_hash = column_hasher.finalize();
     let column_hash_string = hex::encode(column_hash);
 
-    let row_type = format!("{}{}_{}", schema_prefix, "Row", column_hash_string);
+    let row_type = format!("{}Row_{}", schema_prefix, column_hash_string);
     reader
         .into_records()
         .enumerate()
@@ -143,7 +143,7 @@ pub fn import_csv(
             let hash = hasher.finalize();
             let hash_string = hex::encode(hash);
             let node = format!("{}row{}", data_prefix, hash_string);
-            let row_predicate = format!("{}{}", schema_prefix, "row");
+            let row_predicate = format!("{}row", schema_prefix);
 
             // add row type
             builder
