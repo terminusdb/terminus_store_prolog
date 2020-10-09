@@ -95,7 +95,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: HAxdjJ98lVQMTkYGxg/lvymptye0JBI3yBtGOVPZ197z+eZZWtJoWaJviGoGf2QD
-  artifact: libterminus_store.dll
+  artifact: libterminus_store_prolog.dll
   draft: false
   prerelease: false
   on:
