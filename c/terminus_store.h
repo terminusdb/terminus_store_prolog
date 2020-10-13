@@ -38,6 +38,7 @@ typedef struct {
 void add_csv_to_builder(char *name,
                         char *csv,
                         void *builder,
+                        void *schema_builder,
                         char *data_prefix,
                         char *schema_prefix,
                         int header,

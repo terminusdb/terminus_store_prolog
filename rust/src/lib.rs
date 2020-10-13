@@ -1464,6 +1464,7 @@ pub unsafe extern "C" fn add_csv_to_builder(
     name: *mut c_char,
     csv: *mut c_char,
     builder: *mut SyncStoreLayerBuilder,
+    schema_builder: *mut SyncStoreLayerBuilder,
     data_prefix: *mut c_char,
     predicate_prefix: *mut c_char,
     header: c_int,
@@ -1482,10 +1483,18 @@ pub unsafe extern "C" fn add_csv_to_builder(
     let header = header != 0;
     let skip_header = skip_header != 0;
 
+    let schema_builder_option;
+    if schema_builder.is_null(){
+        schema_builder_option = None
+    }else{
+        schema_builder_option = Some(&*schema_builder)
+    }
+
     let result = import_csv(
         csv_name,
         csv_path,
         &*builder,
+        schema_builder_option,
         data_prefix,
         predicate_prefix,
         header,

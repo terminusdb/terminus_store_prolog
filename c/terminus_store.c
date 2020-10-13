@@ -22,6 +22,45 @@ static foreign_t pl_apply_diff(term_t builder_blob,
     PL_succeed;
 }
 
+static foreign_t pl_csv_builder_with_schema(term_t name_term,
+                                            term_t csv_term,
+                                            term_t builder_blob,
+                                            term_t schema_builder_blob,
+                                            term_t data_prefix_term,
+                                            term_t schema_prefix_term,
+                                            term_t header_term,
+                                            term_t skip_header_term) {
+
+    char* name = check_string_or_atom_term(name_term);
+    char* csv = check_string_or_atom_term(csv_term);
+    void* builder = check_blob_type(builder_blob, &layer_builder_blob_type);
+    void* schema_builder = check_blob_type(schema_builder_blob, &layer_builder_blob_type);
+    char* data_prefix = check_string_or_atom_term(data_prefix_term);
+    char* schema_prefix = check_string_or_atom_term(schema_prefix_term);
+
+    int header;
+    PL_get_bool_ex(header_term,&header);
+
+    int skip_header;
+    PL_get_bool_ex(skip_header_term,&skip_header);
+
+    char* err;
+    add_csv_to_builder(name,
+                       csv,
+                       builder,
+                       schema_builder,
+                       data_prefix,
+                       schema_prefix,
+                       header,
+                       skip_header,
+                       &err);
+
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
 static foreign_t pl_csv_builder(term_t name_term,
                                 term_t csv_term,
                                 term_t builder_blob,
@@ -46,6 +85,7 @@ static foreign_t pl_csv_builder(term_t name_term,
     add_csv_to_builder(name,
                        csv,
                        builder,
+                       NULL,
                        data_prefix,
                        schema_prefix,
                        header,
@@ -2026,6 +2066,8 @@ install()
 {
     PL_register_foreign("csv_builder", 7,
                         pl_csv_builder, 0);
+    PL_register_foreign("csv_builder", 8,
+                        pl_csv_builder_with_schema, 0);
     PL_register_foreign("open_memory_store", 1,
                         pl_open_memory_store, 0);
     PL_register_foreign("open_directory_store", 2,
