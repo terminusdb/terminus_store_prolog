@@ -80,10 +80,10 @@ pub fn import_csv(
     let label = format!("{}{}", rdfs, "label");
 
     // Create the csv type
-    let csv_type = format!("{}Csv", schema_prefix);
+    let csv_type = format!("{}CSV", schema_prefix);
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_name_value = format!("{:?}@en", csv_name);
-    let csv_node = format!("{}{}", data_prefix, csv_name_escaped);
+    let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);
     builder.add_string_triple(StringTriple::new_node(&csv_node,
                                                      &rdf_type,
                                                      &csv_type))
@@ -203,9 +203,9 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
     let xsd_integer = format!("{}{}", xsd, "integer");
 
     // Create the csv object
-    let csv_type = format!("{}Csv", schema_prefix);
-    let csv_label = "\"Csv\"@en";
-    let csv_comment = "\"Csv object\"@en";
+    let csv_type = format!("{}CSV", schema_prefix);
+    let csv_label = "\"CSV\"@en";
+    let csv_comment = "\"CSV object\"@en";
     let document = "http://terminusdb.com/schema/system#Document";
 
     schema_builder

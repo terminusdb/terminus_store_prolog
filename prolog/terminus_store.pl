@@ -1258,6 +1258,7 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     csv_builder("csv",Filename, Builder, []),
     nb_commit(Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
+
     Triples = [
         "csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#column_header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"-"csv:///schema#column_some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
@@ -1265,18 +1266,19 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#column_header"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#column_some"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#CSVRow_c40ce0246f480cd2baca44a7477fee98662917b7"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_header"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_some"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
+        "csv:///data/CSV_csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#CSV"),
+        "csv:///data/CSV_csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en"),
         "csv:///data/ColumnObject_csv_header"-"csv:///schema#csv_column_index"-value("1^^'http://www.w3.org/2001/XMLSchema#integer'"),
         "csv:///data/ColumnObject_csv_header"-"csv:///schema#csv_column_name"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/ColumnObject_csv_header"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column"),
         "csv:///data/ColumnObject_csv_some"-"csv:///schema#csv_column_index"-value("0^^'http://www.w3.org/2001/XMLSchema#integer'"),
         "csv:///data/ColumnObject_csv_some"-"csv:///schema#csv_column_name"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/ColumnObject_csv_some"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column"),
-        "csv:///data/csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_header"),
-        "csv:///data/csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_some"),
-        "csv:///data/csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"),
-        "csv:///data/csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
-        "csv:///data/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Csv"),
-        "csv:///data/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en")].
+        "csv:///data/ColumnObject_csv_some"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column")
+    ].
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
@@ -1295,18 +1297,18 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#column_0"-value("\"3\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"csv:///schema#column_1"-value("\"4\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#CSVRow_ddfe163345d338193ac2bdc183f8e9dcff904b43"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_0"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_1"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"),
+        "csv:///data/CSV_csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
+        "csv:///data/CSV_csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#CSV"),
+        "csv:///data/CSV_csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en"),
         "csv:///data/ColumnObject_csv_0"-"csv:///schema#csv_column_index"-value("0^^'http://www.w3.org/2001/XMLSchema#integer'"),
         "csv:///data/ColumnObject_csv_0"-"csv:///schema#csv_column_name"-value("\"0\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "csv:///data/ColumnObject_csv_0"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column"),
         "csv:///data/ColumnObject_csv_1"-"csv:///schema#csv_column_index"-value("1^^'http://www.w3.org/2001/XMLSchema#integer'"),
         "csv:///data/ColumnObject_csv_1"-"csv:///schema#csv_column_name"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "csv:///data/ColumnObject_csv_1"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column"),
-        "csv:///data/csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_0"),
-        "csv:///data/csv"-"csv:///schema#csv_column"-node("csv:///data/ColumnObject_csv_1"),
-        "csv:///data/csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"),
-        "csv:///data/csv"-"csv:///schema#csv_row"-node("csv:///data/CSVRow_f1f836cb4ea6efb2a0b1b99f41ad8b103eff4b59"),
-        "csv:///data/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Csv"),
-        "csv:///data/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en")
+        "csv:///data/ColumnObject_csv_1"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column")
     ].
 
 test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
@@ -1322,21 +1324,22 @@ test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
                                           schema_prefix('this#')]),
     nb_commit(Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
+
     Triples = [
         "that/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#CSVRow_c40ce0246f480cd2baca44a7477fee98662917b7"),
         "that/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#column_header"-value("\"2\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "that/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"-"this#column_some"-value("\"1\"^^'http://www.w3.org/2001/XMLSchema#string'"),
+        "that/CSV_csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#CSV"),
+        "that/CSV_csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en"),
+        "that/CSV_csv"-"this#csv_column"-node("that/ColumnObject_csv_header"),
+        "that/CSV_csv"-"this#csv_column"-node("that/ColumnObject_csv_some"),
+        "that/CSV_csv"-"this#csv_row"-node("that/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554"),
         "that/ColumnObject_csv_header"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Column"),
         "that/ColumnObject_csv_header"-"this#csv_column_index"-value("1^^'http://www.w3.org/2001/XMLSchema#integer'"),
         "that/ColumnObject_csv_header"-"this#csv_column_name"-value("\"header\"^^'http://www.w3.org/2001/XMLSchema#string'"),
         "that/ColumnObject_csv_some"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Column"),
         "that/ColumnObject_csv_some"-"this#csv_column_index"-value("0^^'http://www.w3.org/2001/XMLSchema#integer'"),
-        "that/ColumnObject_csv_some"-"this#csv_column_name"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'"),
-        "that/csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("this#Csv"),
-        "that/csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv\"@en"),
-        "that/csv"-"this#csv_column"-node("that/ColumnObject_csv_header"),
-        "that/csv"-"this#csv_column"-node("that/ColumnObject_csv_some"),
-        "that/csv"-"this#csv_row"-node("that/CSVRow_7b52009b64fd0a2a49e6d8a939753077792b0554")
+        "that/ColumnObject_csv_some"-"this#csv_column_name"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'")
     ].
 
 test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
@@ -1354,6 +1357,10 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
     nb_commit(Schema_Builder, Layer),
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
     Triples = [
+        "CSV"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
+        "CSV"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV object\"@en"),
+        "CSV"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV\"@en"),
+        "CSV"-"http://www.w3.org/2000/01/rdf-schema#subClassOf"-node("http://terminusdb.com/schema/system#Document"),
         "CSVRow"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         "CSVRow"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Generic Row of a CSV file\"@en"),
         "CSVRow"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV Row\"@en"),
@@ -1364,10 +1371,6 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "Column"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         "Column"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Column information object for a CSV\"@en"),
         "Column"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"Column\"@en"),
-        "Csv"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
-        "Csv"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Csv object\"@en"),
-        "Csv"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"Csv\"@en"),
-        "Csv"-"http://www.w3.org/2000/01/rdf-schema#subClassOf"-node("http://terminusdb.com/schema/system#Document"),
         "column_header"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
         "column_header"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV Column for header name header\"@en"),
         "column_header"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("CSVRow_c40ce0246f480cd2baca44a7477fee98662917b7"),
@@ -1380,14 +1383,12 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "column_some"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#string"),
         "csv_column"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#ObjectProperty"),
         "csv_column"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Associates a CSV with a column object\"@en"),
-        "csv_column"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Csv"),
+        "csv_column"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("CSV"),
         "csv_column"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv column\"@en"),
         "csv_column"-"http://www.w3.org/2000/01/rdf-schema#range"-node("Column"),
         "csv_column_index"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
-        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"The ordering index for a column in a csv\"@en"),
-        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Column"),
-        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv column index\"@en"),
-        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#integer"),
+        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"The ordering index for a column in a csv\"@en"),"csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Column"),
+        "csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv column index\"@en"),"csv_column_index"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#integer"),
         "csv_column_name"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"The name of the column as it was verbatim in the CSV\"@en"),
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Column"),
@@ -1395,7 +1396,7 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#string"),
         "csv_row"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#ObjectProperty"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Connects a CSV to its rows\"@en"),
-        "csv_row"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Csv"),
+        "csv_row"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("CSV"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv row\"@en"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#range"-node("CSVRow_c40ce0246f480cd2baca44a7477fee98662917b7")
     ].
