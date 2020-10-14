@@ -60,3 +60,4 @@ jobs:
           export PATH=$PATH:/c/Program\ Files/swipl/bin/
           export WIN_TERMINUS_STORE_PROLOG_PATH=./rust/target/release
           export WIN_SWIPL_INCLUDE=/c/Program\ Files/swipl/include/
+          make windows_release
