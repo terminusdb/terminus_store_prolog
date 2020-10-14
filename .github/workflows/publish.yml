@@ -82,4 +82,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: libterminus_store.dylib
-          path: lib/x86_64/darwin/libterminus_store.dylib
+          path: lib/x86_64-darwin/libterminus_store.dylib
