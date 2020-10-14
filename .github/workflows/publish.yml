@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           export PATH=$PATH:/c/Program\ Files/swipl/bin/
-          make WIN_TERMINUS_STORE_PROLOG_PATH=./rust/target/release WIN_SWIPL_INCLUDE='/c/Program Files/swipl/include/' windows_release
+          make WIN_TERMINUS_STORE_PROLOG_PATH=./rust/target/release windows_release
 
   mac:
     runs-on: macos-latest
