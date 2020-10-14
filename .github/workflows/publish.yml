@@ -110,6 +110,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' && contains(github.ref, 'tag')
+    needs: [docker, windows, mac, pack]
     steps:
       - name: Set release name
         id: release_name
