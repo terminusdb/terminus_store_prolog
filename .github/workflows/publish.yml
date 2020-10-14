@@ -50,6 +50,7 @@ jobs:
         with:
           toolchain: stable
           target: x86_64-pc-windows-gnu
+          override: true
 
       - name: Install SWI Prolog
         run: choco install swi-prolog
