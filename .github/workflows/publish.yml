@@ -1,7 +1,6 @@
 name: Publish
 
-on:
-  push
+on: [push, pull_request]
 
 jobs:
   docker:
@@ -92,6 +91,7 @@ jobs:
 
   pack:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
     steps:
       - name: Install SWI Prolog
         run: |
@@ -107,3 +107,25 @@ jobs:
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           swipl -g "pack_install('https://github.com/terminusdb/terminus_store_prolog/archive/$VERSION.zip', [interactive=false])." -g halt
 
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && contains(github.ref, 'tag')
+    steps:
+      - name: Set release name
+        id: release_name
+        run: |
+            TAG=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+            echo "::set-output name=tag::$TAG"
+
+      - uses: actions/download-artifact@v2
+
+      - name: Create a Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            tag_name: ${{ steps.release_name.outputs.tag }}
+            files: |
+              libterminus_store.dylib/libterminus_store.dylib
+              libterminus_store.dll/libterminus_store.dll
