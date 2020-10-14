@@ -4,8 +4,8 @@ RUST_TARGET_DIR = rust/target/$(RUST_TARGET)/
 CC = gcc
 ARCH = 
 TARGET = $(PACKSODIR)/libterminus_store.$(SOEXT)
-WIN_SWIPL_INCLUDE = "C:\Program Files\swipl\include"
-WIN_TERMINUS_STORE_PROLOG_PATH = "C:\projects\terminus-store-prolog\rust\target\release"
+WIN_SWIPL_INCLUDE = "/c/Program Files/swipl/include"
+WIN_SWIPL_BIN = "/c/Program Files/swipl/bin"
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = target/error.o target/blobs.o target/terminus_store.o
 CARGO_FLAGS =
@@ -18,7 +18,9 @@ endif
 
 
 ifeq ($(OS), Windows_NT)
-BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I$(WIN_SWIPL_INCLUDE) -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
+PACKSODIR = .
+BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -L$(WIN_SWIPL_BIN) -lswipl -I$(WIN_SWIPL_INCLUDE) -L$(RUST_TARGET_DIR)
+SOEXT = dll
 endif
 
 all: release

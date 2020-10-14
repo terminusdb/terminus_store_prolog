@@ -1,6 +1,6 @@
 # terminus-store prolog bindings
 
-[![Build Status](https://travis-ci.com/terminusdb/terminus_store_prolog.svg?branch=master)](https://travis-ci.com/terminusdb/terminus_store_prolog)
+[![Actions Status](https://github.com/terminusdb/terminus_store_prolog/workflows/Publish/badge.svg)](https://github.com/terminusdb/terminus_store_prolog/actions)
 
 Prolog bindings for the [terminus-store](https://github.com/terminusdb/terminus-store/) Rust library.
 
