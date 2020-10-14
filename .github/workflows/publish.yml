@@ -95,7 +95,7 @@ jobs:
     if: github.event_name != 'pull_request' && contains(github.ref, 'tag')
     steps:
       - name: Install SWI Prolog
-        steps: |
+        run: |
           sudo apt-add-repository ppa:swi-prolog/stable
           sudo apt update
           sudo apt install swi-prolog-nox
