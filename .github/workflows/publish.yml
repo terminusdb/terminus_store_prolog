@@ -57,8 +57,7 @@ jobs:
       - name: Compile terminus-store-prolog
         shell: bash
         run: |
-          export PATH=$PATH:/c/Program\ Files/swipl/bin/
-          make WIN_TERMINUS_STORE_PROLOG_PATH=./rust/target/release windows_release
+          make windows_release
 
   mac:
     runs-on: macos-latest
