@@ -15,3 +15,25 @@ jobs:
 
       - name: Run tests
         run: docker run --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
+
+      - name: Log into Docker Container Registry
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u terminusdb --password-stdin
+
+      - name: Push to the Docker registry
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        run: |
+          IMAGE_ID=$IMAGE_NAME
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
