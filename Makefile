@@ -18,7 +18,7 @@ endif
 
 
 ifeq ($(OS), Windows_NT)
-BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I$(WIN_SWIPL_INCLUDE) -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
+BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -llibswipl -I"$(WIN_SWIPL_INCLUDE)" -L$(WIN_TERMINUS_STORE_PROLOG_PATH)
 SOEXT = dll
 endif
 
