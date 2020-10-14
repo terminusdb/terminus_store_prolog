@@ -1,14 +1,14 @@
 use chardetng::*;
 use csv::ReaderBuilder;
 use encoding_rs::UTF_8;
+use hex;
+use sha1::{Digest, Sha1};
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use terminus_store::layer::StringTriple;
 use terminus_store::store::sync::*;
-use hex;
-use sha1::{Sha1, Digest};
 use urlencoding;
 
 fn check_utf8(csv_path: PathBuf) -> bool {
@@ -84,41 +84,54 @@ pub fn import_csv(
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_name_value = format!("{:?}@en", csv_name);
     let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);
-    builder.add_string_triple(StringTriple::new_node(&csv_node,
-                                                     &rdf_type,
-                                                     &csv_type))
+    builder
+        .add_string_triple(StringTriple::new_node(&csv_node, &rdf_type, &csv_type))
         .unwrap();
-    builder.add_string_triple(StringTriple::new_value(&csv_node,
-                                                      &label,
-                                                      &csv_name_value))
+    builder
+        .add_string_triple(StringTriple::new_value(&csv_node, &label, &csv_name_value))
         .unwrap();
     // Create the ordered column names metadata for the csv
     let mut column_index = 0;
     for field in column_names.iter() {
         let escaped_field = urlencoding::encode(field);
         let column_predicate = format!("{}csv_column", schema_prefix);
-        let column_node = format!("{}ColumnObject_{}_{}", data_prefix, csv_name_escaped, escaped_field);
+        let column_node = format!(
+            "{}ColumnObject_{}_{}",
+            data_prefix, csv_name_escaped, escaped_field
+        );
         let column_type = format!("{}Column", schema_prefix);
         let column_index_predicate = format!("{}csv_column_index", schema_prefix);
         let column_index_value = format!("{}^^'{}{}'", column_index, xsd, "integer");
         let column_name_predicate = format!("{}csv_column_name", schema_prefix);
         let column_name_value = format!("{:?}^^'{}{}'", field, xsd, "string");
 
-        builder.add_string_triple(StringTriple::new_node(&csv_node,
-                                                         &column_predicate,
-                                                         &column_node))
+        builder
+            .add_string_triple(StringTriple::new_node(
+                &csv_node,
+                &column_predicate,
+                &column_node,
+            ))
             .unwrap();
-        builder.add_string_triple(StringTriple::new_node(&column_node,
-                                                         &rdf_type,
-                                                         &column_type))
+        builder
+            .add_string_triple(StringTriple::new_node(
+                &column_node,
+                &rdf_type,
+                &column_type,
+            ))
             .unwrap();
-        builder.add_string_triple(StringTriple::new_value(&column_node,
-                                                          &column_index_predicate,
-                                                          &column_index_value))
+        builder
+            .add_string_triple(StringTriple::new_value(
+                &column_node,
+                &column_index_predicate,
+                &column_index_value,
+            ))
             .unwrap();
-        builder.add_string_triple(StringTriple::new_value(&column_node,
-                                                          &column_name_predicate,
-                                                          &column_name_value))
+        builder
+            .add_string_triple(StringTriple::new_value(
+                &column_node,
+                &column_name_predicate,
+                &column_name_value,
+            ))
             .unwrap();
         column_index += 1;
     }
@@ -135,7 +148,12 @@ pub fn import_csv(
     let column_hash_string = hex::encode(column_hash);
 
     if let Some(schema_builder) = schema_builder_option {
-        write_schema(schema_builder, &schema_prefix, &column_hash_string, &sorted_column_names);
+        write_schema(
+            schema_builder,
+            &schema_prefix,
+            &column_hash_string,
+            &sorted_column_names,
+        );
     }
 
     reader
@@ -177,10 +195,12 @@ pub fn import_csv(
     return Ok(());
 }
 
-fn write_schema(schema_builder: &SyncStoreLayerBuilder,
-                schema_prefix: &str,
-                column_hash_string: &str,
-                sorted_column_names: &Vec<String>){
+fn write_schema(
+    schema_builder: &SyncStoreLayerBuilder,
+    schema_prefix: &str,
+    column_hash_string: &str,
+    sorted_column_names: &Vec<String>,
+) {
     // Prefixes
     let rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     let rdfs = "http://www.w3.org/2000/01/rdf-schema#";
@@ -243,57 +263,121 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
         .add_string_triple(StringTriple::new_value(&column_type, &label, &column_label))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_type, &comment, &column_comment))
+        .add_string_triple(StringTriple::new_value(
+            &column_type,
+            &comment,
+            &column_comment,
+        ))
         .unwrap();
     // column
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_predicate, &rdf_type, &object_property))
+        .add_string_triple(StringTriple::new_node(
+            &column_predicate,
+            &rdf_type,
+            &object_property,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_predicate, &label, &column_predicate_label))
+        .add_string_triple(StringTriple::new_value(
+            &column_predicate,
+            &label,
+            &column_predicate_label,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_predicate, &comment, &column_predicate_comment))
+        .add_string_triple(StringTriple::new_value(
+            &column_predicate,
+            &comment,
+            &column_predicate_comment,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_predicate, &domain, &csv_type))
+        .add_string_triple(StringTriple::new_node(
+            &column_predicate,
+            &domain,
+            &csv_type,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_predicate, &range, &column_type))
+        .add_string_triple(StringTriple::new_node(
+            &column_predicate,
+            &range,
+            &column_type,
+        ))
         .unwrap();
 
     // index
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_index_predicate, &rdf_type, &datatype_property))
+        .add_string_triple(StringTriple::new_node(
+            &column_index_predicate,
+            &rdf_type,
+            &datatype_property,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_index_predicate, &label, &column_index_label))
+        .add_string_triple(StringTriple::new_value(
+            &column_index_predicate,
+            &label,
+            &column_index_label,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_index_predicate, &comment, &column_index_comment))
+        .add_string_triple(StringTriple::new_value(
+            &column_index_predicate,
+            &comment,
+            &column_index_comment,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_index_predicate, &domain, &column_type))
+        .add_string_triple(StringTriple::new_node(
+            &column_index_predicate,
+            &domain,
+            &column_type,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_index_predicate, &range, &xsd_integer))
+        .add_string_triple(StringTriple::new_node(
+            &column_index_predicate,
+            &range,
+            &xsd_integer,
+        ))
         .unwrap();
 
     // name
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_name_predicate, &rdf_type, &datatype_property))
+        .add_string_triple(StringTriple::new_node(
+            &column_name_predicate,
+            &rdf_type,
+            &datatype_property,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_name_predicate, &label, &column_name_label))
+        .add_string_triple(StringTriple::new_value(
+            &column_name_predicate,
+            &label,
+            &column_name_label,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&column_name_predicate, &comment, &column_name_comment))
+        .add_string_triple(StringTriple::new_value(
+            &column_name_predicate,
+            &comment,
+            &column_name_comment,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_name_predicate, &domain, &column_type))
+        .add_string_triple(StringTriple::new_node(
+            &column_name_predicate,
+            &domain,
+            &column_type,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_node(&column_name_predicate, &range, &xsd_string))
+        .add_string_triple(StringTriple::new_node(
+            &column_name_predicate,
+            &range,
+            &xsd_string,
+        ))
         .unwrap();
 
     // Row super class
@@ -305,10 +389,18 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
         .add_string_triple(StringTriple::new_node(&row_super, &rdf_type, &owl_class))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&row_super, &label, &row_super_label))
+        .add_string_triple(StringTriple::new_value(
+            &row_super,
+            &label,
+            &row_super_label,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&row_super, &comment, &row_super_comment))
+        .add_string_triple(StringTriple::new_value(
+            &row_super,
+            &comment,
+            &row_super_comment,
+        ))
         .unwrap();
 
     // Create Row types
@@ -336,13 +428,25 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
     let row_predicate_comment = "\"Connects a CSV to its rows\"@en";
 
     schema_builder
-        .add_string_triple(StringTriple::new_node(&row_predicate, &rdf_type, &object_property))
+        .add_string_triple(StringTriple::new_node(
+            &row_predicate,
+            &rdf_type,
+            &object_property,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&row_predicate, &label, &row_predicate_label))
+        .add_string_triple(StringTriple::new_value(
+            &row_predicate,
+            &label,
+            &row_predicate_label,
+        ))
         .unwrap();
     schema_builder
-        .add_string_triple(StringTriple::new_value(&row_predicate, &comment, &row_predicate_comment))
+        .add_string_triple(StringTriple::new_value(
+            &row_predicate,
+            &comment,
+            &row_predicate_comment,
+        ))
         .unwrap();
     schema_builder
         .add_string_triple(StringTriple::new_node(&row_predicate, &domain, &csv_type))
@@ -359,13 +463,21 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
         let column_comment = format!("\"CSV Column for header name {}\"@en", field);
 
         schema_builder
-            .add_string_triple(StringTriple::new_node(&column_p, &rdf_type, &datatype_property))
+            .add_string_triple(StringTriple::new_node(
+                &column_p,
+                &rdf_type,
+                &datatype_property,
+            ))
             .unwrap();
         schema_builder
             .add_string_triple(StringTriple::new_value(&column_p, &label, &column_label))
             .unwrap();
         schema_builder
-            .add_string_triple(StringTriple::new_value(&column_p, &comment, &column_comment))
+            .add_string_triple(StringTriple::new_value(
+                &column_p,
+                &comment,
+                &column_comment,
+            ))
             .unwrap();
         schema_builder
             .add_string_triple(StringTriple::new_node(&column_p, &domain, &row_type))
@@ -374,6 +486,4 @@ fn write_schema(schema_builder: &SyncStoreLayerBuilder,
             .add_string_triple(StringTriple::new_node(&column_p, &range, &xsd_string))
             .unwrap();
     }
-
-
 }

@@ -393,7 +393,6 @@ pub unsafe extern "C" fn builder_apply_diff(
     }
 }
 
-
 #[no_mangle]
 pub unsafe extern "C" fn layer_parent(
     layer: *mut SyncStoreLayer,
@@ -1471,7 +1470,6 @@ pub unsafe extern "C" fn add_csv_to_builder(
     skip_header: c_int,
     err: *mut *mut c_char,
 ) {
-
     let csv_name = CStr::from_ptr(name).to_str().unwrap().to_string();
     let csv_path = CStr::from_ptr(csv).to_str().unwrap().to_string();
     let data_prefix = CStr::from_ptr(data_prefix).to_str().unwrap().to_string();
@@ -1484,9 +1482,9 @@ pub unsafe extern "C" fn add_csv_to_builder(
     let skip_header = skip_header != 0;
 
     let schema_builder_option;
-    if schema_builder.is_null(){
+    if schema_builder.is_null() {
         schema_builder_option = None
-    }else{
+    } else {
         schema_builder_option = Some(&*schema_builder)
     }
 
