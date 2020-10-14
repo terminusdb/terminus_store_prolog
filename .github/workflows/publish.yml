@@ -5,7 +5,8 @@ on: [push, pull_request]
 jobs:
   docker:
     runs-on: ubuntu-latest
-
+    env:
+      IMAGE_NAME: terminusdb/terminus_store_prolog
     steps:
       - uses: actions/checkout@v2
 
