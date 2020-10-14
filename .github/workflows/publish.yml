@@ -92,7 +92,6 @@ jobs:
 
   pack:
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' && contains(github.ref, 'tag')
     steps:
       - name: Install SWI Prolog
         run: |
