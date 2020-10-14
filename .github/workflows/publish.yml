@@ -14,4 +14,4 @@ jobs:
         run: docker build -t terminusdb/terminus_store_prolog:latest .
 
       - name: Run tests
-        run: docker run -it --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
+        run: docker run --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
