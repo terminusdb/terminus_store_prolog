@@ -57,7 +57,9 @@
 
               csv_builder/3,
               csv_builder/4,
-              csv_builder/5
+              csv_builder/5,
+
+              count_layer_stack_size/2
             ]).
 
 :- use_foreign_library(foreign(libterminus_store)).
@@ -905,6 +907,17 @@ blob_allocations(allocations{stores:Stores,
     num_subject_predicate_lookup_blobs(Subject_Predicate_Lookups),
     num_predicate_lookup_blobs(Predicate_Lookups),
     num_object_lookup_blobs(Object_Lookups).
+
+count_layer_stack_size(Layer, Acc, Count) :-
+    parent(Layer, Parent),
+    !,
+    NextAcc is Acc + 1,
+    count_layer_stack_size(Parent, NextAcc, Count).
+count_layer_stack_size(_Layer, Acc, Count) :-
+    Count is Acc + 1.
+
+count_layer_stack_size(Layer, Count) :-
+    count_layer_stack_size(Layer, 0, Count).
 
 :- begin_tests(terminus_store).
 
