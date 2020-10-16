@@ -13,7 +13,7 @@ BUILD_LD_OPTIONS =-Wl,-Bstatic -L./$(RUST_TARGET_DIR) -l$(RUST_LIB_NAME) -Wl,-Bd
 
 ifeq ($(SWIARCH),x86_64-darwin)
 SOEXT = dylib
-BUILD_LD_OPTIONS = -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_TARGET_DIR) -lterminus_store_prolog
+BUILD_LD_OPTIONS = $(LDSOFLAGS) -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_TARGET_DIR) -lterminus_store_prolog
 endif
 
 

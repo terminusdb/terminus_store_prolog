@@ -77,12 +77,12 @@ jobs:
           toolchain: stable
 
       - name: Install SWI Prolog
-        run: brew install swi-prolog
+        run: bash .ci/install_swipl_dmg.sh
 
       - name: Compile terminus-store-prolog
         shell: bash
         run: |
-          ./make.sh
+          SWIPL_PATH='/Applications/SWI-Prolog.app/Contents/MacOS/' ./make.sh
 
       - name: Upload macOS artifact dylib
         uses: actions/upload-artifact@v1
