@@ -11,7 +11,7 @@ use terminus_store::storage::{name_to_string, string_to_name};
 use terminus_store::store::sync::*;
 
 mod csv;
-use crate::csv::import_csv;
+use crate::csv::{import_csv,csv_name_iri};
 
 #[no_mangle]
 pub unsafe extern "C" fn open_memory_store() -> *mut SyncStore {
@@ -1507,4 +1507,12 @@ pub unsafe extern "C" fn add_csv_to_builder(
             *err = error_to_cstring(e).into_raw();
         }
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn csv_iri(csv_name: *const c_char, prefix: *const c_char) -> *mut c_char {
+    let csv_name_str = CStr::from_ptr(csv_name).to_string_lossy().to_string();
+    let prefix_str = CStr::from_ptr(prefix).to_string_lossy().to_string();
+    let (_,node) = csv_name_iri(csv_name_str, prefix_str);
+    CString::new(node).unwrap().into_raw() as *mut c_char
 }

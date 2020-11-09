@@ -11,6 +11,12 @@ use terminus_store::layer::StringTriple;
 use terminus_store::store::sync::*;
 use urlencoding;
 
+pub fn csv_name_iri(csv_name: String, data_prefix: String) -> (String,String) {
+    let csv_name_escaped = urlencoding::encode(&csv_name);
+    let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);
+    return (csv_name_escaped,csv_node)
+}
+
 fn check_utf8(csv_path: PathBuf) -> bool {
     let csv_path_clone = csv_path.clone();
     let mut f = File::open(csv_path_clone).unwrap();
@@ -91,9 +97,8 @@ pub fn import_csv(
 
     // Create the csv type
     let csv_type = format!("{}CSV", schema_prefix);
-    let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_name_value = format!("{:?}@en", csv_name);
-    let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);
+    let (csv_name_escaped,csv_node) = csv_name_iri(csv_name,data_prefix.clone());
     builder.add_string_triple(StringTriple::new_node(&csv_node, &rdf_type, &csv_type))?;
     builder.add_string_triple(StringTriple::new_value(&csv_node, &label, &csv_name_value))?;
 

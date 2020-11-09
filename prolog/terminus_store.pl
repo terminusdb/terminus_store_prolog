@@ -58,6 +58,7 @@
               csv_builder/3,
               csv_builder/4,
               csv_builder/5,
+              csv_iri/3,
 
               count_layer_stack_size/2
             ]).
@@ -386,6 +387,11 @@
 % @arg Csv The path to the csv to be loaded
 % @arg Builder The builder into which to place the CSV
 % @arg Layer The returned Layer
+
+
+%! csv_iri(Name, Prefix, IRI) is det.
+%
+% Creates a CSV IRI from a name and prefix
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%

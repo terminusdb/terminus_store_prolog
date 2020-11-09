@@ -8,6 +8,15 @@
 #include "error.h"
 #include "blobs.h"
 
+static foreign_t pl_csv_iri(term_t csv_name_term, term_t prefix_term, term_t iri_term){
+    char* csv_name = check_string_or_atom_term(csv_name_term);
+    char* prefix = check_string_or_atom_term(prefix_term);
+    char* str_ptr = csv_iri(csv_name, prefix);
+    foreign_t result = PL_unify_string_chars(iri_term, str_ptr);
+    cleanup_cstring(str_ptr);
+    return result;
+}
+
 static foreign_t pl_apply_diff(term_t builder_blob,
                                term_t layer_blob) {
     void* builder = check_blob_type(builder_blob, &layer_builder_blob_type);
@@ -2064,6 +2073,8 @@ static foreign_t pl_windows_hack_setlocale() {
 install_t
 install()
 {
+    PL_register_foreign("csv_iri", 3,
+                        pl_csv_iri, 0);
     PL_register_foreign("csv_builder", 7,
                         pl_csv_builder, 0);
     PL_register_foreign("csv_builder", 8,
