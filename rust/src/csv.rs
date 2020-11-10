@@ -98,7 +98,8 @@ pub fn import_csv(
     // Create the csv type
     let csv_type = format!("{}CSV", schema_prefix);
     let csv_name_value = format!("{:?}@en", csv_name);
-    let (csv_name_escaped,csv_node) = csv_name_iri(csv_name,data_prefix.clone());
+    let (csv_name_escaped,csv_node) = csv_name_iri(csv_name.clone(),
+                                                   data_prefix.clone());
     builder.add_string_triple(StringTriple::new_node(&csv_node, &rdf_type, &csv_type))?;
     builder.add_string_triple(StringTriple::new_value(&csv_node, &label, &csv_name_value))?;
 
@@ -165,10 +166,10 @@ pub fn import_csv(
 
     for result in reader.records() {
         let record = result?;
-
         // create a Sha1 object
         let mut hasher = Sha1::new();
-
+        // add csv_name to hasher so we don't overlap CSVs
+        hasher.update(csv_name.clone());
         // process input message
         for (_, field) in record.iter().enumerate() {
             hasher.update(field);
@@ -188,7 +189,7 @@ pub fn import_csv(
             let column = &header[col];
             builder.add_string_triple(StringTriple::new_value(&node, &column, &value))?;
         }
-        return Ok(());
+
     }
 
     return Ok(());
