@@ -9,7 +9,7 @@ WIN_SWIPL_BIN = "/c/Program Files/swipl/bin"
 SRCS = c/error.c c/blobs.c c/terminus_store.c
 OBJS = target/error.o target/blobs.o target/terminus_store.o
 CARGO_FLAGS =
-BUILD_LD_OPTIONS =-Wl,-Bstatic -L./$(RUST_TARGET_DIR) -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lc
+BUILD_LD_OPTIONS =-Wl,-Bstatic -L./$(RUST_TARGET_DIR) -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lc -fPIC
 
 ifeq ($(SWIARCH),x86_64-darwin)
 SOEXT = dylib
