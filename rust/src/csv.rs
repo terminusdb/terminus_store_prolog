@@ -164,6 +164,8 @@ pub fn import_csv(
         )?;
     }
 
+    let row_type = format!("{}CSVRow_{}", schema_prefix, column_hash_string);
+
     for result in reader.records() {
         let record = result?;
         // create a Sha1 object
@@ -178,7 +180,6 @@ pub fn import_csv(
         let hash_string = hex::encode(hash);
         let node = format!("{}CSVRow_{}", data_prefix, hash_string);
         let row_predicate = format!("{}csv_row", schema_prefix);
-        let row_type = format!("{}CSVRow_{}", schema_prefix, column_hash_string);
 
         // add row type
         builder.add_string_triple(StringTriple::new_node(&node, &rdf_type, &row_type))?;
@@ -384,6 +385,7 @@ fn write_schema(
     let row_predicate = format!("{}csv_row", schema_prefix);
     let row_predicate_label = "\"csv row\"@en";
     let row_predicate_comment = "\"Connects a CSV to its rows\"@en";
+    let row_super = format!("{}CSVRow", schema_prefix);
 
     schema_builder.add_string_triple(StringTriple::new_node(
         &row_predicate,
@@ -401,7 +403,7 @@ fn write_schema(
         &row_predicate_comment,
     ))?;
     schema_builder.add_string_triple(StringTriple::new_node(&row_predicate, &domain, &csv_type))?;
-    schema_builder.add_string_triple(StringTriple::new_node(&row_predicate, &range, &row_type))?;
+    schema_builder.add_string_triple(StringTriple::new_node(&row_predicate, &range, &row_super))?;
 
     // Create column predicates for each field
     for field in sorted_column_names {

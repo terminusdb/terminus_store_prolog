@@ -1371,11 +1371,11 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
     format(Stream, "3,4~n", []),
     close(Stream),
     csv_builder("csv",Filename, Builder, Schema_Builder,
-                [data_prefix(''),
+                [data_prefix('data/'),
                  schema_prefix('')]),
-    nb_commit(Schema_Builder, Layer),
-    findall(X-P-Y, triple(Layer, X, P, Y), Triples),
-    Triples = [
+    nb_commit(Schema_Builder, Schema_Layer),
+    findall(X-P-Y, triple(Schema_Layer, X, P, Y), Schema_Triples),
+    Schema_Expected = [
         "CSV"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         "CSV"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV object\"@en"),
         "CSV"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV\"@en"),
@@ -1392,12 +1392,12 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "Column"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"Column\"@en"),
         "column_header"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
         "column_header"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV Column for header name header\"@en"),
-        "column_header"-"http://www.w3.org/2000/01/rdf-schema#domain"-node(Row1),
+        "column_header"-"http://www.w3.org/2000/01/rdf-schema#domain"-node(Row_Type),
         "column_header"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"Column header\"@en"),
         "column_header"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#string"),
         "column_some"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
         "column_some"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV Column for header name some\"@en"),
-        "column_some"-"http://www.w3.org/2000/01/rdf-schema#domain"-node(Row1),
+        "column_some"-"http://www.w3.org/2000/01/rdf-schema#domain"-node(Row_Type),
         "column_some"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"Column some\"@en"),
         "column_some"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#string"),
         "csv_column"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#ObjectProperty"),
@@ -1417,8 +1417,11 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Connects a CSV to its rows\"@en"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("CSV"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv row\"@en"),
-        "csv_row"-"http://www.w3.org/2000/01/rdf-schema#range"-node(Row1)
-    ].
+        "csv_row"-"http://www.w3.org/2000/01/rdf-schema#range"-node("CSVRow")
+    ],
+
+    forall(member(Triple,Schema_Triples),
+           member(Triple,Schema_Expected)).
 
 test(so_mode,[cleanup(clean), setup(createng)]) :-
     open_directory_store("testdir", Store),
