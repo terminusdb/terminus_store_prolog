@@ -157,6 +157,7 @@ pub fn import_csv(
 
     if let Some(schema_builder) = schema_builder_option {
         write_schema(
+            &csv_name,
             schema_builder,
             &schema_prefix,
             &column_hash_string,
@@ -197,6 +198,7 @@ pub fn import_csv(
 }
 
 fn write_schema(
+    csv_name: &str,
     schema_builder: &SyncStoreLayerBuilder,
     schema_prefix: &str,
     column_hash_string: &str,
@@ -250,7 +252,7 @@ fn write_schema(
     let column_index_label = "\"csv column index\"@en";
     let column_index_comment = "\"The ordering index for a column in a csv\"@en";
     let column_name_predicate = format!("{}csv_column_name", schema_prefix);
-    let column_name_label = "\"csv column index\"@en";
+    let column_name_label = "\"csv column name\"@en";
     let column_name_comment = "\"The name of the column as it was verbatim in the CSV\"@en";
 
     schema_builder.add_string_triple(StringTriple::new_node(
@@ -368,7 +370,7 @@ fn write_schema(
 
     // Create Row types
     let row_type = format!("{}CSVRow_{}", schema_prefix, column_hash_string);
-    let row_label = format!("\"CSV Row {}\"@en", column_hash_string);
+    let row_label = format!("\"CSV Row from {}\"@en", csv_name.clone());
     let sorted_column_string = format!("CSV Row object for columns {:?}", sorted_column_names);
     let row_comment = format!("{:?}@en", sorted_column_string);
 

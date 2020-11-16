@@ -1375,6 +1375,7 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
                  schema_prefix('')]),
     nb_commit(Schema_Builder, Schema_Layer),
     findall(X-P-Y, triple(Schema_Layer, X, P, Y), Schema_Triples),
+
     Schema_Expected = [
         "CSV"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         "CSV"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV object\"@en"),
@@ -1385,7 +1386,7 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "CSVRow"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV Row\"@en"),
         Row_Type-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         Row_Type-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"CSV Row object for columns [\\\"header\\\", \\\"some\\\"]\"@en"),
-        Row_Type-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV Row c40ce0246f480cd2baca44a7477fee98662917b7\"@en"),
+        Row_Type-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"CSV Row from csv\"@en"),
         Row_Type-"http://www.w3.org/2000/01/rdf-schema#subClassOf"-node("CSVRow"),
         "Column"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#Class"),
         "Column"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Column information object for a CSV\"@en"),
@@ -1411,7 +1412,7 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
         "csv_column_name"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#DatatypeProperty"),
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"The name of the column as it was verbatim in the CSV\"@en"),
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#domain"-node("Column"),
-        "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv column index\"@en"),
+        "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#label"-value("\"csv column name\"@en"),
         "csv_column_name"-"http://www.w3.org/2000/01/rdf-schema#range"-node("http://www.w3.org/2001/XMLSchema#string"),
         "csv_row"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("http://www.w3.org/2002/07/owl#ObjectProperty"),
         "csv_row"-"http://www.w3.org/2000/01/rdf-schema#comment"-value("\"Connects a CSV to its rows\"@en"),
