@@ -17,9 +17,9 @@ pub fn csv_name_iri(csv_name: String, data_prefix: String) -> (String,String) {
     return (csv_name_escaped,csv_node)
 }
 
-fn check_utf8(csv_path: PathBuf) -> bool {
+fn check_utf8(csv_path: PathBuf) -> Result<bool, csv::Error> {
     let csv_path_clone = csv_path.clone();
-    let mut f = File::open(csv_path_clone).unwrap();
+    let mut f = File::open(csv_path_clone)?;
     let mut buffer = [0; 2048];
     // read a chunk
     let _n = f.read(&mut buffer);
@@ -31,9 +31,9 @@ fn check_utf8(csv_path: PathBuf) -> bool {
     let res = enc_detector.guess(None, true);
 
     if res == UTF_8 {
-        return true;
+        return Ok(true);
     } else {
-        return false;
+        return Ok(false);
     }
 }
 
@@ -49,7 +49,7 @@ pub fn import_csv(
 ) -> Result<(), csv::Error> {
     let pathbuf: PathBuf = csv_path.into();
 
-    if !check_utf8(pathbuf.clone()) {
+    if !check_utf8(pathbuf.clone())? {
         return Err(
             io::Error::new(io::ErrorKind::InvalidData, "Could not convert to utf-8").into(),
         );
