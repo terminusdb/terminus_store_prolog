@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: libterminus_store.dll
-          path: libterminus_store.dll
+          path: lib/x64-win64/libterminus_store.dll
 
   mac:
     runs-on: macos-latest
