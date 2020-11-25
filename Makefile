@@ -21,6 +21,7 @@ ifeq ($(OS), Windows_NT)
 PACKSODIR = lib/x64-win64/
 BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -L$(WIN_SWIPL_BIN) -lswipl -I$(WIN_SWIPL_INCLUDE) -L$(RUST_TARGET_DIR)
 SOEXT = dll
+SWIARCH = x64-win64
 endif
 
 all: release
