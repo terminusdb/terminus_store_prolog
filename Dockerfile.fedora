@@ -1,0 +1,7 @@
+FROM fedora:latest
+WORKDIR /usr/share/swi-prolog/pack/terminus_store_prolog
+COPY . .
+RUN dnf install pl git gcc automake pl-devel make rust cargo curl ca-certificates -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN ./make.sh \
+       && rm -rf rust/target/release/build && rm -rf rust/target/release/deps
