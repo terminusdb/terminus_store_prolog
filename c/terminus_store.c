@@ -614,6 +614,21 @@ static foreign_t pl_layer_squash(term_t layer_term, term_t squash_layer_term) {
     PL_succeed;
 }
 
+static foreign_t pl_layer_rollup(term_t layer_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    if (PL_is_variable(layer_term)) {
+        return throw_instantiation_err(layer_term);
+    }
+
+    char* err;
+    layer_rollup(layer, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
 static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
@@ -652,42 +667,6 @@ static foreign_t pl_layer_total_triple_count(term_t layer_term, term_t count_ter
     uint64_t count = (uint64_t) layer_total_triple_count(layer);
 
     return PL_unify_uint64(count_term, count);
-}
-
-static foreign_t pl_layer_subjects(term_t layer_term, term_t subject_lookup_term, control_t handle) {
-    void* layer;
-    void* iter;
-    switch (PL_foreign_control(handle)) {
-    case PL_FIRST_CALL:
-        layer = check_blob_type(layer_term, &layer_blob_type);
-        iter = layer_subjects_iter(layer);
-        break;
-    case PL_REDO:
-        iter = PL_foreign_context_address(handle);
-        break;
-    case PL_PRUNED:
-        iter = PL_foreign_context_address(handle);
-        cleanup_subjects_iter(iter);
-        PL_succeed;
-    default:
-        abort();
-    }
-
-    void* next = subjects_iter_next(iter);
-    if (next) {
-        if (PL_unify_blob(subject_lookup_term, next, 0, &subject_lookup_blob_type)) {
-            PL_retry_address(iter);
-        }
-        else {
-            cleanup_subject_lookup(next);
-            cleanup_subjects_iter(iter);
-            PL_fail;
-        }
-    }
-    else {
-        cleanup_subjects_iter(iter);
-        PL_fail;
-    }
 }
 
 static foreign_t pl_layer_subject_additions(term_t layer_term, term_t subject_lookup_term, control_t handle) {
@@ -2137,6 +2116,8 @@ install()
                         pl_layer_parent, 0);
     PL_register_foreign("squash", 2,
                         pl_layer_squash, 0);
+    PL_register_foreign("rollup", 1,
+                        pl_layer_rollup, 0);
     PL_register_foreign("layer_addition_count", 2,
                         pl_layer_addition_count, 0);
     PL_register_foreign("layer_removal_count", 2,
@@ -2147,48 +2128,6 @@ install()
                         pl_layer_total_removal_count, 0);
     PL_register_foreign("layer_total_triple_count", 2,
                         pl_layer_total_triple_count, 0);
-    PL_register_foreign("lookup_subject", 2,
-                        pl_layer_subjects, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_predicate", 2,
-                        pl_layer_predicates, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_object", 2,
-                        pl_layer_objects, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_subject", 3,
-                        pl_layer_lookup_subject, 0);
-    PL_register_foreign("lookup_predicate", 3,
-                        pl_layer_lookup_predicate, 0);
-    PL_register_foreign("lookup_object", 3,
-                        pl_layer_lookup_object, 0);
-    PL_register_foreign("lookup_subject_addition", 2,
-                        pl_layer_subject_additions, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_predicate_addition", 2,
-                        pl_layer_predicate_additions, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_object_addition", 2,
-                        pl_layer_object_additions, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_subject_removal", 2,
-                        pl_layer_subject_removals, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_predicate_removal", 2,
-                        pl_layer_predicate_removals, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_object_removal", 2,
-                        pl_layer_object_removals, PL_FA_NONDETERMINISTIC);
-    PL_register_foreign("lookup_subject", 3,
-                        pl_layer_lookup_subject, 0);
-    PL_register_foreign("lookup_predicate", 3,
-                        pl_layer_lookup_predicate, 0);
-    PL_register_foreign("lookup_object", 3,
-                        pl_layer_lookup_object, 0);
-    PL_register_foreign("lookup_subject_addition", 3,
-                        pl_layer_lookup_subject_addition, 0);
-    PL_register_foreign("lookup_predicate_addition", 3,
-                        pl_layer_lookup_predicate_addition, 0);
-    PL_register_foreign("lookup_object_addition", 3,
-                        pl_layer_lookup_object_addition, 0);
-    PL_register_foreign("lookup_subject_removal", 3,
-                        pl_layer_lookup_subject_removal, 0);
-    PL_register_foreign("lookup_predicate_removal", 3,
-                        pl_layer_lookup_predicate_removal, 0);
-    PL_register_foreign("lookup_object_removal", 3,
-                        pl_layer_lookup_object_removal, 0);
     PL_register_foreign("subject_lookup_subject", 2,
                         pl_subject_lookup_subject, 0);
     PL_register_foreign("subject_lookup_predicate", 2,

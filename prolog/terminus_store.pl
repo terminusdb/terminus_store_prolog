@@ -25,19 +25,13 @@
               object_id/3,
 
               id_triple/4,
-              old_id_triple/4,
               triple/4,
-              old_triple/4,
 
               id_triple_addition/4,
-              old_id_triple_addition/4,
               triple_addition/4,
-              old_triple_addition/4,
 
               id_triple_removal/4,
-              old_id_triple_removal/4,
               triple_removal/4,
-              old_triple_removal/4,
 
               parent/2,
               squash/2,
@@ -338,31 +332,12 @@
 % @arg Layer the layer for which to do the parent lookup.
 % @arg Parent the retrieved parent layer.
 
-%! lookup_subject(+Layer:layer, -Subject:subject_lookup) is nondet.
+%! rollup(+Layer:layer) is semidet.
 %
-% Unify Subject with a subject lookup. On backtracking, this'll unify
-% with all possible subjects.
+% Produces a rollup of the current layer
 %
-% A subject lookup caches a lookup in a layer so that further
-% operations only have to traverse data relevant to one particular
-% subject.
-%
-% @arg Layer the layer to do the lookup in.
-% @arg Subject the returned subject lookup.
-
-%! lookup_subject(+Layer:layer, +Subject_Id:integer, -Subject:subject_lookup) is semidet.
-%
-% Unify Subject with the subject lookup for the given subject
-% id. Fails if the lookup cannot be done for that id.
-%
-% A subject lookup caches a lookup in a layer so that further
-% operations only have to traverse data relevant to one particular
-% subject.
-%
-% @arg Layer the layer to do the lookup in.
-% @arg Subject_Id the subject id to do the lookup with
-% @arg Subject the returned subject lookup.
-%
+% @arg Layer the layer for which to do the parent lookup.
+% @arg Parent the retrieved parent layer.
 
 %! csv_builder(+Name:string, +Csv:path, +Builder:builder, +Options:options) is det
 %
@@ -523,96 +498,6 @@ object_id(Layer, Object, Id) :-
     id_to_object(Layer, Id, Object_String, Type),
     Object =.. [Type, Object_String].
 
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    ground(Object),
-    !,
-
-    lookup_subject(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    !,
-
-    lookup_subject(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Object),
-    !,
-
-    lookup_subject(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    !,
-
-    lookup_subject(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Object),
-    !,
-
-    lookup_object(Layer, Object, Object_Lookup),
-    object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    ground(Predicate),
-    !,
-
-    lookup_predicate(Layer, Predicate, Predicate_Lookup),
-    predicate_lookup_subject_predicate_pair(Predicate_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple(Layer, Subject, Predicate, Object) :-
-    lookup_subject(Layer, Subject_Lookup),
-    subject_lookup_subject(Subject_Lookup, Subject),
-    subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
-    subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
-old_triple(Layer, Subject, Predicate, Object) :-
-    (   ground(Subject)
-    ->  subject_id(Layer, Subject, S_Id)
-    ;   true),
-
-    (   ground(Predicate)
-    ->  predicate_id(Layer, Predicate, P_Id)
-    ;   true),
-
-    (   ground(Object)
-    ->  object_id(Layer, Object, O_Id)
-    ;   true),
-
-    old_id_triple(Layer, S_Id, P_Id, O_Id),
-
-    (   ground(Subject)
-    ->  true
-    ;   subject_id(Layer, Subject, S_Id)),
-
-
-    (   ground(Predicate)
-    ->  true
-    ;   predicate_id(Layer, Predicate, P_Id)),
-
-
-    (   ground(Object)
-    ->  true
-    ;   object_id(Layer,Object, O_Id)).
-
 triple(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
     ->  subject_id(Layer, Subject, S_Id)
@@ -659,67 +544,6 @@ csv_builder(Name, Csv, Builder, Schema_Builder, Options) :-
     option(skip_header(Skip), Options, false),
     csv_builder(Name, Csv, Builder, Schema_Builder, Data, Schema, Header, Skip).
 
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    ground(Object),
-    !,
-
-    lookup_subject_addition(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    !,
-
-    lookup_subject_addition(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Object),
-    !,
-
-    lookup_subject_addition(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    !,
-
-    lookup_subject_addition(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Object),
-    !,
-
-    lookup_object_addition(Layer, Object, Object_Lookup),
-    object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    ground(Predicate),
-    !,
-
-    lookup_predicate_addition(Layer, Predicate, Predicate_Lookup),
-    predicate_lookup_subject_predicate_pair(Predicate_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_addition(Layer, Subject, Predicate, Object) :-
-    lookup_subject_addition(Layer, Subject_Lookup),
-    subject_lookup_subject(Subject_Lookup, Subject),
-    subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
-    subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
 triple_addition(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
     ->  subject_id(Layer, Subject, S_Id)
@@ -749,96 +573,6 @@ triple_addition(Layer, Subject, Predicate, Object) :-
     ->  true
     ;   object_id(Layer,Object, O_Id)).
 
-old_triple_addition(Layer, Subject, Predicate, Object) :-
-    (   ground(Subject)
-    ->  subject_id(Layer, Subject, S_Id)
-    ;   true),
-
-    (   ground(Predicate)
-    ->  predicate_id(Layer, Predicate, P_Id)
-    ;   true),
-
-    (   ground(Object)
-    ->  object_id(Layer, Object, O_Id)
-    ;   true),
-
-    old_id_triple_addition(Layer, S_Id, P_Id, O_Id),
-
-    (   ground(Subject)
-    ->  true
-    ;   subject_id(Layer, Subject, S_Id)),
-
-
-    (   ground(Predicate)
-    ->  true
-    ;   predicate_id(Layer, Predicate, P_Id)),
-
-
-    (   ground(Object)
-    ->  true
-    ;   object_id(Layer,Object, O_Id)).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    ground(Object),
-    !,
-
-    lookup_subject_removal(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Subject_Predicate_Lookup),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Predicate),
-    !,
-
-    lookup_subject_removal(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Predicate, Predicate_Lookup),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    ground(Object),
-    !,
-
-    lookup_subject_removal(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_has_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Subject),
-    !,
-
-    lookup_subject_removal(Layer, Subject, Subject_Lookup),
-    subject_lookup_predicate(Subject_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_predicate(Subject_Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Object),
-    !,
-
-    lookup_object_removal(Layer, Object, Object_Lookup),
-    object_lookup_subject_predicate(Object_Lookup, Subject, Predicate).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    ground(Predicate),
-    !,
-
-    lookup_predicate_removal(Layer, Predicate, Predicate_Lookup),
-    predicate_lookup_subject_predicate_pair(Predicate_Lookup, Subject_Predicate_Lookup),
-    subject_predicate_lookup_subject(Subject_Predicate_Lookup, Subject),
-    subject_predicate_lookup_object(Subject_Predicate_Lookup, Object).
-
-old_id_triple_removal(Layer, Subject, Predicate, Object) :-
-    lookup_subject_removal(Layer, Subject_Lookup),
-    subject_lookup_subject(Subject_Lookup, Subject),
-    subject_lookup_predicate(Subject_Lookup, Predicate_Lookup),
-    subject_predicate_lookup_predicate(Predicate_Lookup, Predicate),
-    subject_predicate_lookup_object(Predicate_Lookup, Object).
-
 triple_removal(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
     ->  subject_id(Layer, Subject, S_Id)
@@ -853,35 +587,6 @@ triple_removal(Layer, Subject, Predicate, Object) :-
     ;   true),
 
     id_triple_removal(Layer, S_Id, P_Id, O_Id),
-
-    (   ground(Subject)
-    ->  true
-    ;   subject_id(Layer, Subject, S_Id)),
-
-
-    (   ground(Predicate)
-    ->  true
-    ;   predicate_id(Layer, Predicate, P_Id)),
-
-
-    (   ground(Object)
-    ->  true
-    ;   object_id(Layer,Object, O_Id)).
-
-old_triple_removal(Layer, Subject, Predicate, Object) :-
-    (   ground(Subject)
-    ->  subject_id(Layer, Subject, S_Id)
-    ;   true),
-
-    (   ground(Predicate)
-    ->  predicate_id(Layer, Predicate, P_Id)
-    ;   true),
-
-    (   ground(Object)
-    ->  object_id(Layer, Object, O_Id)
-    ;   true),
-
-    old_id_triple_removal(Layer, S_Id, P_Id, O_Id),
 
     (   ground(Subject)
     ->  true
@@ -1267,6 +972,7 @@ test(apply_empty_diff,[cleanup(clean), setup(createng)]) :-
     Triple_Removals = [].
 
 test(add_csv,[cleanup(clean), setup(createng)]) :-
+    writeq(gobgob),nl,
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -1275,7 +981,9 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     format(Stream, "3,4~n", []),
     close(Stream),
     csv_builder("csv",Filename, Builder, []),
+    writeq(gobgob),nl,
     nb_commit(Builder, Layer),
+    writeq(gobgobob),nl,
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
 
     Triples = [
@@ -1300,6 +1008,7 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
+    writeq(nobnob),nl,
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -1331,6 +1040,8 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
+    writeq(woopwoop),nl,
+
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
 
@@ -1362,6 +1073,8 @@ test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
+    writeq(hmmmmm),nl,
+
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     open_write(Store, Schema_Builder),
@@ -1426,6 +1139,8 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
            (   member(Triple,Schema_Expected))).
 
 test(so_mode,[cleanup(clean), setup(createng)]) :-
+    writeq(here),nl,
+
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("C")),
@@ -1462,5 +1177,17 @@ test(p_mode,[cleanup(clean), setup(createng)]) :-
     nb_commit(Builder, Layer),
     findall(X, triple(Layer, "A", X, node("D")), Ps),
     Ps = ["B"].
+
+%% test(rollup,[cleanup(clean), setup(createng)]) :-
+%%     open_directory_store("testdir", Store),
+%%     open_write(Store, Builder),
+%%     nb_add_triple(Builder, "A", "B", node("D")),
+%%     nb_add_triple(Builder, "C", "B", node("D")),
+%%     nb_commit(Builder, Layer),
+%%     rollup(Layer),
+%%     true.
+
+%     findall(X, triple(Layer, "A", X, node("D")), Ps),
+%    Ps = ["B"].
 
 :- end_tests(terminus_store).

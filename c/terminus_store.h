@@ -102,6 +102,8 @@ void *layer_parent(void *layer, char **err);
 
 void *layer_squash(void *layer, char **err);
 
+void *layer_rollup(void *layer, char **err);
+
 uintptr_t layer_node_and_value_count(void *layer);
 
 uintptr_t layer_predicate_count(void *layer);

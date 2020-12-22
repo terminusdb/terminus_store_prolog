@@ -4,8 +4,7 @@ use std::os::raw::{c_char, c_int, c_void};
 use std::sync::Mutex;
 
 use terminus_store::layer::{
-    IdTriple, Layer, ObjectLookup, ObjectType, PredicateLookup, StringTriple, SubjectLookup,
-    SubjectPredicateLookup,
+    IdTriple, Layer, ObjectType, StringTriple,
 };
 use terminus_store::storage::{name_to_string, string_to_name};
 use terminus_store::store::sync::*;
@@ -533,239 +532,6 @@ pub unsafe extern "C" fn layer_total_triple_count(layer: *mut SyncStoreLayer) ->
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_lookup_subject(
-    layer: *mut SyncStoreLayer,
-    subject: u64,
-) -> *mut c_void {
-    match (*layer).lookup_subject(subject) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_subject_addition(
-    layer: *mut SyncStoreLayer,
-    subject: u64,
-) -> *mut c_void {
-    match (*layer).lookup_subject_addition_generic(subject) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_subject_removal(
-    layer: *mut SyncStoreLayer,
-    subject: u64,
-) -> *mut c_void {
-    match (*layer).lookup_subject_removal_generic(subject) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_predicate(
-    layer: *mut SyncStoreLayer,
-    predicate: u64,
-) -> *mut c_void {
-    match (*layer).lookup_predicate(predicate) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_predicate_addition(
-    layer: *mut SyncStoreLayer,
-    predicate: u64,
-) -> *mut c_void {
-    match (*layer).lookup_predicate_addition_generic(predicate) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_predicate_removal(
-    layer: *mut SyncStoreLayer,
-    predicate: u64,
-) -> *mut c_void {
-    match (*layer).lookup_predicate_removal_generic(predicate) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_object(
-    layer: *mut SyncStoreLayer,
-    object: u64,
-) -> *mut c_void {
-    match (*layer).lookup_object(object) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_object_addition(
-    layer: *mut SyncStoreLayer,
-    object: u64,
-) -> *mut c_void {
-    match (*layer).lookup_object_addition_generic(object) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_lookup_object_removal(
-    layer: *mut SyncStoreLayer,
-    object: u64,
-) -> *mut c_void {
-    match (*layer).lookup_object_removal_generic(object) {
-        Some(result) => Box::into_raw(Box::new(result)) as *mut c_void,
-        None => std::ptr::null_mut(),
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_subjects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).subjects()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_subject_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).subject_additions_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_subject_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).subject_removals_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subjects_iter_next(iter: *mut c_void) -> *mut c_void {
-    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn SubjectLookup>>>>;
-    match (*iter).lock().expect("locking should succeed").next() {
-        None => std::ptr::null_mut(),
-        Some(subject_lookup) => Box::into_raw(Box::new(subject_lookup)) as *mut c_void,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_predicates_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).predicates()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_predicate_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).predicate_additions_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_predicate_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).predicate_removals_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn predicates_iter_next(iter: *mut c_void) -> *mut c_void {
-    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn ObjectLookup>>>>;
-    match (*iter).lock().expect("locking should succeed").next() {
-        None => std::ptr::null_mut(),
-        Some(object_lookup) => Box::into_raw(Box::new(object_lookup)) as *mut c_void,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_objects_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).objects()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_object_additions_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).object_additions_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn layer_object_removals_iter(layer: *mut SyncStoreLayer) -> *mut c_void {
-    Box::into_raw(Box::new(Mutex::new((*layer).object_removals_generic()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn objects_iter_next(iter: *mut c_void) -> *mut c_void {
-    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn ObjectLookup>>>>;
-    match (*iter).lock().expect("locking should succeed").next() {
-        None => std::ptr::null_mut(),
-        Some(object_lookup) => Box::into_raw(Box::new(object_lookup)) as *mut c_void,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_lookup_subject(subject_lookup: *mut c_void) -> u64 {
-    let subject_lookup = subject_lookup as *mut Box<dyn SubjectLookup>;
-    (*subject_lookup).subject()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_lookup_lookup_predicate(
-    subject_lookup: *mut c_void,
-    predicate: u64,
-) -> *mut c_void {
-    let subject_lookup = subject_lookup as *mut Box<dyn SubjectLookup>;
-    // *mut Box<dyn SubjectPredicateLookup>;
-    match (*subject_lookup).lookup_predicate(predicate) {
-        None => std::ptr::null_mut(),
-        Some(objects_for_po_pair) => {
-            let obj_po_pair_box = Box::new(objects_for_po_pair);
-            Box::into_raw(obj_po_pair_box) as *mut c_void
-        }
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_lookup_predicates_iter(
-    subject_lookup: *mut c_void,
-) -> *mut c_void {
-    let subject_lookup = subject_lookup as *mut Box<dyn SubjectLookup>;
-    Box::into_raw(Box::new(Mutex::new((*subject_lookup).predicates()))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_predicates_iter_next(iter: *mut c_void) -> *mut c_void {
-    let iter = iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn SubjectPredicateLookup>>>>;
-    match (*iter).lock().expect("locking should succeed").next() {
-        None => std::ptr::null_mut(),
-        Some(objects_for_po_pair) => Box::into_raw(Box::new(objects_for_po_pair)) as *mut c_void,
-    }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_predicate_lookup_subject(objects_for_po_pair: *mut c_void) -> u64 {
-    let objects_for_po_pair = objects_for_po_pair as *mut Box<dyn SubjectPredicateLookup>;
-    (*objects_for_po_pair).subject()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_predicate_lookup_predicate(
-    objects_for_po_pair: *mut c_void,
-) -> u64 {
-    let objects_for_po_pair = objects_for_po_pair as *mut Box<dyn SubjectPredicateLookup>;
-    (*objects_for_po_pair).predicate()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_predicate_lookup_objects_iter(
-    objects: *mut c_void,
-) -> *mut c_void {
-    let objects = objects as *mut Box<dyn SubjectPredicateLookup>;
-    let iter: Box<dyn Iterator<Item = u64>> = Box::new((*objects).objects());
-    Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn subject_predicate_objects_iter_next(iter: *mut c_void) -> u64 {
     let iter = iter as *mut Mutex<Box<dyn Iterator<Item = u64>>>;
     (*iter)
@@ -773,57 +539,6 @@ pub unsafe extern "C" fn subject_predicate_objects_iter_next(iter: *mut c_void) 
         .expect("lock should succeed")
         .next()
         .unwrap_or(0)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn subject_predicate_lookup_lookup_object(
-    objects: *mut c_void,
-    object: u64,
-) -> bool {
-    let objects = objects as *mut Box<dyn SubjectPredicateLookup>;
-    (*objects).has_object(object)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn predicate_lookup_predicate(predicate_lookup: *mut c_void) -> u64 {
-    let predicate_lookup = predicate_lookup as *mut Box<dyn PredicateLookup>;
-    (*predicate_lookup).predicate()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn predicate_lookup_subject_predicate_pairs_iter(
-    predicate_lookup: *mut c_void,
-) -> *mut c_void {
-    let predicate_lookup = predicate_lookup as *mut Box<dyn PredicateLookup>;
-    Box::into_raw(Box::new(Mutex::new(
-        (*predicate_lookup).subject_predicate_pairs(),
-    ))) as *mut c_void
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn object_lookup_object(object_lookup: *mut c_void) -> u64 {
-    let object_lookup = object_lookup as *mut Box<dyn ObjectLookup>;
-    (*object_lookup).object()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn object_lookup_lookup_subject_predicate_pair(
-    object_lookup: *mut c_void,
-    subject: u64,
-    predicate: u64,
-) -> bool {
-    let object_lookup = object_lookup as *mut Box<dyn ObjectLookup>;
-    (*object_lookup).has_subject_predicate_pair(subject, predicate)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn object_lookup_subject_predicate_pairs_iter(
-    object_lookup: *mut c_void,
-) -> *mut c_void {
-    let object_lookup = object_lookup as *mut Box<dyn ObjectLookup>;
-    let iter = Box::new((*object_lookup).subject_predicate_pairs())
-        as Box<dyn Iterator<Item = (u64, u64)>>;
-    Box::into_raw(Box::new(Mutex::new(iter))) as *mut c_void
 }
 
 #[repr(C)]
@@ -1368,49 +1083,6 @@ pub unsafe extern "C" fn cleanup_layer_builder(layer_builder: *mut SyncStoreLaye
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn cleanup_subject_lookup(subject_lookup: *mut c_void) {
-    Box::from_raw(subject_lookup as *mut Box<dyn SubjectLookup>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_subject_predicate_lookup(objects_for_po_pair: *mut c_void) {
-    Box::from_raw(objects_for_po_pair as *mut Box<dyn SubjectPredicateLookup>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_predicate_lookup(subject_lookup: *mut c_void) {
-    Box::from_raw(subject_lookup as *mut Box<dyn PredicateLookup>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_object_lookup(object_lookup: *mut c_void) {
-    Box::from_raw(object_lookup as *mut Box<dyn ObjectLookup>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_subjects_iter(iter: *mut c_void) {
-    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn SubjectLookup>>>>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_subject_predicates_iter(iter: *mut c_void) {
-    let _iter = Box::from_raw(
-        iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn SubjectPredicateLookup>>>>,
-    );
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_predicates_iter(iter: *mut c_void) {
-    let _iter =
-        Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn PredicateLookup>>>>);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn cleanup_objects_iter(iter: *mut c_void) {
-    let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = Box<dyn ObjectLookup>>>>);
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn cleanup_subject_predicate_objects_iter(iter: *mut c_void) {
     let _iter = Box::from_raw(iter as *mut Mutex<Box<dyn Iterator<Item = u64>>>);
 }
@@ -1515,4 +1187,17 @@ pub unsafe extern "C" fn csv_iri(csv_name: *const c_char, prefix: *const c_char)
     let prefix_str = CStr::from_ptr(prefix).to_string_lossy().to_string();
     let (_,node) = csv_name_iri(csv_name_str, prefix_str);
     CString::new(node).unwrap().into_raw() as *mut c_char
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_rollup(
+    layer: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) {
+    match (*layer).rollup() {
+        Ok(()) => *err = std::ptr::null_mut(),
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+        }
+    }
 }
