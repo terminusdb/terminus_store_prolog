@@ -972,7 +972,6 @@ test(apply_empty_diff,[cleanup(clean), setup(createng)]) :-
     Triple_Removals = [].
 
 test(add_csv,[cleanup(clean), setup(createng)]) :-
-    writeq(gobgob),nl,
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -981,9 +980,7 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     format(Stream, "3,4~n", []),
     close(Stream),
     csv_builder("csv",Filename, Builder, []),
-    writeq(gobgob),nl,
     nb_commit(Builder, Layer),
-    writeq(gobgobob),nl,
     findall(X-P-Y, triple(Layer, X, P, Y), Triples),
 
     Triples = [
@@ -1008,7 +1005,6 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
-    writeq(nobnob),nl,
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -1040,8 +1036,6 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
-    writeq(woopwoop),nl,
-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
 
@@ -1073,8 +1067,6 @@ test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
     ].
 
 test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
-    writeq(hmmmmm),nl,
-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     open_write(Store, Schema_Builder),
@@ -1139,8 +1131,6 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
            (   member(Triple,Schema_Expected))).
 
 test(so_mode,[cleanup(clean), setup(createng)]) :-
-    writeq(here),nl,
-
     open_directory_store("testdir", Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("C")),
@@ -1178,16 +1168,22 @@ test(p_mode,[cleanup(clean), setup(createng)]) :-
     findall(X, triple(Layer, "A", X, node("D")), Ps),
     Ps = ["B"].
 
-%% test(rollup,[cleanup(clean), setup(createng)]) :-
-%%     open_directory_store("testdir", Store),
-%%     open_write(Store, Builder),
-%%     nb_add_triple(Builder, "A", "B", node("D")),
-%%     nb_add_triple(Builder, "C", "B", node("D")),
-%%     nb_commit(Builder, Layer),
-%%     rollup(Layer),
-%%     true.
+test(rollup,[cleanup(clean), setup(createng)]) :-
+    open_directory_store("testdir", Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
 
-%     findall(X, triple(Layer, "A", X, node("D")), Ps),
-%    Ps = ["B"].
+    open_write(Layer, New_Builder),
+    nb_add_triple(New_Builder, "E", "F", node("G")),
+    nb_remove_triple(New_Builder, "C", "B", node("D")),
+    nb_commit(New_Builder, New_Layer),
+    rollup(New_Layer),
+    layer_to_id(New_Layer, Id),
+    store_id_layer(Store, Id, Rollup),
+    findall(X-P-Y, triple(Rollup, X, P, node(Y)), Triples),
+
+    Triples = ["A"-"B"-"D","E"-"F"-"G"].
 
 :- end_tests(terminus_store).
