@@ -607,19 +607,11 @@ triple_removal(Layer, Subject, Predicate, Object) :-
 blob_allocations(allocations{stores:Stores,
                              named_graphs:Named_Graphs,
                              layers:Layers,
-                             layer_builders:Layer_Builders,
-                             subject_lookups:Subject_Lookups,
-                             subject_predicate_lookups:Subject_Predicate_Lookups,
-                             predicate_lookups:Predicate_Lookups,
-                             object_lookups:Object_Lookups}) :-
+                             layer_builders:Layer_Builders}) :-
     num_store_blobs(Stores),
     num_named_graph_blobs(Named_Graphs),
     num_layer_blobs(Layers),
-    num_layer_builder_blobs(Layer_Builders),
-    num_subject_lookup_blobs(Subject_Lookups),
-    num_subject_predicate_lookup_blobs(Subject_Predicate_Lookups),
-    num_predicate_lookup_blobs(Predicate_Lookups),
-    num_object_lookup_blobs(Object_Lookups).
+    num_layer_builder_blobs(Layer_Builders).
 
 count_layer_stack_size(Layer, Acc, Count) :-
     parent(Layer, Parent),
