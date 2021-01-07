@@ -933,13 +933,22 @@ count_layer_stack_size(Layer, Count) :-
 		 *     Developer Utilities      *
 		 *******************************/
 
+/**
+ * random_string(String) is det.
+ */
+random_string(String) :-
+    Size is 2 ** (20 * 8),
+    random(0, Size, Num),
+    format(string(String), '~36r', [Num]).
 
-clean :-
-    delete_directory_and_contents("testdir").
+clean(TestDir) :-
+    delete_directory_and_contents(TestDir).
 
-createng :-
-    make_directory("testdir"),
-    open_directory_store("testdir", X),
+createng(TestDir) :-
+    random_string(RandomString),
+    atomic_list_concat(["testdir", RandomString], TestDir),
+    make_directory(TestDir),
+    open_directory_store(TestDir, X),
     create_named_graph(X, "sometestdb", _).
 
 create_memory_ng(DB) :-
@@ -958,8 +967,9 @@ test(open_directory_store_atom_exception, [
      ]) :-
     open_directory_store(234, _).
 
-test(create_db, [cleanup(clean)]) :-
+test(create_db, [cleanup(clean(TestDir))]) :-
     make_directory("testdir"),
+    TestDir = 'testdir',
     open_directory_store("testdir", X),
     create_named_graph(X, "sometestdb", _).
 
@@ -968,8 +978,8 @@ test(create_db_on_memory) :-
     open_memory_store(X),
     create_named_graph(X, "sometestdb", _).
 
-test(open_named_graph, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", X),
+test(open_named_graph, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, X),
     open_named_graph(X, "sometestdb", _).
 
 test(open_named_graph_memory) :-
@@ -977,8 +987,8 @@ test(open_named_graph_memory) :-
     create_named_graph(X, "sometestdb", _),
     open_named_graph(X, "sometestdb", _).
 
-test(head_from_empty_db, [fail, cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", X),
+test(head_from_empty_db, [fail, cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, X),
     open_named_graph(X, "sometestdb", DB),
     head(DB, _). % should be false because we have no HEAD yet
 
@@ -986,12 +996,12 @@ test(head_from_empty_db_memory, [fail, setup(create_memory_ng(DB))]) :-
      head(DB, _).
 
 test(open_write_from_db_without_head, [
-    cleanup(clean),
-    setup(createng),
+    cleanup(clean(TestDir)),
+    setup(createng(TestDir)),
     throws(
         error(terminus_store_rust_error('Create a base layer first before opening the named graph for write'), _)
     )]) :-
-    open_directory_store("testdir", X),
+    open_directory_store(TestDir, X),
     open_named_graph(X, "sometestdb", DB),
     open_write(DB, _).
 
@@ -1003,8 +1013,8 @@ test(open_write_from_memory_ng_without_head, [
     )]) :-
     open_write(DB, _).
 
-test(create_base_layer, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(create_base_layer, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, _).
 
 
@@ -1012,8 +1022,8 @@ test(create_base_layer_memory) :-
     open_memory_store(Store),
     open_write(Store, _).
 
-test(write_value_triple, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(write_value_triple, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
@@ -1022,8 +1032,8 @@ test(write_value_triple_memory) :-
     open_write(Store, Builder),
     nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
 
-test(commit_and_set_header, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(commit_and_set_header, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     open_named_graph(Store, "sometestdb", DB),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -1039,8 +1049,8 @@ test(commit_and_set_header_memory) :-
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
 
-test(head_after_first_commit, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(head_after_first_commit, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -1048,8 +1058,8 @@ test(head_after_first_commit, [cleanup(clean), setup(createng)]) :-
     nb_set_head(DB, Layer),
     head(DB, _).
 
-test(predicate_count, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(predicate_count, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -1059,16 +1069,16 @@ test(predicate_count, [cleanup(clean), setup(createng)]) :-
     predicate_count(LayerHead, Count),
     Count == 1.
 
-test(node_and_value_count, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(node_and_value_count, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     node_and_value_count(Layer, Count),
     Count == 2.
 
-test(predicate_count_2, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(predicate_count_2, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_named_graph(Store, "sometestdb", DB),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
@@ -1078,16 +1088,16 @@ test(predicate_count_2, [cleanup(clean), setup(createng)]) :-
     predicate_count(Layer, Count),
     Count == 2.
 
-test(remove_triple, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(remove_triple, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     open_write(Layer, LayerBuilder),
     nb_remove_triple(LayerBuilder, "Subject", "Predicate", value("Object")).
 
-test(triple_search_test, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(triple_search_test, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
@@ -1095,8 +1105,8 @@ test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     Bag == ["Object"].
 
 
-test(triple_search_test, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(triple_search_test, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
@@ -1104,16 +1114,16 @@ test(triple_search_test, [cleanup(clean), setup(createng)]) :-
     Bag == ["Predicate"-"Object"].
 
 
-test(triple_search_test, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(triple_search_test, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     setof(X-Y-Z, triple(Layer, X, Y, value(Z)), Bag),
     Bag == ["Subject"-"Predicate"-"Object"].
 
-test(backtracking_test, [cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(backtracking_test, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     create_named_graph(Store, "testdb", DB),
     nb_add_triple(Builder, "A", "B", node("C")),
@@ -1127,8 +1137,8 @@ test(backtracking_test, [cleanup(clean), setup(createng)]) :-
     findall(P, triple(Layer, "A", P, node("O")), Ps),
     Ps = ["D", "E"].
 
-test(query_builder_for_committed, [cleanup(clean),setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(query_builder_for_committed, [cleanup(clean(TestDir)),setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
 
     \+ builder_committed(Builder),
@@ -1137,8 +1147,8 @@ test(query_builder_for_committed, [cleanup(clean),setup(createng)]) :-
 
     builder_committed(Builder).
 
-test(squash_a_tower,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(squash_a_tower,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     create_named_graph(Store, "testdb", DB),
     nb_add_triple(Builder, "joe", "eats", node("urchin")),
@@ -1163,8 +1173,8 @@ test(squash_a_tower,[cleanup(clean), setup(createng)]) :-
     \+ parent(Squash,_).
 
 
-test(force_set_head,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(force_set_head,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder1),
     create_named_graph(Store, "testdb", DB1),
     nb_add_triple(Builder1, "joe", "eats", node("urchin")),
@@ -1183,8 +1193,8 @@ test(force_set_head,[cleanup(clean), setup(createng)]) :-
 
     \+ parent(Layer3,_).
 
-test(apply_a_delta,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(apply_a_delta,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "joe", "eats", node("urchin")),
     nb_commit(Builder, Layer),
@@ -1207,8 +1217,8 @@ test(apply_a_delta,[cleanup(clean), setup(createng)]) :-
                "jill"-"eats"-node("caviar")
               ].
 
-test(apply_a_diff,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(apply_a_diff,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "joe", "eats", node("urchin")),
     nb_add_triple(Builder, "jill", "eats", node("caviar")),
@@ -1241,8 +1251,8 @@ test(apply_a_diff,[cleanup(clean), setup(createng)]) :-
         "joe"-"eats"-node("urchin")
     ].
 
-test(apply_empty_diff,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(apply_empty_diff,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "joe", "eats", node("urchin")),
     nb_add_triple(Builder, "jill", "eats", node("caviar")),
@@ -1266,8 +1276,8 @@ test(apply_empty_diff,[cleanup(clean), setup(createng)]) :-
     findall(X-P-Y, triple_removal(Final_Layer, X, P, Y), Triple_Removals),
     Triple_Removals = [].
 
-test(add_csv,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(add_csv,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
     format(Stream, "some,header~n", []),
@@ -1299,8 +1309,8 @@ test(add_csv,[cleanup(clean), setup(createng)]) :-
         "csv:///data/ColumnObject_csv_some"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column")
     ].
 
-test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(add_csv_skip_header,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
     format(Stream, "1,2~n", []),
@@ -1330,8 +1340,8 @@ test(add_csv_skip_header,[cleanup(clean), setup(createng)]) :-
         "csv:///data/ColumnObject_csv_1"-"http://www.w3.org/1999/02/22-rdf-syntax-ns#type"-node("csv:///schema#Column")
     ].
 
-test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(csv_prefixes,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
 
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -1361,8 +1371,8 @@ test(csv_prefixes,[cleanup(clean), setup(createng)]) :-
         "that/ColumnObject_csv_some"-"this#csv_column_name"-value("\"some\"^^'http://www.w3.org/2001/XMLSchema#string'")
     ].
 
-test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(csv_with_schema,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     open_write(Store, Schema_Builder),
     tmp_file_stream(Filename, Stream, [encoding(utf8)]),
@@ -1425,8 +1435,8 @@ test(csv_with_schema,[cleanup(clean), setup(createng)]) :-
     forall(member(Triple,Schema_Triples),
            (   member(Triple,Schema_Expected))).
 
-test(so_mode,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(so_mode,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("C")),
     nb_add_triple(Builder, "A", "B", node("D")),
@@ -1435,8 +1445,8 @@ test(so_mode,[cleanup(clean), setup(createng)]) :-
     Ps = ["A"-node("C"),
           "A"-node("D")].
 
-test(sp_mode,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(sp_mode,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("D")),
     nb_add_triple(Builder, "C", "B", node("D")),
@@ -1445,8 +1455,8 @@ test(sp_mode,[cleanup(clean), setup(createng)]) :-
     Ps = ["A"-"B",
           "C"-"B"].
 
-test(op_mode,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(op_mode,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("D")),
     nb_add_triple(Builder, "C", "B", node("D")),
@@ -1454,8 +1464,8 @@ test(op_mode,[cleanup(clean), setup(createng)]) :-
     findall(X, triple(Layer, X, "B", node("D")), Ps),
     Ps = ["A","C"].
 
-test(p_mode,[cleanup(clean), setup(createng)]) :-
-    open_directory_store("testdir", Store),
+test(p_mode,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("D")),
     nb_add_triple(Builder, "C", "B", node("D")),
