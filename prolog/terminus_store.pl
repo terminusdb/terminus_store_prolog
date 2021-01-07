@@ -54,7 +54,9 @@
               csv_builder/5,
               csv_iri/3,
 
-              count_layer_stack_size/2
+              count_layer_stack_size/2,
+
+              rollup/1
             ]).
 
 :- use_foreign_library(foreign(libterminus_store)).
