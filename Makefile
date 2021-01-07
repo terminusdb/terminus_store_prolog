@@ -33,7 +33,7 @@ windows: $(TARGET)
 build: $(TARGET)
 
 $(OBJS): target/%.o: c/%.c
-	mkdir target || true
+	mkdir -p target || true
 	$(CC) $(CFLAGS) -c $< -llibswipl -I$(WIN_SWIPL_INCLUDE) $(BUILD_LD_OPTIONS) -o $@
 
 $(TARGET): $(OBJS)
