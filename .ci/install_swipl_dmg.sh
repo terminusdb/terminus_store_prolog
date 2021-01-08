@@ -1,6 +1,6 @@
 #!/bin/bash
-HASH='1fd495fea2e523b098c7221c092fb6403cbeed7f9c99df3737cd336bb39d6b84'
-SWIPL_DMG_NAME='swipl-8.2.1-1.x86_64'
+HASH='235a08a3fcc4eecfa023a8e4f89a78ce54f7723120883f9944efaaf89930f444'
+SWIPL_DMG_NAME='swipl-8.2.3-1.x86_64'
 SWIPL_DMG="$SWIPL_DMG_NAME.dmg"
 echo "$HASH  $SWIPL_DMG" > checksum
 
