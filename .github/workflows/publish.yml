@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: terminusdb/terminus_store_prolog
-      RUST_BACTRACE: 1
+      RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v2
 
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: terminus_store_prolog_fedora
-      RUST_BACTRACE: 1
+      RUST_BACKTRACE: 1
     steps:
       - uses: actions/checkout@v2
 
