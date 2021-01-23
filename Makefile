@@ -19,7 +19,10 @@ SWIARCH = x64-win64
 else ifeq ($(shell uname), Darwin)
 SOEXT = dylib
 BUILD_LD_OPTIONS = $(LDSOFLAGS) -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_TARGET_DIR) -lterminus_store_prolog
+else ifeq ($(SWIARCH), arm64-android)
+BUILD_LD_OPTIONS = $(LDSOFLAGS) -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_TARGET_DIR) -lterminus_store_prolog
 endif
+
 
 all: release
 
