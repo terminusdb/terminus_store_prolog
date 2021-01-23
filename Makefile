@@ -17,6 +17,10 @@ BUILD_LD_OPTIONS = $(LDSOFLAGS) -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_T
 endif
 
 
+ifeq ($(SWIARCH),arm64-android)
+BUILD_LD_OPTIONS = $(LDSOFLAGS) -L$(SWIHOME)/$(PACKSODIR) $(SWILIB) -L./$(RUST_TARGET_DIR) -lterminus_store_prolog
+endif
+
 ifeq ($(OS), Windows_NT)
 PACKSODIR = lib/x64-win64/
 BUILD_LD_OPTIONS = -Wl,-Bstatic -l$(RUST_LIB_NAME) -Wl,-Bdynamic -lws2_32 -lwsock32 -luserenv -L$(WIN_SWIPL_BIN) -lswipl -I$(WIN_SWIPL_INCLUDE) -L$(RUST_TARGET_DIR)
