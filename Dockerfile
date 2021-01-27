@@ -1,5 +1,5 @@
 # First build with rust and c libs
-FROM terminusdb/swipl:v8.2.3
+FROM terminusdb/swipl:v8.2.4
 WORKDIR /usr/share/swi-prolog/pack/terminus_store_prolog
 COPY . .
 RUN BUILD_DEPS="git build-essential curl" && apt-get update \
@@ -11,6 +11,6 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 RUN ./make.sh && apt-get purge -y --auto-remove $BUILD_DEPS \
        && rm -rf rust/target/release/build && rm -rf rust/target/release/deps
 
-FROM terminusdb/swipl:v8.2.3
+FROM terminusdb/swipl:v8.2.4
 WORKDIR /usr/share/swi-prolog/pack/terminus_store_prolog
 COPY --from=0 /usr/share/swi-prolog/pack/terminus_store_prolog /usr/share/swi-prolog/pack/terminus_store_prolog
