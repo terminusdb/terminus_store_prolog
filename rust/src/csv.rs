@@ -11,13 +11,17 @@ use terminus_store::layer::StringTriple;
 use terminus_store::store::sync::*;
 use urlencoding;
 
-pub fn csv_name_iri(csv_name: String, data_prefix: String) -> (String,String) {
+pub fn csv_name_iri(csv_name: String, data_prefix: String) -> (String, String) {
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);
-    return (csv_name_escaped,csv_node)
+    return (csv_name_escaped, csv_node);
 }
 
-pub fn csv_row_type_info(csv_name: &str, column_names: &[String], schema_prefix: &str) -> (String,String,String) {
+pub fn csv_row_type_info(
+    csv_name: &str,
+    column_names: &[String],
+    schema_prefix: &str,
+) -> (String, String, String) {
     let mut column_hasher = Sha1::new();
     let mut sorted_column_names = column_names.to_vec();
     sorted_column_names.sort();
@@ -35,7 +39,7 @@ pub fn csv_row_type_info(csv_name: &str, column_names: &[String], schema_prefix:
     let sorted_column_string = format!("CSV Row object for columns {:?}", sorted_column_names);
     let row_comment = format!("{:?}@en", sorted_column_string);
 
-    (row_type,row_label,row_comment)
+    (row_type, row_label, row_comment)
 }
 
 fn check_utf8(csv_path: PathBuf) -> Result<bool, csv::Error> {
@@ -88,14 +92,16 @@ pub fn import_csv(
     // if headers.is_error(){
     //     return io::Error::new(io::ErrorKind::UnexpectedEof,"There are no lines in this CSV").into();
     // }
-    let (csv_name_escaped,csv_node) = csv_name_iri(csv_name.clone(),
-                                                   data_prefix.clone());
+    let (csv_name_escaped, csv_node) = csv_name_iri(csv_name.clone(), data_prefix.clone());
     if !has_header || skip_header {
         let len = headers
             .expect("Expected a Some for headers but headers are empty")
             .len();
         for i in 0..len {
-            header.push(format!("{}{}_column_{}", schema_prefix, csv_name_escaped, i));
+            header.push(format!(
+                "{}{}_column_{}",
+                schema_prefix, csv_name_escaped, i
+            ));
             column_names.push(format!("{}", i));
         }
     } else {
@@ -105,7 +111,10 @@ pub fn import_csv(
         {
             let escaped_field = urlencoding::encode(field);
             column_names.push(String::from(field));
-            header.push(format!("{}{}_column_{}", schema_prefix, csv_name_escaped, escaped_field));
+            header.push(format!(
+                "{}{}_column_{}",
+                schema_prefix, csv_name_escaped, escaped_field
+            ));
         }
     }
 
@@ -166,15 +175,10 @@ pub fn import_csv(
     }
 
     if let Some(schema_builder) = schema_builder_option {
-        write_schema(
-            &csv_name,
-            schema_builder,
-            &schema_prefix,
-            &column_names
-        )?;
+        write_schema(&csv_name, schema_builder, &schema_prefix, &column_names)?;
     }
 
-    let (row_type,_,_) = csv_row_type_info(&csv_name,&column_names,&schema_prefix);
+    let (row_type, _, _) = csv_row_type_info(&csv_name, &column_names, &schema_prefix);
 
     for result in reader.records() {
         let record = result?;
@@ -200,7 +204,6 @@ pub fn import_csv(
             let column = &header[col];
             builder.add_string_triple(StringTriple::new_value(&node, &column, &value))?;
         }
-
     }
 
     return Ok(());
@@ -210,7 +213,7 @@ fn write_schema(
     csv_name: &str,
     schema_builder: &SyncStoreLayerBuilder,
     schema_prefix: &str,
-    column_names: &[String]
+    column_names: &[String],
 ) -> Result<(), csv::Error> {
     // Prefixes
     let rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -238,7 +241,8 @@ fn write_schema(
     let csv_label = "\"CSV\"@en";
     let csv_comment = "\"CSV object\"@en";
     let document = "http://terminusdb.com/schema/system#Document";
-    let (row_type,row_label,row_comment) = csv_row_type_info(csv_name,column_names,schema_prefix);
+    let (row_type, row_label, row_comment) =
+        csv_row_type_info(csv_name, column_names, schema_prefix);
 
     schema_builder.add_string_triple(StringTriple::new_node(&csv_type, &rdf_type, &owl_class))?;
     schema_builder.add_string_triple(StringTriple::new_value(&csv_type, &label, &csv_label))?;
@@ -386,10 +390,14 @@ fn write_schema(
 
     let system_prefix = "http://terminusdb.com/schema/system#";
     let csv_name_property = format!("{}csv_name", system_prefix);
-    let csv_name_value = format!("{:?}@en",csv_name);
+    let csv_name_value = format!("{:?}@en", csv_name);
     schema_builder.add_string_triple(StringTriple::new_value(&row_type, &label, &row_label))?;
     schema_builder.add_string_triple(StringTriple::new_value(&row_type, &comment, &row_comment))?;
-    schema_builder.add_string_triple(StringTriple::new_value(&row_type, &csv_name_property, &csv_name_value))?;
+    schema_builder.add_string_triple(StringTriple::new_value(
+        &row_type,
+        &csv_name_property,
+        &csv_name_value,
+    ))?;
     // Row predicate
     let row_predicate = format!("{}csv_row", schema_prefix);
     let row_predicate_label = "\"csv row\"@en";
@@ -414,12 +422,15 @@ fn write_schema(
     schema_builder.add_string_triple(StringTriple::new_node(&row_predicate, &domain, &csv_type))?;
     schema_builder.add_string_triple(StringTriple::new_node(&row_predicate, &range, &row_super))?;
 
-    let (csv_name_escaped,_) = csv_name_iri(csv_name.to_string(),"".to_string());
+    let (csv_name_escaped, _) = csv_name_iri(csv_name.to_string(), "".to_string());
 
     // Create column predicates for each field
     for field in column_names {
         let escaped_field = urlencoding::encode(field);
-        let column_p = format!("{}{}_column_{}", schema_prefix, csv_name_escaped, escaped_field);
+        let column_p = format!(
+            "{}{}_column_{}",
+            schema_prefix, csv_name_escaped, escaped_field
+        );
         let column_label = format!("\"Column {}\"@en", field);
         let column_comment = format!("\"CSV Column for header name {}\"@en", field);
 
