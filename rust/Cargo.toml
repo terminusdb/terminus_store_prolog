@@ -9,7 +9,7 @@ name = "terminus_store_prolog"
 crate-type = ["staticlib"]
 
 [dependencies]
-terminus-store = "=0.14.1"
+terminus-store = "=0.15.0"
 csv = "1.1"
 rayon = "1.4"
 clap = "2.33.3"

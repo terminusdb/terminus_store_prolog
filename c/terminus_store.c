@@ -632,7 +632,12 @@ static foreign_t pl_layer_rollup(term_t layer_term) {
 static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
-    uint64_t count = (uint64_t) layer_triple_addition_count(layer);
+    char* err = NULL;
+    uint64_t count = (uint64_t) layer_triple_addition_count(layer, &err);
+
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
 
     return PL_unify_uint64(count_term, count);
 }
@@ -640,7 +645,12 @@ static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
 static foreign_t pl_layer_removal_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
-    uint64_t count = (uint64_t) layer_triple_removal_count(layer);
+    char* err = NULL;
+    uint64_t count = (uint64_t) layer_triple_removal_count(layer, &err);
+
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
 
     return PL_unify_uint64(count_term, count);
 }
@@ -987,7 +997,7 @@ static TripleIterControl* init_triple_iterator(term_t layer_term, term_t subject
     return control;
 }
 
-static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term, char** err) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
     TripleIterControl* control = malloc(sizeof(TripleIterControl));
@@ -1006,7 +1016,7 @@ static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_
             }
             else {
                 control->type = O;
-                control->iter = id_triple_addition_sp_iter(layer, subject, predicate);
+                control->iter = id_triple_addition_sp_iter(layer, subject, predicate, err);
             }
         }
         else {
@@ -1015,11 +1025,11 @@ static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_
                 assert(PL_cvt_i_uint64(object_term, &object));
 
                 control->type = P;
-                control->iter = id_triple_addition_so_iter(layer, subject, object);
+                control->iter = id_triple_addition_so_iter(layer, subject, object, err);
             }
             else {
                 control->type = PO;
-                control->iter = id_triple_addition_s_iter(layer, subject);
+                control->iter = id_triple_addition_s_iter(layer, subject, err);
             }
         }
     }
@@ -1028,24 +1038,24 @@ static TripleIterControl* init_triple_addition_iterator(term_t layer_term, term_
         assert(PL_cvt_i_uint64(predicate_term, &predicate));
 
         control->type = SO;
-        control->iter = id_triple_addition_p_iter(layer, predicate);
+        control->iter = id_triple_addition_p_iter(layer, predicate, err);
     }
     else if (PL_is_ground(object_term)) {
         uint64_t object;
         assert(PL_cvt_i_uint64(object_term, &object));
 
         control->type = SP;
-        control->iter = id_triple_addition_o_iter(layer, object);
+        control->iter = id_triple_addition_o_iter(layer, object, err);
     }
     else {
         control->type = SPO;
-        control->iter = id_triple_addition_iter(layer);
+        control->iter = id_triple_addition_iter(layer, err);
     }
 
     return control;
 }
 
-static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term) {
+static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t subject_term, term_t predicate_term, term_t object_term, char** err) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
     TripleIterControl* control = malloc(sizeof(TripleIterControl));
@@ -1064,7 +1074,7 @@ static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t
             }
             else {
                 control->type = O;
-                control->iter = id_triple_removal_sp_iter(layer, subject, predicate);
+                control->iter = id_triple_removal_sp_iter(layer, subject, predicate, err);
             }
         }
         else {
@@ -1073,11 +1083,11 @@ static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t
                 assert(PL_cvt_i_uint64(object_term, &object));
 
                 control->type = P;
-                control->iter = id_triple_removal_so_iter(layer, subject, object);
+                control->iter = id_triple_removal_so_iter(layer, subject, object, err);
             }
             else {
                 control->type = PO;
-                control->iter = id_triple_removal_s_iter(layer, subject);
+                control->iter = id_triple_removal_s_iter(layer, subject, err);
             }
         }
     }
@@ -1086,18 +1096,18 @@ static TripleIterControl* init_triple_removal_iterator(term_t layer_term, term_t
         assert(PL_cvt_i_uint64(predicate_term, &predicate));
 
         control->type = SO;
-        control->iter = id_triple_removal_p_iter(layer, predicate);
+        control->iter = id_triple_removal_p_iter(layer, predicate, err);
     }
     else if (PL_is_ground(object_term)) {
         uint64_t object;
         assert(PL_cvt_i_uint64(object_term, &object));
 
         control->type = SP;
-        control->iter = id_triple_removal_o_iter(layer, object);
+        control->iter = id_triple_removal_o_iter(layer, object, err);
     }
     else {
         control->type = SPO;
-        control->iter = id_triple_removal_iter(layer);
+        control->iter = id_triple_removal_iter(layer, err);
     }
 
     return control;
@@ -1254,16 +1264,24 @@ static foreign_t pl_id_triple_addition(term_t layer_term, term_t subject_term, t
             assert(PL_cvt_i_uint64(subject_term, &subject));
             assert(PL_cvt_i_uint64(predicate_term, &predicate));
             assert(PL_cvt_i_uint64(object_term, &object));
-            if (id_triple_addition_spo_exists(layer, subject, predicate, object)) {
+            char *err = NULL;
+            if (id_triple_addition_spo_exists(layer, subject, predicate, object, &err)) {
                 PL_succeed;
             }
             else {
+                if (err != NULL) {
+                    return throw_rust_err(err);
+                }
                 PL_fail;
             }
         }
         else {
             // this is where we initialize the iterator
-            control = init_triple_addition_iterator(layer_term, subject_term, predicate_term, object_term);
+            char* err = NULL;
+            control = init_triple_addition_iterator(layer_term, subject_term, predicate_term, object_term, &err);
+            if (err != NULL) {
+                return throw_rust_err(err);
+            }
             if (control->iter == NULL) {
                 PL_fail;
             }
@@ -1296,16 +1314,24 @@ static foreign_t pl_id_triple_removal(term_t layer_term, term_t subject_term, te
             assert(PL_cvt_i_uint64(subject_term, &subject));
             assert(PL_cvt_i_uint64(predicate_term, &predicate));
             assert(PL_cvt_i_uint64(object_term, &object));
-            if (id_triple_removal_spo_exists(layer, subject, predicate, object)) {
+            char* err = NULL;
+            if (id_triple_removal_spo_exists(layer, subject, predicate, object, &err)) {
                 PL_succeed;
             }
             else {
+                if (err != NULL) {
+                    return throw_rust_err(err);
+                }
                 PL_fail;
             }
         }
         else {
             // this is where we initialize the iterator
-            control = init_triple_removal_iterator(layer_term, subject_term, predicate_term, object_term);
+            char *err = NULL;
+            control = init_triple_removal_iterator(layer_term, subject_term, predicate_term, object_term, &err);
+            if (err != NULL) {
+                return throw_rust_err(err);
+            }
             if (control->iter == NULL) {
                 PL_fail;
             }

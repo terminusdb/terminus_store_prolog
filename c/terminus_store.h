@@ -110,22 +110,23 @@ void *create_named_graph(void *store_ptr, char *name, char **err);
 
 char *csv_iri(const char *csv_name, const char *prefix);
 
-void *id_triple_addition_iter(void *layer);
+void *id_triple_addition_iter(void *layer, char **err);
 
-void *id_triple_addition_o_iter(void *layer, uint64_t object);
+void *id_triple_addition_o_iter(void *layer, uint64_t object, char **err);
 
-void *id_triple_addition_p_iter(void *layer, uint64_t predicate);
+void *id_triple_addition_p_iter(void *layer, uint64_t predicate, char **err);
 
-void *id_triple_addition_s_iter(void *layer, uint64_t subject);
+void *id_triple_addition_s_iter(void *layer, uint64_t subject, char **err);
 
-void *id_triple_addition_so_iter(void *layer, uint64_t subject, uint64_t object);
+void *id_triple_addition_so_iter(void *layer, uint64_t subject, uint64_t object, char **err);
 
-void *id_triple_addition_sp_iter(void *layer, uint64_t subject, uint64_t predicate);
+void *id_triple_addition_sp_iter(void *layer, uint64_t subject, uint64_t predicate, char **err);
 
 bool id_triple_addition_spo_exists(void *layer,
                                    uint64_t subject,
                                    uint64_t predicate,
-                                   uint64_t object);
+                                   uint64_t object,
+                                   char **err);
 
 void *id_triple_iter(void *layer);
 
@@ -133,22 +134,23 @@ void *id_triple_o_iter(void *layer, uint64_t object);
 
 void *id_triple_p_iter(void *layer, uint64_t predicate);
 
-void *id_triple_removal_iter(void *layer);
+void *id_triple_removal_iter(void *layer, char **err);
 
-void *id_triple_removal_o_iter(void *layer, uint64_t object);
+void *id_triple_removal_o_iter(void *layer, uint64_t object, char **err);
 
-void *id_triple_removal_p_iter(void *layer, uint64_t predicate);
+void *id_triple_removal_p_iter(void *layer, uint64_t predicate, char **err);
 
-void *id_triple_removal_s_iter(void *layer, uint64_t subject);
+void *id_triple_removal_s_iter(void *layer, uint64_t subject, char **err);
 
-void *id_triple_removal_so_iter(void *layer, uint64_t subject, uint64_t object);
+void *id_triple_removal_so_iter(void *layer, uint64_t subject, uint64_t object, char **err);
 
-void *id_triple_removal_sp_iter(void *layer, uint64_t subject, uint64_t predicate);
+void *id_triple_removal_sp_iter(void *layer, uint64_t subject, uint64_t predicate, char **err);
 
 bool id_triple_removal_spo_exists(void *layer,
                                   uint64_t subject,
                                   uint64_t predicate,
-                                  uint64_t object);
+                                  uint64_t object,
+                                  char **err);
 
 void *id_triple_s_iter(void *layer, uint64_t subject);
 
@@ -198,9 +200,9 @@ uintptr_t layer_total_triple_count(void *layer);
 
 uintptr_t layer_total_triple_removal_count(void *layer);
 
-uintptr_t layer_triple_addition_count(void *layer);
+uintptr_t layer_triple_addition_count(void *layer, char **err);
 
-uintptr_t layer_triple_removal_count(void *layer);
+uintptr_t layer_triple_removal_count(void *layer, char **err);
 
 bool named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
 
