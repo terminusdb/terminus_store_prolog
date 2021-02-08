@@ -3,6 +3,7 @@ name = "terminus-store-prolog"
 version = "0.1.1"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>", "Robin de Rooij <robin@terminusdb.com>", "Gavin Mendel-Gleason <gavin@terminusdb.com>"]
 edition = "2018"
+publish = false
 
 [lib]
 name = "terminus_store_prolog"
