@@ -1268,6 +1268,16 @@ pub unsafe extern "C" fn cleanup_layer_and_parent_vec(vec_handle: VecHandle) {
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn cleanup_layer_vec(vec_handle: VecHandle) {
+    let _vec: Vec<[u32; 5]> = Vec::from_raw_parts(
+        vec_handle.ptr as *mut [u32; 5],
+        vec_handle.len,
+        vec_handle.capacity,
+    );
+}
+
+
+#[no_mangle]
 pub unsafe extern "C" fn add_csv_to_builder(
     name: *mut c_char,
     csv: *mut c_char,
@@ -1332,6 +1342,44 @@ pub unsafe extern "C" fn layer_rollup(layer: *mut SyncStoreLayer, err: *mut *mut
         Ok(()) => *err = std::ptr::null_mut(),
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_rollup_upto(layer: *mut SyncStoreLayer,
+                                           upto: *mut SyncStoreLayer,
+                                           err: *mut *mut c_char) {
+    match (*layer).rollup_upto(&*upto) {
+        Ok(()) => *err = std::ptr::null_mut(),
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn retrieve_layer_stack_names(
+    layer: *mut SyncStoreLayer,
+    err: *mut *mut c_char) -> VecHandle
+{
+    match (* layer).retrieve_layer_stack_names() {
+        Ok(mut names) => {
+            let len = names.len();
+            let capacity = names.capacity();
+            let ptr = &mut names[0] as *mut [u32; 5] as *mut c_void;
+
+            let result = VecHandle { ptr, len, capacity };
+
+            *err = std::ptr::null_mut();
+
+            std::mem::forget(names);
+            result
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+
+            VecHandle::null()
         }
     }
 }

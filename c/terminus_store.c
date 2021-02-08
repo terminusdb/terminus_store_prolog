@@ -629,6 +629,23 @@ static foreign_t pl_layer_rollup(term_t layer_term) {
     PL_succeed;
 }
 
+static foreign_t pl_layer_rollup_upto(term_t layer_term, term_t upto_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    void* upto = check_blob_type(upto_term, &layer_blob_type);
+
+    if (PL_is_variable(layer_term)
+        || PL_is_variable(upto_term)) {
+        return throw_instantiation_err(layer_term);
+    }
+
+    char* err;
+    layer_rollup_upto(layer, upto, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
 static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
@@ -864,7 +881,7 @@ static foreign_t pl_pack_layerids_and_parents(term_t pack_term, term_t layer_par
 
             term_t layer_parent_id_string_term = PL_new_term_ref();
             assert(PL_unify_arg(1, layer_parent_id_term, layer_parent_id_string_term));
-            
+
             char* layer_parent_id = layer_id_to_string(layer_parent_ids[i].layer_parent_id);
             result = PL_unify_string_chars(layer_parent_id_string_term, layer_parent_id);
             cleanup_cstring(layer_parent_id);
@@ -892,6 +909,54 @@ static foreign_t pl_pack_layerids_and_parents(term_t pack_term, term_t layer_par
     result = PL_unify_nil(list);
 
     cleanup_layer_and_parent_vec(handle);
+
+    return result;
+}
+
+static foreign_t pl_retrieve_layer_stack_names(term_t layer_term, term_t layer_stack_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+
+    char* err = NULL;
+
+    VecHandle handle = retrieve_layer_stack_names(layer, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+
+    uint32_t (*layer_stack_ids)[5] = handle.ptr;
+
+    term_t head = PL_new_term_refs(handle.len);
+    term_t tail = PL_new_term_refs(handle.len);
+    term_t list = layer_stack_term;
+    foreign_t result;
+
+    for (int i=0;i<handle.len;i++) {
+        result = PL_unify_list(list, head, tail);
+
+        if (!result) {
+            cleanup_layer_vec(handle);
+
+            return result;
+        }
+
+        char* layer_id = layer_id_to_string( (uint32_t*) (layer_stack_ids + i));
+        result = PL_unify_string_chars(head, layer_id);
+        cleanup_cstring(layer_id);
+
+        if (!result) {
+            cleanup_layer_vec(handle);
+
+            return result;
+        }
+
+        list = tail;
+        head++;
+        tail++;
+    }
+
+    result = PL_unify_nil(list);
+
+    cleanup_layer_vec(handle);
 
     return result;
 }
@@ -1425,6 +1490,8 @@ install()
                         pl_layer_squash, 0);
     PL_register_foreign("rollup", 1,
                         pl_layer_rollup, 0);
+    PL_register_foreign("rollup_upto", 2,
+                        pl_layer_rollup_upto, 0);
     PL_register_foreign("layer_addition_count", 2,
                         pl_layer_addition_count, 0);
     PL_register_foreign("layer_removal_count", 2,
@@ -1435,6 +1502,8 @@ install()
                         pl_layer_total_removal_count, 0);
     PL_register_foreign("layer_total_triple_count", 2,
                         pl_layer_total_triple_count, 0);
+    PL_register_foreign("retrieve_layer_stack_names", 2,
+                        pl_retrieve_layer_stack_names, 0);
     PL_register_foreign("num_store_blobs", 1,
                         pl_num_store_blobs, 0);
     PL_register_foreign("num_named_graph_blobs", 1,

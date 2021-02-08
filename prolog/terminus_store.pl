@@ -56,7 +56,9 @@
 
               count_layer_stack_size/2,
 
-              rollup/1
+              rollup/1,
+
+              layer_stack_names/2
             ]).
 
 :- use_foreign_library(foreign(libterminus_store)).
@@ -339,7 +341,14 @@
 % Produces a rollup of the current layer
 %
 % @arg Layer the layer for which to do the parent lookup.
-% @arg Parent the retrieved parent layer.
+
+%! rollup_upto(+Layer:layer, +Upto:layer) is semidet.
+%
+% Produces a rollup of the current layer upto (but not including)
+% the specified layer
+%
+% @arg Layer the layer for which to do the parent lookup.
+% @arg Upto the layer at which to stop the rollup.
 
 %! csv_builder(+Name:string, +Csv:path, +Builder:builder, +Options:options) is det
 %
@@ -365,10 +374,17 @@
 % @arg Builder The builder into which to place the CSV
 % @arg Layer The returned Layer
 
-
 %! csv_iri(Name, Prefix, IRI) is det.
 %
 % Creates a CSV IRI from a name and prefix
+
+%! layer_stack_names(+Layer:layer, -Stack:list) is det.
+%
+% Creates a layer-id stack from a layer which contains all ancestor
+% layers.
+%
+% @arg Layer The layer from which to obtain the stack.
+% @arg Stack A list of the layer-ids of all ancestors.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% End of foreign predicate pldocs   %%%
@@ -623,6 +639,14 @@ count_layer_stack_size(_Layer, Acc, Count) :-
 
 count_layer_stack_size(Layer, Count) :-
     count_layer_stack_size(Layer, 0, Count).
+
+
+layer_stack_names(Layer, Stack) :-
+    ground(Layer),
+    !,
+    retrieve_layer_stack_names(Layer, Stack).
+layer_stack_names(_Layer, _Stack) :-
+    throw(error(domain_error('Layer not bound in layer_stack_names/2'),_)).
 
 :- begin_tests(terminus_store).
 
@@ -1189,5 +1213,56 @@ test(rollup,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     findall(X-P-Y, triple(Rollup, X, P, node(Y)), Triples),
 
     Triples = ["A"-"B"-"D","E"-"F"-"G"].
+
+test(rollup_upto,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
+
+    open_write(Layer, New_Builder),
+    nb_add_triple(New_Builder, "E", "F", node("G")),
+    nb_remove_triple(New_Builder, "C", "B", node("D")),
+    nb_commit(New_Builder, New_Layer),
+
+    open_write(New_Layer, New_Builder_2),
+    nb_add_triple(New_Builder_2, "G", "H", node("I")),
+    nb_remove_triple(New_Builder_2, "A", "B", node("D")),
+    nb_commit(New_Builder_2, New_Layer_2),
+
+    rollup_upto(New_Layer_2, Layer),
+    layer_to_id(New_Layer_2, Id),
+
+    store_id_layer(Store, Id, Rollup),
+    findall(X-P-Y, triple(Rollup, X, P, node(Y)), Triples),
+
+    Triples = ["E"-"F"-"G","G"-"H"-"I"].
+
+test(layer_stack_names,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+        open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_add_triple(Builder, "C", "B", node("D")),
+    nb_commit(Builder, Layer),
+    layer_to_id(Layer, Layer_Id),
+
+    open_write(Layer, New_Builder),
+    nb_add_triple(New_Builder, "E", "F", node("G")),
+    nb_remove_triple(New_Builder, "C", "B", node("D")),
+    nb_commit(New_Builder, New_Layer),
+    layer_to_id(New_Layer, New_Layer_Id),
+
+    open_write(New_Layer, New_Builder_2),
+    nb_add_triple(New_Builder_2, "G", "H", node("I")),
+    nb_remove_triple(New_Builder_2, "A", "B", node("D")),
+    nb_commit(New_Builder_2, New_Layer_2),
+    layer_to_id(New_Layer_2, New_Layer_2_Id),
+
+    layer_stack_names(New_Layer_2, Layers),
+
+    Expected = [Layer_Id,New_Layer_Id,New_Layer_2_Id],
+
+    Expected = Layers.
 
 :- end_tests(terminus_store).
