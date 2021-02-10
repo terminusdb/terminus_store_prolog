@@ -58,6 +58,8 @@
 
               rollup/1,
 
+              rollup_upto/2,
+
               layer_stack_names/2
             ]).
 
