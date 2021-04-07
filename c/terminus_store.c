@@ -646,6 +646,23 @@ static foreign_t pl_layer_rollup_upto(term_t layer_term, term_t upto_term) {
     PL_succeed;
 }
 
+static foreign_t pl_layer_imprecise_rollup_upto(term_t layer_term, term_t upto_term) {
+    void* layer = check_blob_type(layer_term, &layer_blob_type);
+    void* upto = check_blob_type(upto_term, &layer_blob_type);
+
+    if (PL_is_variable(layer_term)
+        || PL_is_variable(upto_term)) {
+        return throw_instantiation_err(layer_term);
+    }
+
+    char* err;
+    layer_imprecise_rollup_upto(layer, upto, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
 static foreign_t pl_layer_addition_count(term_t layer_term, term_t count_term) {
     void* layer = check_blob_type(layer_term, &layer_blob_type);
 
@@ -1492,6 +1509,8 @@ install()
                         pl_layer_rollup, 0);
     PL_register_foreign("rollup_upto", 2,
                         pl_layer_rollup_upto, 0);
+    PL_register_foreign("imprecise_rollup_upto", 2,
+                        pl_layer_imprecise_rollup_upto, 0);
     PL_register_foreign("layer_addition_count", 2,
                         pl_layer_addition_count, 0);
     PL_register_foreign("layer_removal_count", 2,
