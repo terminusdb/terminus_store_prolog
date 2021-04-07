@@ -76,8 +76,8 @@ triple(Layer, Subject, Predicate, Object).
 open_directory_store("testdir", Store),
 open_named_graph(Store, "sometestdb", DB),
 head(DB, Layer),
-subject_id("Subject", S_Id),
+subject_id(Layer, "Subject", S_Id),
 id_triple(Layer, S_Id, P_Id, O_Id),
-predicate_id(Predicate, P_Id),
-object_id(Object, O_Id).
+predicate_id(Layer, Predicate, P_Id),
+object_id(Layer, Object, O_Id).
 ```
