@@ -1242,7 +1242,7 @@ test(rollup_upto,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     Triples = ["E"-"F"-"G","G"-"H"-"I"].
 
 test(layer_stack_names,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
-        open_directory_store(TestDir, Store),
+    open_directory_store(TestDir, Store),
     open_write(Store, Builder),
     nb_add_triple(Builder, "A", "B", node("D")),
     nb_add_triple(Builder, "C", "B", node("D")),
@@ -1266,5 +1266,99 @@ test(layer_stack_names,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     Expected = [Layer_Id,New_Layer_Id,New_Layer_2_Id],
 
     Expected = Layers.
+
+test(precise_rollup_rolls_up_precisely,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "a", "a", value("a")),
+    nb_add_triple(Builder, "a", "b", value("a")),
+    nb_add_triple(Builder, "c", "c", node("a")),
+    nb_commit(Builder, Layer),
+
+    open_write(Layer, Builder2),
+    nb_remove_triple(Builder2, "a", "a", value("a")),
+    nb_add_triple(Builder2, "c", "b", node("d")),
+    nb_commit(Builder2, Layer2),
+
+    open_write(Layer2, Builder3),
+    nb_add_triple(Builder3, "c", "c", node("c")),
+    nb_remove_triple(Builder3, "c", "b", node("d")),
+    nb_commit(Builder3, Layer3),
+
+    open_write(Layer3, Builder4),
+    nb_add_triple(Builder4, "a", "a", value("a")),
+    nb_add_triple(Builder4, "x", "y", node("z")),
+    nb_commit(Builder4, Layer4),
+
+    rollup_upto(Layer3, Layer),
+
+    % lets reload the top layer
+    layer_to_id(Layer4, Layer4_Id),
+    store_id_layer(Store, Layer4_Id, Layer4_Reloaded),
+
+    % and rollup again
+    rollup_upto(Layer4_Reloaded, Layer2),
+
+    % and reload again!
+    store_id_layer(Store, Layer4_Id, Layer4_Reloaded_Again),
+    
+    findall(t(S,P,O), triple(Layer4_Reloaded_Again, S, P, O), Triples),
+
+    Expected = [
+        t("a", "a", value("a")),
+        t("a", "b", value("a")),
+        t("c", "c", node("a")),
+        t("c", "c", node("c")),
+        t("x", "y", node("z"))
+    ],
+
+    Triples = Expected.
+
+test(imprecise_rollup_rolls_up_imprecisely,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "a", "a", value("a")),
+    nb_add_triple(Builder, "a", "b", value("a")),
+    nb_add_triple(Builder, "c", "c", node("a")),
+    nb_commit(Builder, Layer),
+
+    open_write(Layer, Builder2),
+    nb_remove_triple(Builder2, "a", "a", value("a")),
+    nb_add_triple(Builder2, "c", "b", node("d")),
+    nb_commit(Builder2, Layer2),
+
+    open_write(Layer2, Builder3),
+    nb_add_triple(Builder3, "c", "c", node("c")),
+    nb_remove_triple(Builder3, "c", "b", node("d")),
+    nb_commit(Builder3, Layer3),
+
+    open_write(Layer3, Builder4),
+    nb_add_triple(Builder4, "a", "a", value("a")),
+    nb_add_triple(Builder4, "x", "y", node("z")),
+    nb_commit(Builder4, Layer4),
+
+    rollup_upto(Layer3, Layer),
+
+    % lets reload the top layer
+    layer_to_id(Layer4, Layer4_Id),
+    store_id_layer(Store, Layer4_Id, Layer4_Reloaded),
+
+    % and rollup again
+    imprecise_rollup_upto(Layer4_Reloaded, Layer2),
+
+    % and reload again!
+    store_id_layer(Store, Layer4_Id, Layer4_Reloaded_Again),
+    
+    findall(t(S,P,O), triple(Layer4_Reloaded_Again, S, P, O), Triples),
+
+    Expected = [
+        t("a", "a", value("a")),
+        t("a", "b", value("a")),
+        t("c", "c", node("a")),
+        t("c", "c", node("c")),
+        t("x", "y", node("z"))
+    ],
+
+    Triples = Expected.
 
 :- end_tests(terminus_store).
