@@ -1276,7 +1276,6 @@ pub unsafe extern "C" fn cleanup_layer_vec(vec_handle: VecHandle) {
     );
 }
 
-
 #[no_mangle]
 pub unsafe extern "C" fn add_csv_to_builder(
     name: *mut c_char,
@@ -1347,10 +1346,26 @@ pub unsafe extern "C" fn layer_rollup(layer: *mut SyncStoreLayer, err: *mut *mut
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn layer_rollup_upto(layer: *mut SyncStoreLayer,
-                                           upto: *mut SyncStoreLayer,
-                                           err: *mut *mut c_char) {
+pub unsafe extern "C" fn layer_rollup_upto(
+    layer: *mut SyncStoreLayer,
+    upto: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) {
     match (*layer).rollup_upto(&*upto) {
+        Ok(()) => *err = std::ptr::null_mut(),
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn layer_imprecise_rollup_upto(
+    layer: *mut SyncStoreLayer,
+    upto: *mut SyncStoreLayer,
+    err: *mut *mut c_char,
+) {
+    match (*layer).imprecise_rollup_upto(&*upto) {
         Ok(()) => *err = std::ptr::null_mut(),
         Err(e) => {
             *err = error_to_cstring(e).into_raw();
@@ -1361,9 +1376,9 @@ pub unsafe extern "C" fn layer_rollup_upto(layer: *mut SyncStoreLayer,
 #[no_mangle]
 pub unsafe extern "C" fn retrieve_layer_stack_names(
     layer: *mut SyncStoreLayer,
-    err: *mut *mut c_char) -> VecHandle
-{
-    match (* layer).retrieve_layer_stack_names() {
+    err: *mut *mut c_char,
+) -> VecHandle {
+    match (*layer).retrieve_layer_stack_names() {
         Ok(mut names) => {
             let len = names.len();
             let capacity = names.capacity();
