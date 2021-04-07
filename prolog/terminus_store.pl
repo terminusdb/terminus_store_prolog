@@ -57,8 +57,8 @@
               count_layer_stack_size/2,
 
               rollup/1,
-
               rollup_upto/2,
+              imprecise_rollup_upto/2,
 
               layer_stack_names/2
             ]).
