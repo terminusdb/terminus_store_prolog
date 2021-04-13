@@ -6,8 +6,10 @@
               open_named_graph/3,
 
               head/2,
+              head/3,
               nb_set_head/2,
               nb_force_set_head/2,
+              nb_force_set_head/3,
 
               open_write/2,
 
