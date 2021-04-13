@@ -115,6 +115,18 @@
 % @arg Graph the named graph to retrieve the head layer from.
 % @arg Layer the returned head layer.
 
+
+%! head(+Graph:named_graph, -Layer:layer, -Version:version) is semidet.
+%
+% Retrieve the layer that a named graph points at and retrieve the version.
+% This is the equivalent of opening a read transaction with snapshot isolation on a named graph.
+%
+% Fails if the given graph has no head yet.
+%
+% @arg Graph the named graph to retrieve the head layer from.
+% @arg Layer the returned head layer.
+% @arg Version the version of the label.
+
 %! nb_set_head(+Graph:named_graph, +Layer:layer) is semidet.
 %
 % Set the given layer as the new head of the given graph.
@@ -125,6 +137,20 @@
 %
 % @arg Graph the named graph to set the head layer of.
 % @arg Layer the layer to make the new head of the graph.
+
+
+%! nb_set_head(+Graph:named_graph, +Layer:layer, +Version:version) is semidet.
+%
+% Set the given layer as the new head of the given graph and checks if version
+% matches.
+%
+% Fails if the new layer is not a proper child of the current head.
+%
+% This predicate does not support backtracking.
+%
+% @arg Graph the named graph to set the head layer of.
+% @arg Layer the layer to make the new head of the graph.
+% @arg Version the version of the label.
 
 %! open_write(+Store_Or_Layer:term, -Builder:layer_builder) is det.
 %
@@ -764,6 +790,67 @@ test(commit_and_set_header, [cleanup(clean(TestDir)), setup(createng(TestDir))])
     nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
     nb_commit(Builder, Layer),
     nb_set_head(DB, Layer).
+
+
+test(commit_and_set_header_version_first, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_force_set_head(DB, Layer, 0).
+
+
+test(commit_and_set_header_version_first_wrong_version, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    \+ nb_force_set_head(DB, Layer, 1).
+
+test(commit_and_set_header_version_multiple_commits, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_force_set_head(DB, Layer, 0),
+
+    head(DB, _, 1),
+
+    open_write(Store, Builder2),
+    nb_add_triple(Builder2, "Subject2", "Predicate2", value("Object2")),
+    nb_commit(Builder2, Layer2),
+    nb_force_set_head(DB, Layer2, 1),
+
+    head(DB, _, 2),
+    \+ head(DB, _, 3).
+
+
+test(commit_and_set_header_version_incorrect, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    \+ nb_force_set_head(DB, Layer, 1).
+
+
+test(commit_and_set_header_version_multiples_incorrect, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_add_triple(Builder, "Subject", "Predicate", value("Object")),
+    nb_commit(Builder, Layer),
+    nb_force_set_head(DB, Layer, 0),
+
+    head(DB, _, 1),
+
+    open_write(Store, Builder2),
+    nb_add_triple(Builder2, "Subject2", "Predicate2", value("Object2")),
+    nb_commit(Builder2, Layer2),
+    \+ nb_force_set_head(DB, Layer2, 0).
 
 
 test(commit_and_set_header_memory) :-

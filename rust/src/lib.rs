@@ -103,6 +103,32 @@ pub unsafe extern "C" fn named_graph_get_head(
     }
 }
 
+
+#[no_mangle]
+pub unsafe extern "C" fn named_graph_get_head_version(
+    named_graph: *mut SyncNamedGraph,
+    version: *mut u64,
+    err: *mut *mut c_char,
+) -> *mut SyncStoreLayer {
+    match (*named_graph).head_version() {
+        Ok((None, v)) => {
+            *version = v;
+            *err = std::ptr::null_mut();
+            std::ptr::null_mut()
+        }
+        Ok((Some(layer), v)) => {
+            *version = v;
+            *err = std::ptr::null_mut();
+            Box::into_raw(Box::new(layer))
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+            *version = 0;
+            std::ptr::null_mut()
+        }
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn named_graph_set_head(
     named_graph: *mut SyncNamedGraph,
@@ -126,8 +152,25 @@ pub unsafe extern "C" fn named_graph_force_set_head(
     named_graph: *mut SyncNamedGraph,
     layer_ptr: *mut SyncStoreLayer,
     err: *mut *mut c_char,
-) -> bool {
+) {
     match (*named_graph).force_set_head(&*layer_ptr) {
+        Ok(()) => {
+            *err = std::ptr::null_mut();
+        }
+        Err(e) => {
+            *err = error_to_cstring(e).into_raw();
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn named_graph_force_set_head_version(
+    named_graph: *mut SyncNamedGraph,
+    layer_ptr: *mut SyncStoreLayer,
+    version: u64,
+    err: *mut *mut c_char,
+) -> bool {
+    match (*named_graph).force_set_head_version(&*layer_ptr, version) {
         Ok(b) => {
             *err = std::ptr::null_mut();
             b
@@ -1118,10 +1161,22 @@ pub unsafe extern "C" fn pack_export(
     store: *mut SyncStore,
     layer_ids_ptr: *const [u32; 5],
     layer_ids_len: usize,
+    err: *mut *mut c_char,
 ) -> VecHandle {
     let layer_ids = std::slice::from_raw_parts(layer_ids_ptr, layer_ids_len);
     let vec: Vec<_> = layer_ids.to_vec();
-    let mut result = (*store).export_layers(Box::new(vec.into_iter()));
+    let result = (*store).export_layers(Box::new(vec.into_iter()));
+    if let Err(e) = result {
+        *err = error_to_cstring(e).into_raw();
+        return VecHandle {
+            ptr: std::ptr::null_mut(),
+            len: 0,
+            capacity: 0,
+        };
+    }
+    let mut result = result.unwrap();
+    *err = std::ptr::null_mut();
+
     let len = result.len();
     let capacity = result.capacity();
     let ptr: *mut c_void = &mut result[0] as *mut u8 as *mut c_void;
@@ -1165,7 +1220,7 @@ pub unsafe extern "C" fn pack_layerids_and_parents(
     err: *mut *mut c_char,
 ) -> VecHandle {
     let pack = std::slice::from_raw_parts(pack_ptr, pack_len);
-    match terminus_store::storage::directory::pack_layer_parents(pack) {
+    match terminus_store::storage::pack::pack_layer_parents(pack) {
         Ok(id_parent_map) => {
             let mut result_vec: Vec<LayerAndParent> = id_parent_map
                 .into_iter()
