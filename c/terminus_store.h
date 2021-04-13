@@ -210,9 +210,16 @@ uintptr_t layer_triple_addition_count(void *layer, char **err);
 
 uintptr_t layer_triple_removal_count(void *layer, char **err);
 
-bool named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
+void named_graph_force_set_head(void *named_graph, void *layer_ptr, char **err);
+
+bool named_graph_force_set_head_version(void *named_graph,
+                                        void *layer_ptr,
+                                        uint64_t version,
+                                        char **err);
 
 void *named_graph_get_head(void *named_graph, char **err);
+
+void *named_graph_get_head_version(void *named_graph, uint64_t *version, char **err);
 
 char *named_graph_get_name(void *named_graph);
 
@@ -228,7 +235,10 @@ void *open_memory_store(void);
 
 void *open_named_graph(void *store, char *name, char **err);
 
-VecHandle pack_export(void *store, const uint32_t (*layer_ids_ptr)[5], uintptr_t layer_ids_len);
+VecHandle pack_export(void *store,
+                      const uint32_t (*layer_ids_ptr)[5],
+                      uintptr_t layer_ids_len,
+                      char **err);
 
 void pack_import(void *store,
                  const uint8_t *pack_ptr,

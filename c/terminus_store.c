@@ -185,10 +185,34 @@ static foreign_t pl_head(term_t named_graph_blob_term, term_t layer_term) {
         }
     }
     else {
-        PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
+        return PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type);
+    }
+}
+
+
+static foreign_t pl_head_version(term_t named_graph_blob_term, term_t layer_term, term_t version_term) {
+    void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
+    if (!PL_is_variable(layer_term)) {
+        PL_fail;
     }
 
-    PL_succeed;
+    char* err;
+    uint64_t version;
+
+    void* layer_ptr = named_graph_get_head_version(named_graph, &version, &err);
+
+    if (layer_ptr == NULL) {
+        if (err == NULL) {
+            PL_fail;
+        }
+        else {
+            return throw_rust_err(err);
+        }
+    }
+    else {
+        return PL_unify_blob(layer_term, layer_ptr, 0, &layer_blob_type) &&
+            PL_unify_uint64(version_term, version);
+    }
 }
 
 static foreign_t pl_set_head(term_t named_graph_blob_term, term_t layer_blob_term) {
@@ -200,6 +224,9 @@ static foreign_t pl_set_head(term_t named_graph_blob_term, term_t layer_blob_ter
         PL_succeed;
     }
     else {
+        if (err != NULL) {
+            return throw_rust_err(err);
+        }
         PL_fail;
     }
 }
@@ -209,10 +236,32 @@ static foreign_t pl_force_set_head(term_t named_graph_blob_term, term_t layer_bl
     void* layer = check_blob_type(layer_blob_term, &layer_blob_type);
 
     char* err;
-    if (named_graph_force_set_head(named_graph, layer, &err)) {
+
+
+    named_graph_force_set_head(named_graph, layer, &err);
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
+    PL_succeed;
+}
+
+
+static foreign_t pl_force_set_head_version(term_t named_graph_blob_term, term_t layer_blob_term, term_t version_term) {
+    void* named_graph = check_blob_type(named_graph_blob_term, &named_graph_blob_type);
+    void* layer = check_blob_type(layer_blob_term, &layer_blob_type);
+    uint64_t version;
+    if (!PL_cvt_i_uint64(version_term, &version)) {
+        PL_fail;
+    }
+
+    char* err;
+    if (named_graph_force_set_head_version(named_graph, layer, version, &err)) {
         PL_succeed;
     }
     else {
+        if (err != NULL) {
+            return throw_rust_err(err);
+        }
         PL_fail;
     }
 }
@@ -824,9 +873,12 @@ static foreign_t pl_pack_export(term_t store_term, term_t layer_ids_term, term_t
         return result;
     }
 
-    VecHandle pack = pack_export(store, layer_ids, len);
+    char* err;
+    VecHandle pack = pack_export(store, layer_ids, len, &err);
     free(layer_ids);
-
+    if (err != NULL) {
+        return throw_rust_err(err);
+    }
     result = PL_unify_string_nchars(pack_term, pack.len, pack.ptr);
     cleanup_u8_vec(pack);
 
@@ -1457,10 +1509,14 @@ install()
                         pl_open_named_graph, 0);
     PL_register_foreign("head", 2,
                         pl_head, 0);
+    PL_register_foreign("head", 3,
+                        pl_head_version, 0);
     PL_register_foreign("nb_set_head", 2,
                         pl_set_head, 0);
     PL_register_foreign("nb_force_set_head", 2,
                         pl_force_set_head, 0);
+    PL_register_foreign("nb_force_set_head", 3,
+                        pl_force_set_head_version, 0);
     PL_register_foreign("open_write", 2,
                         pl_open_write, 0);
     PL_register_foreign("nb_add_id_triple", 4,
