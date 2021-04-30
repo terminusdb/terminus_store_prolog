@@ -11,4 +11,8 @@ pub extern "C" fn install() {
     named_graph::register_open_named_graph();
     named_graph::register_head2();
     named_graph::register_head3();
+    named_graph::register_nb_set_head();
+    layer::register_store_id_layer();
+    layer::register_open_write();
+    builder::register_nb_commit();
 }

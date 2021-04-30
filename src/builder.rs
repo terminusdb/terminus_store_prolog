@@ -6,9 +6,9 @@ use std::sync::Arc;
 use crate::layer::*;
 
 predicates! {
-    semidet fn nb_commit(context, builder_term, layer_term) {
+    pub semidet fn nb_commit(context, builder_term, layer_term) {
         let builder: WrappedBuilder = builder_term.get()?;
-        let layer = context.except(builder.commit())?;
+        let layer = context.try_or_die(builder.commit())?;
         layer_term.unify(WrappedLayer(Arc::new(layer)))
     }
 }

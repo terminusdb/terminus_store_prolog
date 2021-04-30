@@ -8,7 +8,7 @@ use crate::store::*;
 use crate::builder::*;
 
 predicates! {
-    semidet fn store_id_layer(context, store_term, id_term, layer_term) {
+    pub semidet fn store_id_layer(context, store_term, id_term, layer_term) {
         let store: WrappedStore = store_term.get()?;
         if id_term.is_var() {
             // get id from layer, which has to be there
@@ -20,42 +20,18 @@ predicates! {
         else {
             // load layer by id
             let id_string: String = id_term.get()?;
-            match string_to_name(&id_string) {
-                Ok(id) => {
-                    match store.get_layer_from_id(id) {
-                        Ok(None) => Err(PrologError::Failure),
-                        Ok(Some(layer)) => layer_term.unify(&WrappedLayer(Arc::new(layer))),
-                        Err(e) => {
-                            let msg = format!("{}", e);
-                            let error_term = term!{context: error(rust_error(#msg), _)};
-
-                            context.raise_exception(&error_term)
-                        }
-                    }
-                },
-                Err(e) => {
-                    let msg = format!("{}", e);
-                    let error_term = term!{context: error(rust_error(#msg), _)};
-
-                    context.raise_exception(&error_term)
-                }
+            let id = context.try_or_die(string_to_name(&id_string))?;
+            match context.try_or_die(store.get_layer_from_id(id))? {
+                None => Err(PrologError::Failure),
+                Some(layer) => layer_term.unify(&WrappedLayer(Arc::new(layer))),
             }
         }
     }
 
-    semidet fn open_write(context, layer_term, builder_term) {
+    pub semidet fn open_write(context, layer_term, builder_term) {
         let layer: WrappedLayer = layer_term.get()?;
-        match layer.open_write() {
-            Ok(builder) => {
-                builder_term.unify(WrappedBuilder(Arc::new(builder)))
-            }
-            Err(e) => {
-                let msg = format!("{}", e);
-                let error_term = term!{context: error(rust_error(#msg), _)};
-
-                context.raise_exception(&error_term)
-            }
-        }
+        let builder = context.try_or_die(layer.open_write())?;
+        builder_term.unify(WrappedBuilder(Arc::new(builder)))
     }
 }
 

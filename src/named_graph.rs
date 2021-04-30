@@ -10,7 +10,7 @@ predicates! {
         let store: WrappedStore = store_term.get()?;
         let graph_name: String = graph_name_term.get()?;
 
-        let graph = context.except(store.create(&graph_name))?;
+        let graph = context.try_or_die(store.create(&graph_name))?;
         graph_term.unify(&WrappedNamedGraph(Arc::new(graph)))
     }
 
@@ -18,7 +18,7 @@ predicates! {
         let store: WrappedStore = store_term.get()?;
         let graph_name: String = graph_name_term.get()?;
 
-        match context.except(store.open(&graph_name))? {
+        match context.try_or_die(store.open(&graph_name))? {
             None => Err(PrologError::Failure),
             Some(graph) => graph_term.unify(&WrappedNamedGraph(Arc::new(graph))),
         }
@@ -27,7 +27,7 @@ predicates! {
     #[name("head")]
     pub semidet fn head2(context, graph_term, layer_term) {
         let graph: WrappedNamedGraph = graph_term.get()?;
-        match context.except(graph.head())? {
+        match context.try_or_die(graph.head())? {
             None => Err(PrologError::Failure),
             Some(layer) => layer_term.unify(&WrappedLayer(Arc::new(layer))),
         }
@@ -36,7 +36,7 @@ predicates! {
     #[name("head")]
     pub semidet fn head3(context, graph_term, layer_term, version_term) {
         let graph: WrappedNamedGraph = graph_term.get()?;
-        let (layer_opt, version) = context.except(graph.head_version())?;
+        let (layer_opt, version) = context.try_or_die(graph.head_version())?;
         version_term.unify(version)?;
 
         if let Some(layer) = layer_opt {
@@ -50,7 +50,7 @@ predicates! {
         let graph: WrappedNamedGraph = graph_term.get()?;
         let layer: WrappedLayer = layer_term.get()?;
 
-        into_prolog_result(context.except(graph.set_head(&layer))?)
+        into_prolog_result(context.try_or_die(graph.set_head(&layer))?)
     }
 }
 
