@@ -1,6 +1,5 @@
 use swipl::prelude::*;
 use terminus_store::store::sync::*;
-use std::sync::Arc;
 use std::io::{self, Write};
 use crate::store::*;
 use crate::layer::*;
@@ -11,7 +10,7 @@ predicates! {
         let graph_name: String = graph_name_term.get()?;
 
         let graph = context.try_or_die(store.create(&graph_name))?;
-        graph_term.unify(&WrappedNamedGraph(Arc::new(graph)))
+        graph_term.unify(&WrappedNamedGraph(graph))
     }
 
     pub semidet fn open_named_graph(context, store_term, graph_name_term, graph_term) {
@@ -20,7 +19,7 @@ predicates! {
 
         match context.try_or_die(store.open(&graph_name))? {
             None => Err(PrologError::Failure),
-            Some(graph) => graph_term.unify(&WrappedNamedGraph(Arc::new(graph))),
+            Some(graph) => graph_term.unify(&WrappedNamedGraph(graph)),
         }
     }
 
@@ -29,7 +28,7 @@ predicates! {
         let graph: WrappedNamedGraph = graph_term.get()?;
         match context.try_or_die(graph.head())? {
             None => Err(PrologError::Failure),
-            Some(layer) => layer_term.unify(&WrappedLayer(Arc::new(layer))),
+            Some(layer) => layer_term.unify(&WrappedLayer(layer)),
         }
     }
 
@@ -40,7 +39,7 @@ predicates! {
         version_term.unify(version)?;
 
         if let Some(layer) = layer_opt {
-                layer_term.unify(&WrappedLayer(Arc::new(layer)))?;
+            layer_term.unify(&WrappedLayer(layer))?;
         }
 
         Ok(())
@@ -54,10 +53,10 @@ predicates! {
     }
 }
 
-wrapped_arc_blob!(pub "named_graph", WrappedNamedGraph, SyncNamedGraph);
+wrapped_clone_blob!("named_graph", pub WrappedNamedGraph, SyncNamedGraph);
 
-impl WrappedArcBlobImpl for WrappedNamedGraph {
-    fn write(this: &SyncNamedGraph, stream: &mut PrologStream) -> io::Result<()> {
-        write!(stream, "<named_graph {}>", this.name())
+impl CloneBlobImpl for WrappedNamedGraph {
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<named_graph {}>", self.name())
     }
 }

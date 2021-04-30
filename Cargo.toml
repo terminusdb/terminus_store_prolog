@@ -11,4 +11,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 swipl = {path="../swipl-rs/swipl"}
-terminus-store = "=0.18.0"
+terminus-store = {path="../terminus-store"}

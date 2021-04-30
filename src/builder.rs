@@ -2,21 +2,20 @@ use swipl::prelude::*;
 use terminus_store::store::sync::*;
 use terminus_store::storage::name_to_string;
 use std::io::{self, Write};
-use std::sync::Arc;
 use crate::layer::*;
 
 predicates! {
     pub semidet fn nb_commit(context, builder_term, layer_term) {
         let builder: WrappedBuilder = builder_term.get()?;
         let layer = context.try_or_die(builder.commit())?;
-        layer_term.unify(WrappedLayer(Arc::new(layer)))
+        layer_term.unify(WrappedLayer(layer))
     }
 }
 
-wrapped_arc_blob!(pub "builder", WrappedBuilder, SyncStoreLayerBuilder);
+wrapped_clone_blob!("builder", pub WrappedBuilder, SyncStoreLayerBuilder);
 
-impl WrappedArcBlobImpl for WrappedBuilder {
-    fn write(this: &SyncStoreLayerBuilder, stream: &mut PrologStream) -> io::Result<()> {
-        write!(stream, "<builder {}>", name_to_string(this.name()))
+impl CloneBlobImpl for WrappedBuilder {
+    fn write(&self, stream: &mut PrologStream) -> io::Result<()> {
+        write!(stream, "<builder {}>", name_to_string(self.name()))
     }
 }
