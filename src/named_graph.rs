@@ -1,13 +1,13 @@
+use crate::layer::*;
+use crate::store::*;
+use std::io::{self, Write};
 use swipl::prelude::*;
 use terminus_store::store::sync::*;
-use std::io::{self, Write};
-use crate::store::*;
-use crate::layer::*;
 
 predicates! {
     pub semidet fn create_named_graph(context, store_term, graph_name_term, graph_term) {
         let store: WrappedStore = store_term.get()?;
-        let graph_name: String = graph_name_term.get()?;
+        let graph_name: PrologText = graph_name_term.get()?;
 
         let graph = context.try_or_die(store.create(&graph_name))?;
         graph_term.unify(&WrappedNamedGraph(graph))
@@ -15,7 +15,7 @@ predicates! {
 
     pub semidet fn open_named_graph(context, store_term, graph_name_term, graph_term) {
         let store: WrappedStore = store_term.get()?;
-        let graph_name: String = graph_name_term.get()?;
+        let graph_name: PrologText = graph_name_term.get()?;
 
         match context.try_or_die(store.open(&graph_name))? {
             None => Err(PrologError::Failure),
