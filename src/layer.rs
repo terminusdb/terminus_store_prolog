@@ -1,5 +1,6 @@
 use crate::store::*;
 use std::io::{self, Write};
+use std::iter::Peekable;
 use swipl::prelude::*;
 use terminus_store::storage::{name_to_string, string_to_name};
 use terminus_store::store::sync::*;
@@ -27,7 +28,7 @@ predicates! {
         }
     }
 
-    pub nondet fn id_triple<Box<dyn Iterator<Item=IdTriple>+Send>>(context, layer_term, subject_id_term, predicate_id_term, object_id_term) {
+    pub nondet fn id_triple<Peekable<Box<dyn Iterator<Item=IdTriple>+Send>>>(context, layer_term, subject_id_term, predicate_id_term, object_id_term) {
         setup => {
             let layer: WrappedLayer = layer_term.get()?;
 
@@ -82,6 +83,9 @@ predicates! {
                 iter = layer.triples();
             }
 
+            // lets make it peekable
+            let iter = iter.peekable();
+
             Ok(iter)
         },
         call(iter) => {
@@ -91,13 +95,14 @@ predicates! {
                     if !(attempt(subject_id_term.unify(triple.subject))?
                          && attempt(predicate_id_term.unify(triple.predicate))?
                          && attempt(object_id_term.unify(triple.object))?) {
+                        // continuing rewinds the frame, undoing the unifications
                         continue;
                     }
                     else {
                         // closing the frame commits the data
                         f.close_frame();
 
-                        return Ok(true);
+                        return Ok(iter.peek().is_some());
                     }
                 }
                 else {
