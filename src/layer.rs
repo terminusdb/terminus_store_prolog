@@ -38,10 +38,10 @@ predicates! {
                     if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
                         // everything is known
                         if layer.triple_exists(subject_id, predicate_id, object_id) {
-                            iter = Box::new(vec![IdTriple::new(subject_id, predicate_id, object_id)].into_iter());
+                            return Ok(None);
                         }
                         else {
-                            iter = Box::new(std::iter::empty());
+                            return Err(PrologError::Failure)
                         }
                     }
                     else {
@@ -86,28 +86,16 @@ predicates! {
             // lets make it peekable
             let iter = iter.peekable();
 
-            Ok(iter)
+            Ok(Some(iter))
         },
         call(iter) => {
-            loop {
-                let f = context.open_frame();
-                if let Some(triple) = iter.next() {
-                    if !(attempt(subject_id_term.unify(triple.subject))?
-                         && attempt(predicate_id_term.unify(triple.predicate))?
-                         && attempt(object_id_term.unify(triple.object))?) {
-                        // continuing rewinds the frame, undoing the unifications
-                        continue;
-                    }
-                    else {
-                        // closing the frame commits the data
-                        f.close_frame();
-
-                        return Ok(iter.peek().is_some());
-                    }
-                }
-                else {
-                    return Err(PrologError::Failure);
-                }
+            if let Some(triple) = iter.next() {
+                subject_id_term.unify(triple.subject)?;
+                predicate_id_term.unify(triple.predicate)?;
+                object_id_term.unify(triple.object)?;
+            }
+            else {
+                return Err(PrologError::Failure);
             }
         }
     }
