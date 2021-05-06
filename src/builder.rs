@@ -21,16 +21,16 @@ predicates! {
         let predicate: PrologText = predicate_term.get()?;
 
         let inner = context.new_term_ref();
-        if attempt(object_term.unify(term!{context: node(#&inner)}))? {
+        if attempt(object_term.unify(term!{context: node(#&inner)}?))? {
             let object: PrologText = inner.get()?;
             context.try_or_die(builder.add_string_triple(StringTriple::new_node(&subject, &predicate, &object)))
         }
-        else if attempt(object_term.unify(term!{context: value(#&inner)}))? {
+        else if attempt(object_term.unify(term!{context: value(#&inner)}?))? {
             let object: PrologText = inner.get()?;
             context.try_or_die(builder.add_string_triple(StringTriple::new_value(&subject, &predicate, &object)))
         }
         else {
-            context.raise_exception(&term!{context: error(domain_error(oneof([node(), value()]), #object_term), _)})
+            context.raise_exception(&term!{context: error(domain_error(oneof([node(), value()]), #object_term), _)}?)
         }
     }
 

@@ -93,6 +93,8 @@ predicates! {
                 subject_id_term.unify(triple.subject)?;
                 predicate_id_term.unify(triple.predicate)?;
                 object_id_term.unify(triple.object)?;
+
+                Ok(iter.peek().is_some())
             }
             else {
                 return Err(PrologError::Failure);
