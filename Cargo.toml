@@ -1,5 +1,5 @@
 [package]
-name = "prolog_story"
+name = "terminus_store_prolog_rewrite"
 version = "0.1.0"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>"]
 edition = "2018"
