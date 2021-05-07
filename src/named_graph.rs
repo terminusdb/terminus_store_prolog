@@ -51,6 +51,27 @@ predicates! {
 
         into_prolog_result(context.try_or_die(graph.set_head(&layer))?)
     }
+
+    pub semidet fn nb_force_set_head(context, graph_term, layer_term) {
+        let graph: WrappedNamedGraph = graph_term.get()?;
+        let layer: WrappedLayer = layer_term.get()?;
+
+        context.try_or_die(graph.force_set_head(&layer))?;
+
+        Ok(())
+    }
+
+    #[name("nb_force_set_head")]
+    pub semidet fn nb_force_set_head_version(context, graph_term, layer_term, version_term) {
+        let graph: WrappedNamedGraph = graph_term.get()?;
+        let layer: WrappedLayer = layer_term.get()?;
+
+        let version: u64 = version_term.get()?;
+
+        context.try_or_die(graph.force_set_head_version(&layer, version))?;
+
+        Ok(())
+    }
 }
 
 wrapped_clone_blob!("named_graph", pub WrappedNamedGraph, SyncNamedGraph);
