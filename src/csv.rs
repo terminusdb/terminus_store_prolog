@@ -54,6 +54,7 @@ predicates! {
         ))
     }
 
+    #[name("csv_builder")]
     pub semidet fn csv_builder_with_schema(context,
                                            name_term,
                                            csv_term,
