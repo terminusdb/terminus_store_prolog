@@ -12,7 +12,7 @@ predicates! {
     }
 
     pub semidet fn open_directory_store(_context, dir_term, out_term) {
-        let dir: PrologText = dir_term.get()?;
+        let dir: PrologText = dir_term.get_ex()?;
         let store = open_sync_directory_store(&*dir);
         out_term.unify(&WrappedStore(store))
     }
@@ -23,7 +23,7 @@ predicates! {
             builder = context.try_or_die(store.create_base_layer())?;
         }
         else {
-            let layer: WrappedLayer = store_or_layer_term.get()?;
+            let layer: WrappedLayer = store_or_layer_term.get_ex()?;
             builder = context.try_or_die(layer.open_write())?;
         }
 
@@ -31,8 +31,8 @@ predicates! {
     }
 
     pub semidet fn pack_export(context, store_term, layer_ids_term, pack_term) {
-        let store: WrappedStore = store_term.get()?;
-        let layer_id_strings_list: Vec<String> = layer_ids_term.get()?;
+        let store: WrappedStore = store_term.get_ex()?;
+        let layer_id_strings_list: Vec<String> = layer_ids_term.get_ex()?;
         let mut layer_ids_list = Vec::with_capacity(layer_id_strings_list.len());
         for layer_id_string in layer_id_strings_list {
             let layer_id = context.try_or_die(string_to_name(&layer_id_string))?;
@@ -46,7 +46,7 @@ predicates! {
     }
 
     pub semidet fn pack_layerids_and_parents(context, pack_term, layer_parents_term) {
-        let pack: Vec<u8> = pack_term.get()?;
+        let pack: Vec<u8> = pack_term.get_ex()?;
         let layer_parent_map = context.try_or_die(pack_layer_parents(Cursor::new(pack))
                                                   .map_err(|e| {
                                                       // todo we're mapping to io error here for ease but should be something better
@@ -85,16 +85,16 @@ predicates! {
     }
 
     pub semidet fn pack_import(context, store_term, layer_ids_term, pack_term) {
-        let store: WrappedStore = store_term.get()?;
+        let store: WrappedStore = store_term.get_ex()?;
 
-        let layer_id_strings: Vec<String> = layer_ids_term.get()?;
+        let layer_id_strings: Vec<String> = layer_ids_term.get_ex()?;
         let mut layer_ids = Vec::with_capacity(layer_id_strings.len());
         for layer_id_string in layer_id_strings {
             let name = context.try_or_die(string_to_name(&layer_id_string))?;
             layer_ids.push(name);
         }
 
-        let pack: Vec<u8> = pack_term.get()?;
+        let pack: Vec<u8> = pack_term.get_ex()?;
 
         context.try_or_die(store.import_layers(pack.as_slice(), Box::new(layer_ids.into_iter())))
     }

@@ -33,15 +33,15 @@ predicates! {
                                header_term,
                                skip_header_term
     ) {
-        let name: PrologText = name_term.get()?;
-        let csv: PrologText = csv_term.get()?;
-        let builder: WrappedBuilder = builder_term.get()?;
-        let data_prefix: PrologText = data_prefix_term.get()?;
-        let schema_prefix: PrologText = schema_prefix_term.get()?;
+        let name: PrologText = name_term.get_ex()?;
+        let csv: PrologText = csv_term.get_ex()?;
+        let builder: WrappedBuilder = builder_term.get_ex()?;
+        let data_prefix: PrologText = data_prefix_term.get_ex()?;
+        let schema_prefix: PrologText = schema_prefix_term.get_ex()?;
 
         // TODO original throws an exception here if the type does not match
-        let has_header: bool = header_term.get()?;
-        let skip_header: bool = skip_header_term.get()?;
+        let has_header: bool = header_term.get_ex()?;
+        let skip_header: bool = skip_header_term.get_ex()?;
 
         context.try_or_die_generic(import_csv(name.to_string(),
                                               csv.to_string(),
@@ -65,16 +65,16 @@ predicates! {
                                            header_term,
                                            skip_header_term
     ) {
-        let name: PrologText = name_term.get()?;
-        let csv: PrologText = csv_term.get()?;
-        let builder: WrappedBuilder = builder_term.get()?;
-        let schema_builder: WrappedBuilder = schema_builder_term.get()?;
-        let data_prefix: PrologText = data_prefix_term.get()?;
-        let schema_prefix: PrologText = schema_prefix_term.get()?;
+        let name: PrologText = name_term.get_ex()?;
+        let csv: PrologText = csv_term.get_ex()?;
+        let builder: WrappedBuilder = builder_term.get_ex()?;
+        let schema_builder: WrappedBuilder = schema_builder_term.get_ex()?;
+        let data_prefix: PrologText = data_prefix_term.get_ex()?;
+        let schema_prefix: PrologText = schema_prefix_term.get_ex()?;
 
         // TODO original throws an exception here if the type does not match
-        let has_header: bool = header_term.get()?;
-        let skip_header: bool = skip_header_term.get()?;
+        let has_header: bool = header_term.get_ex()?;
+        let skip_header: bool = skip_header_term.get_ex()?;
 
         context.try_or_die_generic(import_csv(name.to_string(),
                                               csv.to_string(),

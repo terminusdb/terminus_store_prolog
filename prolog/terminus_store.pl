@@ -679,7 +679,7 @@ test(open_directory_store_atom) :-
     open_directory_store("this is a string", _).
 
 test(open_directory_store_atom_exception, [
-         throws(error(type_error(atom,234), _))
+         throws(error(type_error(text,234), _))
      ]) :-
     open_directory_store(234, _).
 
