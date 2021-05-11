@@ -31,7 +31,6 @@ pub extern "C" fn install() {
     layer::register_id_to_predicate();
     layer::register_object_to_id();
     layer::register_id_to_object();
-    layer::register_store_id_layer();
     layer::register_parent();
     layer::register_squash();
     layer::register_rollup();
@@ -42,5 +41,9 @@ pub extern "C" fn install() {
     layer::register_layer_total_addition_count();
     layer::register_layer_total_removal_count();
     layer::register_layer_total_triple_count();
+    layer::register_store_id_layer();
+    store::register_pack_export();
+    store::register_pack_layerids_and_parents();
+    store::register_pack_import();
     layer::register_id_triple();
 }
