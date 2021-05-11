@@ -715,17 +715,28 @@ test(open_write_from_db_without_head, [
     cleanup(clean(TestDir)),
     setup(createng(TestDir)),
     throws(
-        error(rust_io_error('Create a base layer first before opening the named graph for write'), _)
+        error(cannot_open_named_graph_without_base_layer, _)
     )]) :-
     open_directory_store(TestDir, X),
     open_named_graph(X, "sometestdb", DB),
+    open_write(DB, _).
+
+test(open_write_from_db_with_head, [
+         cleanup(clean(TestDir)),
+         setup(createng(TestDir))
+     ]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_commit(Builder, Layer),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_set_head(DB, Layer),
     open_write(DB, _).
 
 
 test(open_write_from_memory_ng_without_head, [
     setup(create_memory_ng(DB)),
     throws(
-        error(rust_io_error('Create a base layer first before opening the named graph for write'),_)
+        error(cannot_open_named_graph_without_base_layer, _)
     )]) :-
     open_write(DB, _).
 

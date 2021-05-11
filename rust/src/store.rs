@@ -1,5 +1,6 @@
 use crate::builder::*;
 use crate::layer::*;
+use crate::named_graph::*;
 use std::io::{self, Cursor};
 use swipl::prelude::*;
 use terminus_store::storage::{name_to_string, pack_layer_parents, string_to_name, PackError};
@@ -17,13 +18,21 @@ predicates! {
         out_term.unify(&WrappedStore(store))
     }
 
-    pub semidet fn open_write(context, store_or_layer_term, builder_term) {
+    pub semidet fn open_write(context, store_or_graph_or_layer_term, builder_term) {
         let builder;
-        if let Some(store) = attempt_opt(store_or_layer_term.get::<WrappedStore>())? {
+        if let Some(store) = attempt_opt(store_or_graph_or_layer_term.get::<WrappedStore>())? {
             builder = context.try_or_die(store.create_base_layer())?;
         }
+        else if let Some(graph) = attempt_opt(store_or_graph_or_layer_term.get::<WrappedNamedGraph>())? {
+            if let Some(layer) = context.try_or_die(graph.head())? {
+                builder = context.try_or_die(layer.open_write())?;
+            }
+            else {
+                return context.raise_exception(&term!{context: error(cannot_open_named_graph_without_base_layer, _)}?);
+            }
+        }
         else {
-            let layer: WrappedLayer = store_or_layer_term.get_ex()?;
+            let layer: WrappedLayer = store_or_graph_or_layer_term.get_ex()?;
             builder = context.try_or_die(layer.open_write())?;
         }
 
