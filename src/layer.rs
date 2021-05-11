@@ -268,6 +268,154 @@ predicates! {
             }
         }
     }
+
+    pub nondet fn id_triple_addition<Peekable<Box<dyn Iterator<Item=IdTriple>+Send>>>(context, layer_term, subject_id_term, predicate_id_term, object_id_term) {
+        setup => {
+            let layer: WrappedLayer = layer_term.get()?;
+
+            let iter: Box<dyn Iterator<Item=IdTriple>+Send>;
+            if let Some(subject_id) = attempt_opt(subject_id_term.get::<u64>())? {
+                if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                    if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                        // everything is known
+                        if context.try_or_die(layer.triple_addition_exists(subject_id, predicate_id, object_id))? {
+                            return Ok(None);
+                        }
+                        else {
+                            return Err(PrologError::Failure)
+                        }
+                    }
+                    else {
+                        // subject and predicate are known, object is not
+                        iter = context.try_or_die(layer.triple_additions_sp(subject_id, predicate_id))?;
+                    }
+                }
+                else {
+                    // subject is known, predicate is not. object may or may not be bound already.
+                    if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                        // object is known so predicate is the only unknown
+                        iter = Box::new(context.try_or_die(layer.triple_additions_s(subject_id))?
+                                        .filter(move |t| t.object == object_id));
+                    }
+                    else {
+                        // both predicate and object are unknown
+                        iter = context.try_or_die(layer.triple_additions_s(subject_id))?;
+                    }
+                }
+            }
+            else if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                // subject is unknown
+                if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                    // predicate is known
+                    iter = Box::new(context.try_or_die(layer.triple_additions_o(object_id))?
+                                    .filter(move |t| t.predicate == predicate_id));
+                }
+                else {
+                    // predicate is unknown, only object is known
+                    iter = context.try_or_die(layer.triple_additions_o(object_id))?
+                }
+            }
+            else if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                // only predicate is known
+                iter = context.try_or_die(layer.triple_additions_p(predicate_id))?;
+            }
+            else {
+                // nothing is known so return everything
+                iter = context.try_or_die(layer.triple_additions())?;
+            }
+
+            // lets make it peekable
+            let iter = iter.peekable();
+
+            Ok(Some(iter))
+        },
+        call(iter) => {
+            if let Some(triple) = iter.next() {
+                subject_id_term.unify(triple.subject)?;
+                predicate_id_term.unify(triple.predicate)?;
+                object_id_term.unify(triple.object)?;
+
+                Ok(iter.peek().is_some())
+            }
+            else {
+                return Err(PrologError::Failure);
+            }
+        }
+    }
+
+    pub nondet fn id_triple_removal<Peekable<Box<dyn Iterator<Item=IdTriple>+Send>>>(context, layer_term, subject_id_term, predicate_id_term, object_id_term) {
+        setup => {
+            let layer: WrappedLayer = layer_term.get()?;
+
+            let iter: Box<dyn Iterator<Item=IdTriple>+Send>;
+            if let Some(subject_id) = attempt_opt(subject_id_term.get::<u64>())? {
+                if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                    if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                        // everything is known
+                        if context.try_or_die(layer.triple_removal_exists(subject_id, predicate_id, object_id))? {
+                            return Ok(None);
+                        }
+                        else {
+                            return Err(PrologError::Failure)
+                        }
+                    }
+                    else {
+                        // subject and predicate are known, object is not
+                        iter = context.try_or_die(layer.triple_removals_sp(subject_id, predicate_id))?;
+                    }
+                }
+                else {
+                    // subject is known, predicate is not. object may or may not be bound already.
+                    if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                        // object is known so predicate is the only unknown
+                        iter = Box::new(context.try_or_die(layer.triple_removals_s(subject_id))?
+                                        .filter(move |t| t.object == object_id));
+                    }
+                    else {
+                        // both predicate and object are unknown
+                        iter = context.try_or_die(layer.triple_removals_s(subject_id))?;
+                    }
+                }
+            }
+            else if let Some(object_id) = attempt_opt(object_id_term.get::<u64>())? {
+                // subject is unknown
+                if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                    // predicate is known
+                    iter = Box::new(context.try_or_die(layer.triple_removals_o(object_id))?
+                                    .filter(move |t| t.predicate == predicate_id));
+                }
+                else {
+                    // predicate is unknown, only object is known
+                    iter = context.try_or_die(layer.triple_removals_o(object_id))?
+                }
+            }
+            else if let Some(predicate_id) = attempt_opt(predicate_id_term.get::<u64>())? {
+                // only predicate is known
+                iter = context.try_or_die(layer.triple_removals_p(predicate_id))?;
+            }
+            else {
+                // nothing is known so return everything
+                iter = context.try_or_die(layer.triple_removals())?;
+            }
+
+            // lets make it peekable
+            let iter = iter.peekable();
+
+            Ok(Some(iter))
+        },
+        call(iter) => {
+            if let Some(triple) = iter.next() {
+                subject_id_term.unify(triple.subject)?;
+                predicate_id_term.unify(triple.predicate)?;
+                object_id_term.unify(triple.object)?;
+
+                Ok(iter.peek().is_some())
+            }
+            else {
+                return Err(PrologError::Failure);
+            }
+        }
+    }
 }
 
 wrapped_clone_blob!("layer", pub WrappedLayer, SyncStoreLayer);

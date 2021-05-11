@@ -46,4 +46,6 @@ pub extern "C" fn install() {
     store::register_pack_layerids_and_parents();
     store::register_pack_import();
     layer::register_id_triple();
+    layer::register_id_triple_addition();
+    layer::register_id_triple_removal();
 }
