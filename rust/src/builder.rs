@@ -74,7 +74,7 @@ predicates! {
         layer_term.unify(WrappedLayer(layer))
     }
 
-    pub semidet fn apply_delta(context, builder_term, layer_term) {
+    pub semidet fn nb_apply_delta(context, builder_term, layer_term) {
         let builder: WrappedBuilder = builder_term.get()?;
         let layer: WrappedLayer = layer_term.get()?;
 
@@ -83,7 +83,7 @@ predicates! {
         Ok(())
     }
 
-    pub semidet fn apply_diff(context, builder_term, layer_term) {
+    pub semidet fn nb_apply_diff(context, builder_term, layer_term) {
         let builder: WrappedBuilder = builder_term.get()?;
         let layer: WrappedLayer = layer_term.get()?;
 

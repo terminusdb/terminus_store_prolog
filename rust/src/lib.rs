@@ -25,8 +25,8 @@ pub extern "C" fn install() {
     builder::register_nb_remove_string_triple();
     builder::register_builder_committed();
     builder::register_nb_commit();
-    builder::register_apply_delta();
-    builder::register_apply_diff();
+    builder::register_nb_apply_delta();
+    builder::register_nb_apply_diff();
     layer::register_node_and_value_count();
     layer::register_predicate_count();
     layer::register_subject_to_id();
@@ -45,6 +45,7 @@ pub extern "C" fn install() {
     layer::register_layer_total_addition_count();
     layer::register_layer_total_removal_count();
     layer::register_layer_total_triple_count();
+    layer::register_layer_to_id();
     layer::register_store_id_layer();
     store::register_pack_export();
     store::register_pack_layerids_and_parents();
