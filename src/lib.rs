@@ -1,10 +1,14 @@
 mod builder;
+mod csv;
 mod layer;
 mod named_graph;
 mod store;
 
 #[no_mangle]
 pub extern "C" fn install() {
+    csv::register_csv_iri();
+    csv::register_csv_builder();
+    csv::register_csv_builder_with_schema();
     store::register_open_memory_store();
     store::register_open_directory_store();
     named_graph::register_create_named_graph();
