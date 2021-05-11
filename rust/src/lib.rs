@@ -45,6 +45,7 @@ pub extern "C" fn install() {
     layer::register_layer_total_addition_count();
     layer::register_layer_total_removal_count();
     layer::register_layer_total_triple_count();
+    layer::register_retrieve_layer_stack_names();
     layer::register_layer_to_id();
     layer::register_store_id_layer();
     store::register_pack_export();

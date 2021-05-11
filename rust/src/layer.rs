@@ -416,6 +416,17 @@ predicates! {
             }
         }
     }
+
+    pub semidet fn retrieve_layer_stack_names(context, layer_term, layer_stack_term) {
+        let layer: WrappedLayer = layer_term.get()?;
+
+        let names = context.try_or_die(layer.retrieve_layer_stack_names())?;
+        let name_strings: Vec<String> = names.into_iter()
+            .map(|name| name_to_string(name))
+            .collect();
+
+        layer_stack_term.unify(name_strings.as_slice())
+    }
 }
 
 wrapped_clone_blob!("layer", pub WrappedLayer, SyncStoreLayer);

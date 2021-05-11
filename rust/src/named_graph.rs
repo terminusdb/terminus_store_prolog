@@ -68,9 +68,9 @@ predicates! {
 
         let version: u64 = version_term.get()?;
 
-        context.try_or_die(graph.force_set_head_version(&layer, version))?;
+        let result = context.try_or_die(graph.force_set_head_version(&layer, version))?;
 
-        Ok(())
+        into_prolog_result(result)
     }
 }
 

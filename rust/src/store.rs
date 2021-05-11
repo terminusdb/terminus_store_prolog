@@ -12,8 +12,8 @@ predicates! {
     }
 
     pub semidet fn open_directory_store(_context, dir_term, out_term) {
-        let dir: String = dir_term.get()?;
-        let store = open_sync_directory_store(&dir);
+        let dir: PrologText = dir_term.get()?;
+        let store = open_sync_directory_store(&*dir);
         out_term.unify(&WrappedStore(store))
     }
 
