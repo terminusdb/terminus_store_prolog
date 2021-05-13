@@ -65,7 +65,7 @@
               layer_stack_names/2
             ]).
 
-:- use_foreign_library(foreign(libterminus_store_rewrite)).
+:- use_foreign_library(foreign(libterminus_store)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% pldocs for the foreign predicates %%%
