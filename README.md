@@ -7,7 +7,7 @@ Prolog bindings for the [terminus-store](https://github.com/terminusdb/terminus-
 ## Requirements
 
 * cargo
-* gcc
+* clang
 * swi-prolog (with the include headers)
 
 ## Installing

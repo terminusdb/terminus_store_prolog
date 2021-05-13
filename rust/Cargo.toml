@@ -1,23 +1,22 @@
 [package]
 name = "terminus-store-prolog"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Matthijs van Otterdijk <matthijs@terminusdb.com>", "Robin de Rooij <robin@terminusdb.com>", "Gavin Mendel-Gleason <gavin@terminusdb.com>"]
 edition = "2018"
 publish = false
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
-name = "terminus_store_prolog"
-crate-type = ["staticlib"]
+crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store = "=0.18.0"
+swipl = "0.3.3"
+#swipl = {path = "../../swipl-rs/swipl"}
+terminus-store = "=0.19.1"
 csv = "1.1"
-rayon = "1.4"
-clap = "2.33.3"
-fs_extra = "1.2.0"
-encoding_rs = "0.8.24"
-chardetng = "0.1.9"
-tempfile = "3.1.0"
 sha-1 = "0.9.1"
 hex = "0.4.2"
+encoding_rs = "0.8.24"
+chardetng = "0.1.9"
 urlencoding = "1.1.1"

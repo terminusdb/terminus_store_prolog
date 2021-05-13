@@ -323,22 +323,13 @@
 % @arg Id the id to convert into a predicate.
 % @arg Predicate the predicate which the id refers to.
 
-%! object_node_to_id(+Layer:layer, +Object:text, -Id:integer) is semidet.
+%! object_to_id(+Layer:layer, +Object:text, -Id:integer) is semidet.
 %
 % Convert the given node object to its id representation in the given layer.
 % Fails if this subject is not known in the given layer.
 %
 % @arg Layer the layer to use for the conversion.
 % @arg Object an atom or string containing the object. The object is assumed to refer to a node.
-% @arg Id the id of the object in the given layer.
-
-%! object_value_to_id(+Layer:layer, +Object:text, -Id:integer) is semidet.
-%
-% Convert the given value object to its id representation in the given layer.
-% Fails if this subject is not known in the given layer.
-%
-% @arg Layer the layer to use for the conversion.
-% @arg Object an atom or string containing the object. The object is assumed to refer to a literal value.
 % @arg Id the id of the object in the given layer.
 
 %! id_to_object(Layer:layer, +Id:integer, -Object:string, -Object_Type:atom) is semidet.
@@ -430,23 +421,9 @@ nb_add_triple(Builder, Subject, Predicate, Object) :-
     !,
     nb_add_id_triple(Builder, Subject, Predicate, Object).
 
-nb_add_triple(Builder, Subject, Predicate, node(Object)) :-
+nb_add_triple(Builder, Subject, Predicate, Object) :-
     !,
-    nb_add_string_node_triple(Builder, Subject, Predicate, Object).
-
-nb_add_triple(Builder, Subject, Predicate, value(Object)) :-
-    !,
-    nb_add_string_value_triple(Builder, Subject, Predicate, Object).
-
-nb_add_triple(_,_,_,Object) :-
-    throw(
-        error(
-            domain_error(oneof([node(), value(), number]), Object),
-                         context(terminus_store:nb_remove_triple/4,
-       'triple must either be numeric, or object must be of format node(..) or value(..)')
-        )).
-
-
+    nb_add_string_triple(Builder, Subject, Predicate, Object).
 
 /*
  * nb_add_triple(+Builder, +Subject, +Predicate, +Object) is semidet
@@ -460,22 +437,9 @@ nb_remove_triple(Builder, Subject, Predicate, Object) :-
     !,
     nb_remove_id_triple(Builder, Subject, Predicate, Object).
 
-nb_remove_triple(Builder, Subject, Predicate, node(Object)) :-
+nb_remove_triple(Builder, Subject, Predicate, Object) :-
     !,
-    nb_remove_string_node_triple(Builder, Subject, Predicate, Object).
-
-nb_remove_triple(Builder, Subject, Predicate, value(Object)) :-
-    !,
-    nb_remove_string_value_triple(Builder, Subject, Predicate, Object).
-
-nb_remove_triple(_,_,_,Object) :-
-    throw(
-        error(
-            domain_error(oneof([node(), value(), number]), Object),
-                         context(terminus_store:nb_remove_triple/4,
-       'triple must either be numeric, or object must be of format node(..) or value(..)')
-        )).
-
+    nb_remove_string_triple(Builder, Subject, Predicate, Object).
 
 /*
  * subject_id(+Layer, +Subject, -Id) is semidet
@@ -527,18 +491,17 @@ predicate_id(Layer, Predicate, Id) :-
 object_id(Layer, Object, Id) :-
     ground(Id),
     !,
-    id_to_object(Layer, Id, Object_String, Type),
-    Object =.. [Type, Object_String].
+    id_to_object(Layer, Id, Object).
 
 object_id(Layer, node(Object), Id) :-
     ground(Object),
     !,
-    object_node_to_id(Layer, Object, Id).
+    object_to_id(Layer, node(Object), Id).
 
 object_id(Layer, value(Object), Id) :-
     ground(Object),
     !,
-    object_value_to_id(Layer, Object, Id).
+    object_to_id(Layer, value(Object), Id).
 
 object_id(Layer, Object, Id) :-
     node_and_value_count(Layer, Count),
@@ -716,7 +679,7 @@ test(open_directory_store_atom) :-
     open_directory_store("this is a string", _).
 
 test(open_directory_store_atom_exception, [
-         throws(error(type_error(atom,234), _))
+         throws(error(type_error(text,234), _))
      ]) :-
     open_directory_store(234, _).
 
@@ -752,17 +715,28 @@ test(open_write_from_db_without_head, [
     cleanup(clean(TestDir)),
     setup(createng(TestDir)),
     throws(
-        error(terminus_store_rust_error('Create a base layer first before opening the named graph for write'), _)
+        error(cannot_open_named_graph_without_base_layer, _)
     )]) :-
     open_directory_store(TestDir, X),
     open_named_graph(X, "sometestdb", DB),
+    open_write(DB, _).
+
+test(open_write_from_db_with_head, [
+         cleanup(clean(TestDir)),
+         setup(createng(TestDir))
+     ]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_commit(Builder, Layer),
+    open_named_graph(Store, "sometestdb", DB),
+    nb_set_head(DB, Layer),
     open_write(DB, _).
 
 
 test(open_write_from_memory_ng_without_head, [
     setup(create_memory_ng(DB)),
     throws(
-        error(terminus_store_rust_error('Create a base layer first before opening the named graph for write'),_)
+        error(cannot_open_named_graph_without_base_layer, _)
     )]) :-
     open_write(DB, _).
 
@@ -778,12 +752,12 @@ test(create_base_layer_memory) :-
 test(write_value_triple, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     open_directory_store(TestDir, Store),
     open_write(Store, Builder),
-    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
+    nb_add_string_triple(Builder, "Subject", "Predicate", value("Object")).
 
 test(write_value_triple_memory) :-
     open_memory_store(Store),
     open_write(Store, Builder),
-    nb_add_string_value_triple(Builder, "Subject", "Predicate", "Object").
+    nb_add_string_triple(Builder, "Subject", "Predicate", value("Object")).
 
 test(commit_and_set_header, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     open_directory_store(TestDir, Store),

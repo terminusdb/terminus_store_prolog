@@ -11,6 +11,83 @@ use terminus_store::layer::StringTriple;
 use terminus_store::store::sync::*;
 use urlencoding;
 
+use swipl::prelude::*;
+
+use crate::builder::WrappedBuilder;
+
+predicates! {
+    pub semidet fn csv_iri(_context, csv_name_term, prefix_term, iri_term) {
+        let csv_name: String = csv_name_term.get::<PrologText>()?.to_string();
+        let prefix: String = prefix_term.get::<PrologText>()?.to_string();
+        let (_, node) = csv_name_iri(csv_name, prefix);
+
+        iri_term.unify(&node)
+    }
+
+    pub semidet fn csv_builder(context,
+                               name_term,
+                               csv_term,
+                               builder_term,
+                               data_prefix_term,
+                               schema_prefix_term,
+                               header_term,
+                               skip_header_term
+    ) {
+        let name: PrologText = name_term.get_ex()?;
+        let csv: PrologText = csv_term.get_ex()?;
+        let builder: WrappedBuilder = builder_term.get_ex()?;
+        let data_prefix: PrologText = data_prefix_term.get_ex()?;
+        let schema_prefix: PrologText = schema_prefix_term.get_ex()?;
+
+        // TODO original throws an exception here if the type does not match
+        let has_header: bool = header_term.get_ex()?;
+        let skip_header: bool = skip_header_term.get_ex()?;
+
+        context.try_or_die_generic(import_csv(name.to_string(),
+                                              csv.to_string(),
+                                              &builder,
+                                              None,
+                                              data_prefix.to_string(),
+                                              schema_prefix.to_string(),
+                                              has_header,
+                                              skip_header
+        ))
+    }
+
+    #[name("csv_builder")]
+    pub semidet fn csv_builder_with_schema(context,
+                                           name_term,
+                                           csv_term,
+                                           builder_term,
+                                           schema_builder_term,
+                                           data_prefix_term,
+                                           schema_prefix_term,
+                                           header_term,
+                                           skip_header_term
+    ) {
+        let name: PrologText = name_term.get_ex()?;
+        let csv: PrologText = csv_term.get_ex()?;
+        let builder: WrappedBuilder = builder_term.get_ex()?;
+        let schema_builder: WrappedBuilder = schema_builder_term.get_ex()?;
+        let data_prefix: PrologText = data_prefix_term.get_ex()?;
+        let schema_prefix: PrologText = schema_prefix_term.get_ex()?;
+
+        // TODO original throws an exception here if the type does not match
+        let has_header: bool = header_term.get_ex()?;
+        let skip_header: bool = skip_header_term.get_ex()?;
+
+        context.try_or_die_generic(import_csv(name.to_string(),
+                                              csv.to_string(),
+                                              &builder,
+                                              Some(&schema_builder),
+                                              data_prefix.to_string(),
+                                              schema_prefix.to_string(),
+                                              has_header,
+                                              skip_header
+        ))
+    }
+}
+
 pub fn csv_name_iri(csv_name: String, data_prefix: String) -> (String, String) {
     let csv_name_escaped = urlencoding::encode(&csv_name);
     let csv_node = format!("{}CSV_{}", data_prefix, csv_name_escaped);

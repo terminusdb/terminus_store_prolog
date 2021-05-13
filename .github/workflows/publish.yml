@@ -90,12 +90,16 @@ jobs:
           toolchain: stable-x86_64-pc-windows-gnu
           override: true
 
-      - name: Install SWI Prolog
-        run: choco install swi-prolog
+      - name: Install LLVM and SWI Prolog
+        run: choco install llvm swi-prolog
 
       - name: Compile terminus-store-prolog
         shell: bash
+        env:
+          SWIPL: C:\Program Files\swipl\bin\swipl.exe
+          LIBCLANG_PATH: C:\Program Files\LLVM\bin\
         run: |
+          /c/Program\ Files/swipl/bin/swipl.exe -g 'use_module(library(prolog_pack)), prolog_pack:build_environment(Env), forall(member(E, Env), (writeq(E),nl)), halt'
           make windows_release
 
 
@@ -120,7 +124,10 @@ jobs:
 
       - name: Compile terminus-store-prolog
         shell: bash
+        env:
+          SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
         run: |
+          $SWIPL -g 'use_module(library(prolog_pack)), prolog_pack:build_environment(Env), forall(member(E, Env), (writeq(E),nl)), halt'
           SWIPL_PATH='/Applications/SWI-Prolog.app/Contents/MacOS/' ./make.sh
 
       - name: Upload macOS artifact dylib
