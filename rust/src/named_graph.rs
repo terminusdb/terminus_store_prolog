@@ -23,6 +23,13 @@ predicates! {
         }
     }
 
+    pub semidet fn delete_named_graph(context, store_term, graph_name_term) {
+        let store: WrappedStore = store_term.get_ex()?;
+        let graph_name: PrologText = graph_name_term.get_ex()?;
+
+        into_prolog_result(context.try_or_die(store.delete(&graph_name))?)
+    }
+
     #[name("head")]
     pub semidet fn head2(context, graph_term, layer_term) {
         let graph: WrappedNamedGraph = graph_term.get_ex()?;

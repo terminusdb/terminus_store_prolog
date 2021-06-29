@@ -13,6 +13,7 @@ pub extern "C" fn install() {
     store::register_open_directory_store();
     named_graph::register_create_named_graph();
     named_graph::register_open_named_graph();
+    named_graph::register_delete_named_graph();
     named_graph::register_head2();
     named_graph::register_head3();
     named_graph::register_nb_set_head();

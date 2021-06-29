@@ -4,6 +4,7 @@
 
               create_named_graph/3,
               open_named_graph/3,
+              delete_named_graph/2,
 
               head/2,
               head/3,
@@ -106,6 +107,15 @@
 % @arg Store the store to create the graph in.
 % @arg Name the name of the graph to be opened.
 % @arg Graph the returned named graph.
+
+%! delete_named_graph(+Store:store, +Name:text) is semidet.
+%
+% Deletes an existing named graph with the given name.
+%
+% Fails if no graph with that name exists.
+%
+% @arg Store the store to create the graph in.
+% @arg Name the name of the graph to be opened.
 
 %! head(+Graph:named_graph, -Layer:layer) is semidet.
 %
@@ -702,6 +712,16 @@ test(open_named_graph_memory) :-
     open_memory_store(X),
     create_named_graph(X, "sometestdb", _),
     open_named_graph(X, "sometestdb", _).
+
+test(delete_named_graph_memory) :-
+    open_memory_store(X),
+    create_named_graph(X, "sometestdb", _),
+    delete_named_graph(X, "sometestdb"),
+    \+ open_named_graph(X, "sometestdb", _).
+
+test(delete_named_graph_directory, [cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, X),
+    \+ delete_named_graph(X, "unknowndb").
 
 test(head_from_empty_db, [fail, cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
     open_directory_store(TestDir, X),
