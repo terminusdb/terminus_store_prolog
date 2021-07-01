@@ -18,11 +18,11 @@ jobs:
         run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
 
       - name: Log into Docker Container Registry
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
         run: echo '${{ secrets.DOCKER_PASS }}' | docker login -u terminusdb --password-stdin
 
       - name: Push to the Docker registry
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
         run: |
           IMAGE_ID=$IMAGE_NAME
           # Change all uppercase to lowercase
@@ -31,7 +31,7 @@ jobs:
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          [ "$VERSION" == "main" ] && VERSION=latest
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
@@ -54,11 +54,11 @@ jobs:
         run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm $IMAGE_NAME bash -c "./run_swipl -g run_tests -g halt"
 
       - name: Log into registry
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
         run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
       - name: Push image
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'master'))
+        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
 
@@ -69,7 +69,7 @@ jobs:
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
 
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
+          [ "$VERSION" == "main" ] && VERSION=latest
 
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
