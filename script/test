@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+##
+## Run `swipl`, load the `terminus_store_prolog` library, and run the tests.
+##
+## - You should run `make.sh` before this.
+##
+
+# Exit the script on any error
+set -e
+
+# Absolute path of this script allowing it to be run from any directory
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+# Get the `swipl` command in $CMD
+source "$SCRIPTDIR/swipl-cmd.sh"
+
+# Run the `swipl` command with tests
+"${CMD[@]}" -g run_tests -g halt
