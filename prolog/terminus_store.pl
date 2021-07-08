@@ -516,8 +516,7 @@ object_id(Layer, value(Object), Id) :-
 object_id(Layer, Object, Id) :-
     node_and_value_count(Layer, Count),
     between(1, Count, Id),
-    id_to_object(Layer, Id, Object_String, Type),
-    Object =.. [Type, Object_String].
+    id_to_object(Layer, Id, Object).
 
 triple(Layer, Subject, Predicate, Object) :-
     (   ground(Subject)
@@ -622,15 +621,6 @@ triple_removal(Layer, Subject, Predicate, Object) :-
     (   ground(Object)
     ->  true
     ;   object_id(Layer,Object, O_Id)).
-
-blob_allocations(allocations{stores:Stores,
-                             named_graphs:Named_Graphs,
-                             layers:Layers,
-                             layer_builders:Layer_Builders}) :-
-    num_store_blobs(Stores),
-    num_named_graph_blobs(Named_Graphs),
-    num_layer_blobs(Layers),
-    num_layer_builder_blobs(Layer_Builders).
 
 count_layer_stack_size(Layer, Acc, Count) :-
     parent(Layer, Parent),
