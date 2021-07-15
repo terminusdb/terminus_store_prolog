@@ -4,7 +4,7 @@
 ## Run `swipl` and load the `terminus_store_prolog` library using GDB.
 ##
 ## - Arguments to this script are passed to `swipl`.
-## - You should run `make.sh` before this.
+## - You should run `make` before this.
 ##
 
 # Exit the script on any error

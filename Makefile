@@ -1,28 +1,45 @@
-RUST_LIB_NAME = terminus_store_prolog
-RUST_TARGET=release
-RUST_TARGET_DIR = rust/target/$(RUST_TARGET)/
-RUST_TARGET_LOCATION = rust/target/$(RUST_TARGET)/lib$(RUST_LIB_NAME).$(SOEXT)
-TARGET = $(PACKSODIR)/libterminus_store.$(SOEXT)
-CARGO_FLAGS =
+# See <https://www.swi-prolog.org/howto/ForeignPack.html> for documentation on
+# creating a pack using non-Prolog code.
 
-ifeq ($(OS), Windows_NT)
-SOEXT = dll
-# NOTE: this is not guaranteed but we only support win64 now anyway
-SWIARCH = x64-win64
-RUST_TARGET_LOCATION = rust/target/$(RUST_TARGET)/$(RUST_LIB_NAME).$(SOEXT)
-TARGET = lib/$(SWIARCH)/libterminus_store.$(SOEXT)
-else ifeq ($(shell uname), Darwin)
-SOEXT = dylib
-else ifeq ($(SWIARCH), arm64-android)
+# The variables `SWIARCH` and `PACKSODIR` are set by `swipl`. It calls `make`
+# when the pack is installed with `pack_install(terminus_store_prolog)`.
+# However, we also want to be able to build this without using `swipl`. If these
+# variables are not already set, we run a script with `swipl` to look up their
+# values.
+
+# Architecture string used by `swipl`.
+SWIARCH ?= $(shell ./script/swiarch.pl)
+
+# Pack shared object directory used by `swipl`.
+PACKSODIR ?= lib/$(SWIARCH)
+
+# Rust and Cargo variables
+RUST_LIB_NAME := terminus_store_prolog
+RUST_TARGET := release
+CARGO_FLAGS :=
+
+# Set some architecture-dependent variables.
+ifeq ($(SWIARCH), x64-win64)
+  # Shared object file extension
+  SOEXT := dll
+else
+  RUST_LIB_NAME := lib$(RUST_LIB_NAME)
+  ifeq ($(SWIARCH), x86_64-darwin)
+    # While SOEXT is set by `swipl`, the value for macOS is not what we want
+    # ("so"). So, we set it correctly here.
+    SOEXT := dylib
+  else
+    SOEXT := so
+  endif
 endif
-
 
 all: release
 
 build:
-	mkdir -p lib/$(SWIARCH)
+	mkdir -p $(PACKSODIR)
 	cd rust; cargo build $(CARGO_FLAGS)
-	cp $(RUST_TARGET_LOCATION) $(TARGET)
+	cp rust/target/$(RUST_TARGET)/$(RUST_LIB_NAME).$(SOEXT) \
+	   $(PACKSODIR)/libterminus_store.$(SOEXT)
 
 check::
 
@@ -32,10 +49,8 @@ debug: build
 release: CARGO_FLAGS += --release
 release: build
 
-windows_release: release
-
 install::
 
 clean:
-	rm -rf *.$(SOEXT) lib buildenv.sh
+	rm -rf lib
 	cd rust; cargo clean

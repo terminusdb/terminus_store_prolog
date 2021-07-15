@@ -79,29 +79,56 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    env:
-      RUSTFLAGS: -C target-feature=+crt-static
     steps:
       - uses: actions/checkout@v2
-        # Runs a single command using the runners shell
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable-x86_64-pc-windows-gnu
-          override: true
+          profile: minimal
+          toolchain: stable
+
+      - name: Cache Rust build files
+        uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: ./rust
 
       - name: Install LLVM and SWI Prolog
-        run: choco install llvm swi-prolog
-
-      - name: Compile terminus-store-prolog
-        shell: bash
-        env:
-          SWIPL: C:\Program Files\swipl\bin\swipl.exe
-          LIBCLANG_PATH: C:\Program Files\LLVM\bin\
         run: |
-          /c/Program\ Files/swipl/bin/swipl.exe -g 'use_module(library(prolog_pack)), prolog_pack:build_environment(Env), forall(member(E, Env), (writeq(E),nl)), halt'
-          make windows_release
+          # Install the latest stable LLVM and SWI Prolog using Chocolatey.
+          choco install llvm swi-prolog --no-progress
+          # Abort early since it doesn't seem that failure causes an exit here.
+          if ($lastExitCode -ne 0) { throw "choco install failed: $lastExitCode" }
 
+          # Update the $PATH to include the new packages. See
+          # <https://stackoverflow.com/a/46760714>
+          Import-Module "$env:ProgramData\chocolatey\helpers\chocolateyInstaller.psm1"
+          Update-SessionEnvironment
+
+          # Display versions for debugging
+          swipl --version
+          clang --version
+
+          # The following commands update GitHub files to make the environment
+          # variables persistent across steps. See
+          # <https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions>
+
+          # Append the `swipl` path to the $PATH.
+          echo (Split-Path -Path (Get-Command swipl).Source) `
+            | Out-File -Encoding utf8 -Append -FilePath $env:GITHUB_PATH
+
+          # Set $LIBCLANG_PATH with the `clang` path.
+          echo "LIBCLANG_PATH=$(Split-Path -Path (Get-Command clang).Source)" `
+            | Out-File -Encoding utf8 -Append -FilePath $env:GITHUB_ENV
+
+      - name: Build
+        # Use Git Bash because the Makefile does not work in other shells.
+        shell: bash
+        run: make
+
+      - name: Test
+        shell: bash
+        run: ./script/test
 
       - name: Upload Windows artifact DLL
         uses: actions/upload-artifact@v1
@@ -113,22 +140,30 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-        # Runs a single command using the runners shell
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
 
-      - name: Install SWI Prolog
-        run: bash .ci/install_swipl_dmg.sh
+      - name: Cache Rust build files
+        uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: ./rust
 
-      - name: Compile terminus-store-prolog
-        shell: bash
-        env:
-          SWIPL: /Applications/SWI-Prolog.app/Contents/MacOS/swipl
+      - name: Install SWI Prolog
         run: |
-          $SWIPL -g 'use_module(library(prolog_pack)), prolog_pack:build_environment(Env), forall(member(E, Env), (writeq(E),nl)), halt'
-          SWIPL_PATH='/Applications/SWI-Prolog.app/Contents/MacOS/' ./make.sh
+          brew install swi-prolog
+
+          # Display version for debugging
+          swipl --version
+
+      - name: Build
+        run: make
+
+      - name: Test
+        run: ./script/test
 
       - name: Upload macOS artifact dylib
         uses: actions/upload-artifact@v1
@@ -145,14 +180,17 @@ jobs:
           sudo apt-add-repository ppa:swi-prolog/stable
           sudo apt update
           sudo apt install swi-prolog-nox
-      - name: rust-toolchain
-        uses: actions-rs/toolchain@v1.0.6
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
+          profile: minimal
           toolchain: stable
+
       - name: Install pack
         run: |
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          swipl -g "pack_install('https://github.com/terminusdb/terminus_store_prolog/archive/$VERSION.zip', [interactive=false])." -g halt
+          swipl -g "pack_install('https://github.com/terminusdb/terminus_store_prolog/archive/$VERSION.zip', [interactive(false)])" -g halt
 
   deploy:
     runs-on: ubuntu-latest
