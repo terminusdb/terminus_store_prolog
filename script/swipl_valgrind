@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+##
+## Run `swipl` and load the `terminus_store_prolog` library using Valgrind.
+##
+## - Arguments to this script are passed to `swipl`.
+## - You should run `make.sh` before this.
+##
+
+# Exit the script on any error
+set -e
+
+# Absolute path of this script allowing it to be run from any directory
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+# Get the `swipl` command in $CMD
+source "$SCRIPTDIR/swipl-cmd.sh"
+
+# Run `valgrind` the `swipl` command
+valgrind "${CMD[@]}"

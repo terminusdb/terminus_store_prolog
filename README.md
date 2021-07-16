@@ -25,16 +25,16 @@ If you need to compile manually, for example to test a change without reinstalli
 
 Use the wrapper script `./make.sh` rather than the Makefile directly. The wrapper script will set up swipl environment variables which the build needs.
 
-Also, use the provided `./run_swipl` script to start a test instance. This will ensure the foreign library will be located properly.
+Also, use the provided `./script/swipl` script to start a test instance. This will ensure the foreign library will be located properly.
 ```
 ./make.sh
-./run_swipl
+./script/swipl
 ```
 
 ## Running the tests
 ```
 ./make.sh
-./run_swipl -g run_tests -g halt
+./script/test
 ```
 
 

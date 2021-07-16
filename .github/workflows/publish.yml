@@ -15,7 +15,7 @@ jobs:
         run: docker build -t terminusdb/terminus_store_prolog:latest .
 
       - name: Run tests
-        run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm terminusdb/terminus_store_prolog:latest bash -c "./run_swipl -g run_tests -g halt"
+        run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm terminusdb/terminus_store_prolog:latest bash -c "./script/test"
 
       - name: Log into Docker Container Registry
         if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
@@ -51,7 +51,7 @@ jobs:
         run: docker build . --file Dockerfile.fedora --tag $IMAGE_NAME
 
       - name: Run tests
-        run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm $IMAGE_NAME bash -c "./run_swipl -g run_tests -g halt"
+        run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm $IMAGE_NAME bash -c "./script/test"
 
       - name: Log into registry
         if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
