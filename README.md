@@ -23,17 +23,15 @@ use_module(library(terminus_store)).
 ## Compiling and running without installing (for testing purposes)
 If you need to compile manually, for example to test a change without reinstalling the pack, follow these instructions.
 
-Use the wrapper script `./make.sh` rather than the Makefile directly. The wrapper script will set up swipl environment variables which the build needs.
-
 Also, use the provided `./script/swipl` script to start a test instance. This will ensure the foreign library will be located properly.
 ```
-./make.sh
+make
 ./script/swipl
 ```
 
 ## Running the tests
 ```
-./make.sh
+make
 ./script/test
 ```
 

@@ -3,14 +3,16 @@
 ##
 ## Run `swipl`, load the `terminus_store_prolog` library, and run the tests.
 ##
-## - You should run `make.sh` before this.
+## - You should run `make` before this.
 ##
 
 # Exit the script on any error
 set -e
 
-# Absolute path of this script allowing it to be run from any directory
-SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Absolute path of this script allowing it to be run from any directory.
+#
+# Use `cygpath` to get a path that `swipl` will recognize on MSYS (Windows).
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && (cygpath --mixed "$(pwd)" 2> /dev/null || pwd))"
 
 # Get the `swipl` command in $CMD
 source "$SCRIPTDIR/swipl-cmd.sh"

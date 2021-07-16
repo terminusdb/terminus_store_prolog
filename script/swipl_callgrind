@@ -5,7 +5,7 @@
 ## the Callgrind tool.
 ##
 ## - Arguments to this script are passed to `swipl`.
-## - You should run `make.sh` before this.
+## - You should run `make` before this.
 ##
 
 # Exit the script on any error
