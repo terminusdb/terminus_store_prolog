@@ -39,44 +39,6 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
 
-  docker_fedora:
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: terminus_store_prolog_fedora
-      RUST_BACKTRACE: 1
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Build image
-        run: docker build . --file Dockerfile.fedora --tag $IMAGE_NAME
-
-      - name: Run tests
-        run: docker run -e RUST_BACKTRACE=$RUST_BACKTRACE --rm $IMAGE_NAME bash -c "./script/test"
-
-      - name: Log into registry
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
-        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
-
-      - name: Push image
-        if: github.event_name != 'pull_request' && (contains(github.ref, 'tag') || contains(github.ref, 'main'))
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
-
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
-
   windows:
     runs-on: windows-latest
     steps:
