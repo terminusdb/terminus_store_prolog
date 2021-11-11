@@ -36,6 +36,8 @@
               id_triple_removal/4,
               triple_removal/4,
 
+              sp_card/4,
+
               parent/2,
               squash/2,
 
@@ -1433,5 +1435,16 @@ test(imprecise_rollup_rolls_up_imprecisely,[cleanup(clean(TestDir)), setup(creat
     ],
 
     Triples = Expected.
+
+test(sp_card,[cleanup(clean(TestDir)), setup(createng(TestDir))]) :-
+    open_directory_store(TestDir, Store),
+    open_write(Store, Builder),
+    nb_add_triple(Builder, "A", "B", node("C")),
+    nb_add_triple(Builder, "A", "B", node("D")),
+    nb_commit(Builder, Layer),
+    subject_id(Layer, "A", A_Id),
+    predicate_id(Layer, "B", B_Id),
+    sp_card(Layer, A_Id, B_Id, Count),
+    Count = 2.
 
 :- end_tests(terminus_store).

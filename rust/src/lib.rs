@@ -55,4 +55,5 @@ pub extern "C" fn install() {
     layer::register_id_triple();
     layer::register_id_triple_addition();
     layer::register_id_triple_removal();
+    layer::register_sp_card();
 }

@@ -269,6 +269,15 @@ predicates! {
         }
     }
 
+    pub semidet fn sp_card(_context, layer_term, subject_id_term, predicate_id_term, count_term) {
+        let layer: WrappedLayer = layer_term.get_ex()?;
+        let subject_id: u64 = subject_id_term.get_ex()?;
+        let predicate_id: u64 = predicate_id_term.get_ex()?;
+        let iter = layer.triples_sp(subject_id, predicate_id);
+        let count = iter.count() as u64;
+        count_term.unify(count)
+    }
+
     pub nondet fn id_triple_addition<Peekable<Box<dyn Iterator<Item=IdTriple>+Send>>>(context, layer_term, subject_id_term, predicate_id_term, object_id_term) {
         setup => {
             let layer: WrappedLayer = layer_term.get_ex()?;
