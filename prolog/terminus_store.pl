@@ -70,6 +70,11 @@
 
 :- use_foreign_library(foreign(libterminus_store)).
 
+:- use_module(library(lists)).
+:- use_module(library(option)).
+:- use_module(library(plunit)).
+:- use_module(library(random)).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% pldocs for the foreign predicates %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
