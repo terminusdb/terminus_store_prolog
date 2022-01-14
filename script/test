@@ -18,4 +18,4 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && (cygpath --mixe
 source "$SCRIPTDIR/swipl-cmd.sh"
 
 # Run the `swipl` command with tests
-"${CMD[@]}" -g run_tests -g halt
+"${CMD[@]}" -g terminus_store:run_tests -g halt
