@@ -24,7 +24,7 @@ ifeq ($(SWIARCH), x64-win64)
   SOEXT := dll
 else
   RUST_LIB_NAME := lib$(RUST_LIB_NAME)
-  ifeq ($(SWIARCH), x86_64-darwin)
+  ifneq (,$(filter $(SWIARCH), x86_64-darwin arm64-darwin))
     # While SOEXT is set by `swipl`, the value for macOS is not what we want
     # ("so"). So, we set it correctly here.
     SOEXT := dylib
