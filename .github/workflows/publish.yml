@@ -3,6 +3,19 @@ name: Publish
 on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install python requirements
+        run: pip install beautifulsoup4 requests
+        # Can be found on: https://github.com/terminusdb-labs/swipl-lint/
+      - name: Download script
+        run: curl -L 'https://raw.githubusercontent.com/terminusdb-labs/swipl-lint/v0.1/lint_modules.py' > lint_modules.py
+      - name: Run linter
+        run: python3 lint_modules.py
+
   docker:
     runs-on: ubuntu-latest
     env:
