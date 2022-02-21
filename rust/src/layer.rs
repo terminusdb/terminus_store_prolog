@@ -436,6 +436,13 @@ predicates! {
 
         layer_stack_term.unify(name_strings.as_slice())
     }
+
+    pub semidet fn layer_equals(_context, layer1_term, layer2_term) {
+        let layer1: WrappedLayer = layer1_term.get_ex()?;
+        let layer2: WrappedLayer = layer2_term.get_ex()?;
+
+        into_prolog_result(*layer1 == *layer2)
+    }
 }
 
 wrapped_clone_blob!("layer", pub WrappedLayer, SyncStoreLayer);

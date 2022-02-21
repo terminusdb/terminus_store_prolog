@@ -49,6 +49,7 @@ pub extern "C" fn install() {
     layer::register_retrieve_layer_stack_names();
     layer::register_layer_to_id();
     layer::register_store_id_layer();
+    layer::register_layer_equals();
     store::register_pack_export();
     store::register_pack_layerids_and_parents();
     store::register_pack_import();

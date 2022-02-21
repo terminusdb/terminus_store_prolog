@@ -65,7 +65,8 @@
               rollup_upto/2,
               imprecise_rollup_upto/2,
 
-              layer_stack_names/2
+              layer_stack_names/2,
+              layer_equals/2
             ]).
 
 :- use_foreign_library(foreign(libterminus_store)).

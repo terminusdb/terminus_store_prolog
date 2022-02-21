@@ -13,7 +13,7 @@ crate-type = ["cdylib"]
 [dependencies]
 swipl = "0.3.6"
 #swipl = {path = "../../swipl-rs/swipl"}
-terminus-store = "=0.19.5"
+terminus-store = "=0.19.6"
 csv = "1.1"
 sha-1 = "0.9.1"
 hex = "0.4.2"
