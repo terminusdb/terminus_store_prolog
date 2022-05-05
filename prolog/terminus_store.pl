@@ -87,10 +87,10 @@
 % suppresses loading of the internal library, and instead imports
 % foreign predicates which are expected to have been preloaded into
 % '$terminus_store'.
-:- if(\+ current_prolog_flag(terminusdb_monolithic_module, true)).
-:- use_foreign_library(foreign(libterminus_store)).
-:- else.
+:- if(current_prolog_flag(terminusdb_monolithic_module, true)).
 :- add_import_module('terminus_store', '$terminus_store', start).
+:- else.
+:- use_foreign_library(foreign(libterminus_store)).
 :- endif.
 
 :- use_module(library(lists)).
