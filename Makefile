@@ -14,7 +14,7 @@ SWIARCH ?= $(shell ./script/swiarch.pl)
 PACKSODIR ?= lib/$(SWIARCH)
 
 # Rust and Cargo variables
-RUST_LIB_NAME := terminus_store_prolog
+RUST_LIB_NAME := terminus_store_prolog_dylib
 RUST_TARGET := release
 CARGO_FLAGS :=
 

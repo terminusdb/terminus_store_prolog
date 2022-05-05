@@ -69,7 +69,29 @@
               layer_equals/2
             ]).
 
+% There is two ways that this library is used.
+% 1. Standalone - in this case we need to load the internal foreign library.
+% 2. As part of TerminusDB - in this case we expect all the foreign
+%    predicates to have been preloaded into the module '$terminus_store'.
+%
+% The reason for this is that TerminusDB builds its own rust module
+% which bundles the internal foreign library. This is necessary cause
+% otherwise TerminusDB is unable to make use of the types defined in
+% this library, as these are not exposed through ordinarly shared
+% objects. TerminusDB needs these types in order to build
+% TerminusDB-specific native logic that works with store, graph,
+% layer, and builder blobs.
+%
+% In order to switch between the two kinds of behavior, TerminusDB
+% defines a special prolog flag, 'terminusdb_monolithic_module'. This
+% suppresses loading of the internal library, and instead imports
+% foreign predicates which are expected to have been preloaded into
+% '$terminus_store'.
+:- if(current_prolog_flag(terminusdb_monolithic_module, true)).
+:- add_import_module('terminus_store', '$terminus_store', start).
+:- else.
 :- use_foreign_library(foreign(libterminus_store)).
+:- endif.
 
 :- use_module(library(lists)).
 :- use_module(library(option)).
