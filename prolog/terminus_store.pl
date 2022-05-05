@@ -69,7 +69,9 @@
               layer_equals/2
             ]).
 
+:- if(\+ current_prolog_flag(terminusdb_monolithic_module, true)).
 :- use_foreign_library(foreign(libterminus_store)).
+:- endif.
 
 :- use_module(library(lists)).
 :- use_module(library(option)).
