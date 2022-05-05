@@ -8,4 +8,4 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-terminus-store-prolog-core = {path = "../terminus-store-prolog-core"}
+terminus-store-prolog = {path = "../terminus-store-prolog-core"}

@@ -967,7 +967,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "terminus-store-prolog-core"
+name = "terminus-store-prolog"
 version = "0.2.0"
 dependencies = [
  "chardetng",
@@ -984,7 +984,7 @@ dependencies = [
 name = "terminus-store-prolog-dylib"
 version = "0.1.0"
 dependencies = [
- "terminus-store-prolog-core",
+ "terminus-store-prolog",
 ]
 
 [[package]]
