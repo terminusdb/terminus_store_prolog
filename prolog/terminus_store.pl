@@ -81,6 +81,12 @@
 % objects. TerminusDB needs these types in order to build
 % TerminusDB-specific native logic that works with store, graph,
 % layer, and builder blobs.
+%
+% In order to switch between the two kinds of behavior, TerminusDB
+% defines a special prolog flag, 'terminusdb_monolithic_module'. This
+% suppresses loading of the internal library, and instead imports
+% foreign predicates which are expected to have been preloaded into
+% '$terminus_store'.
 :- if(\+ current_prolog_flag(terminusdb_monolithic_module, true)).
 :- use_foreign_library(foreign(libterminus_store)).
 :- else.
