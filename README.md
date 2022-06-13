@@ -4,6 +4,9 @@
 
 Prolog bindings for the [terminus-store](https://github.com/terminusdb/terminus-store/) Rust library.
 
+## Archival notice
+This project has been archived. Its primary user, [TerminusDB](https://github.com/terminusdb/terminusdb), has directly integrated the code of this repository, and all development is now happening there.
+
 ## Requirements
 
 * cargo
